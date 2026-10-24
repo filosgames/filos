@@ -1140,7 +1140,7 @@ try {
 <script src="data-cats.js?v=20"></script>
 <script src="data-quizdata.js?v=5"></script>
 <script src="data-adulti.js?v=3"></script>
-<script src="data-quiz.js?v=61"></script>
+<script src="data-quiz.js?v=62"></script>
 <script src="data-cdr.js?v=10"></script>
 <script src="data-agr.js?v=5"></script>
 <script src="data-pdr.js?v=5"></script>
@@ -3974,13 +3974,29 @@ document.getElementById("logoEl").addEventListener("click",function(){
  var countIv = null;
 
  var coinPre=new Image();coinPre.src='moneta.png?v=1';
- function openOverlay(){
+ // origin {x,y}: il rosa parte da quel punto e si allarga come una macchia fino a coprire tutto lo schermo
+ function openOverlay(origin){
  phase = 'waiting';
  touches = {};
  msg.style.opacity = 0;
  hint.style.opacity = 1;
  hint.textContent = T("ui_appoggiate_tutti_un_dito");hint.classList.remove("cp-bottom");
- ov.classList.add('active');
+ function setClip(v,tr){ov.style.webkitTransition=tr;ov.style.transition=tr;ov.style.webkitClipPath=v;ov.style.clipPath=v;}
+ if(origin&&typeof origin.x==="number"){
+  var w=window.innerWidth,h=window.innerHeight;
+  var R=Math.ceil(Math.sqrt(Math.max(origin.x,w-origin.x)*Math.max(origin.x,w-origin.x)+Math.max(origin.y,h-origin.y)*Math.max(origin.y,h-origin.y)))+20;
+  var at=" at "+Math.round(origin.x)+"px "+Math.round(origin.y)+"px)";
+  setClip("circle(0px"+at,"none");
+  ov.classList.add('active');
+  void ov.offsetWidth;
+  requestAnimationFrame(function(){
+   setClip("circle("+R+"px"+at,"clip-path .7s cubic-bezier(.3,.6,.25,1), -webkit-clip-path .7s cubic-bezier(.3,.6,.25,1)");
+   setTimeout(function(){setClip("","none");},760);
+  });
+ } else {
+  setClip("","none");
+  ov.classList.add('active');
+ }
  }
 
  function closeOverlay(){

@@ -414,7 +414,8 @@ function pigPreload(){if(!_pigBrokenImg){_pigBrokenImg=new Image();_pigBrokenImg
 function pigDrop(pig){
  if(_pigBusy)return;_pigBusy=true;pigPreload();
  var img=pig.querySelector("img");var r=img.getBoundingClientRect();
- function open(){if(typeof openChiPaga==="function")openChiPaga();}
+ var landAt=null;
+ function open(){if(typeof openChiPaga==="function")openChiPaga(landAt);}
  // Animazione con transizioni CSS: funziona su tutti i telefoni (anche iPhone vecchi)
  var fly=document.createElement("img");fly.src=img.currentSrc||img.src;fly.alt="";
  fly.style.cssText="position:fixed;left:"+r.left+"px;top:"+r.top+"px;width:"+r.width+"px;height:"+r.height+"px;z-index:9998;pointer-events:none;margin:0;will-change:transform;-webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0);";
@@ -430,6 +431,7 @@ function pigDrop(pig){
   var cx=r.left+r.width/2;
   br=document.createElement("img");br.src=PIG_BROKEN;br.alt="";br.className="pig-broken";
   var vw=window.innerWidth||document.documentElement.clientWidth;var lx=Math.max(6,Math.min(vw-w-6,cx-w/2));
+  landAt={x:cx,y:vh-14-h*0.4};
   br.style.cssText="position:fixed;left:"+lx+"px;top:"+(vh-14-h)+"px;width:"+w+"px;height:"+h+"px;z-index:9998;pointer-events:none;margin:0;transform-origin:50% 100%;-webkit-transform:scale(1.06,.9);transform:scale(1.06,.9);";
   document.body.appendChild(br);fly.style.visibility="hidden";
   void br.offsetWidth;
