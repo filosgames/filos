@@ -3973,6 +3973,7 @@ document.getElementById("logoEl").addEventListener("click",function(){
  closeBtn.addEventListener('touchend', function(e){ e.preventDefault(); e.stopPropagation(); closeOverlay(); });
  var countIv = null;
 
+ var coinPre=new Image();coinPre.src='moneta.png?v=1';
  function openOverlay(){
  phase = 'waiting';
  touches = {};
@@ -3994,40 +3995,13 @@ document.getElementById("logoEl").addEventListener("click",function(){
  }
 
  function createTouchEl(id, x, y, color){
- // Cerchio principale
- var el = document.createElement('div');
- el.style.cssText = 'position:absolute;border-radius:50%;width:88px;height:88px;'
- + 'background:' + color + ';'
- + 'left:' + x + 'px;top:' + y + 'px;'
- + 'transform:translate(-50%,-50%) scale(0);'
- + 'transition:transform 0.22s cubic-bezier(.34,1.56,.64,1);'
- + 'pointer-events:none;'
- + 'box-shadow:0 4px 20px rgba(0,0,0,0.15);';
+ // Sotto ogni dito compare una moneta (niente animazioni)
+ var el = document.createElement('img');
+ el.src = 'moneta.png?v=1';el.alt='';el.draggable=false;el.className='cp-coin';
+ el.style.cssText = 'position:absolute;width:96px;height:96px;left:' + x + 'px;top:' + y + 'px;'
+ + 'transform:translate(-50%,-50%);pointer-events:none;-webkit-user-select:none;user-select:none;';
  ov.appendChild(el);
- requestAnimationFrame(function(){
- el.style.transform = 'translate(-50%,-50%) scale(1)';
- el.style.animation = 'cp-pulse 1.6s ease-in-out infinite';
- });
-
- // Ondina (ripple) — si aggiorna ogni ciclo
- var ripple = document.createElement('div');
- ripple.style.cssText = 'position:absolute;border-radius:50%;width:88px;height:88px;'
- + 'border:3px solid ' + color + ';'
- + 'left:' + x + 'px;top:' + y + 'px;'
- + 'pointer-events:none;opacity:0;'
- + 'animation:cp-ripple 1.2s ease-out infinite;';
- ov.appendChild(ripple);
-
- // Seconda ondina sfasata
- var ripple2 = document.createElement('div');
- ripple2.style.cssText = 'position:absolute;border-radius:50%;width:88px;height:88px;'
- + 'border:2px solid ' + color + ';'
- + 'left:' + x + 'px;top:' + y + 'px;'
- + 'pointer-events:none;opacity:0;'
- + 'animation:cp-ripple 1.2s ease-out 0.4s infinite;';
- ov.appendChild(ripple2);
-
- touches[id] = { el:el, r1:ripple, r2:ripple2, color:color, alive:true, x:x, y:y };
+ touches[id] = { el:el, color:color, alive:true, x:x, y:y };
  }
 
  function moveTouch(id, x, y){
@@ -4035,30 +4009,19 @@ document.getElementById("logoEl").addEventListener("click",function(){
  if(!t || !t.alive) return;
  t.x = x; t.y = y;
  t.el.style.left = x + 'px'; t.el.style.top = y + 'px';
- t.r1.style.left = x + 'px'; t.r1.style.top = y + 'px';
- t.r2.style.left = x + 'px'; t.r2.style.top = y + 'px';
  }
 
  function destroyTouch(id){
  var t = touches[id];
  if(!t) return;
- [t.el, t.r1, t.r2].forEach(function(el){
- if(el && el.parentNode) el.parentNode.removeChild(el);
- });
+ if(t.el && t.el.parentNode) t.el.parentNode.removeChild(t.el);
  }
 
  function removeCircle(id){
  var t = touches[id];
  if(!t || !t.alive) return;
  t.alive = false;
- // Animazione uscita
- t.el.style.animation = 'none';
- t.el.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
- t.el.style.transform = 'translate(-50%,-50%) scale(0)';
- t.el.style.opacity = '0';
- t.r1.style.animation = 'none'; t.r1.style.opacity = '0';
- t.r2.style.animation = 'none'; t.r2.style.opacity = '0';
- setTimeout(function(){ destroyTouch(id); }, 300);
+ destroyTouch(id);
  }
 
  function startCountdown(){
@@ -4103,10 +4066,6 @@ document.getElementById("logoEl").addEventListener("click",function(){
  phase = 'done';
  var t = touches[id];
  if(!t) return;
- t.el.style.animation = 'none';
- t.el.style.transition = 'transform 0.4s cubic-bezier(.34,1.56,.64,1), box-shadow 0.4s';
- t.el.style.transform = 'translate(-50%,-50%) scale(1.7)';
- t.el.style.boxShadow = '0 8px 48px rgba(0,0,0,0.22)';
  msg.textContent = T("ui_paga_lui");
  msg.style.opacity = 1;
  setTimeout(function(){
