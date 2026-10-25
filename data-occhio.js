@@ -78,58 +78,77 @@ function ocValid(rows,lvl){
 
 // ── Il tabellone: 4 file da ordinare ──
 // rows: per ogni fila l'ordine attuale (numeri dei colori). onChange viene chiamato a ogni spostamento.
+// ── Il tabellone ──
+// In alto le 4 file in piccolo (si tocca una fila per sceglierla); sotto la fila scelta in grande,
+// in verticale: strisce larghe, facili da prendere anche quando i colori sono tanti.
+// Si sposta una striscia trascinandola su o giù, oppure toccandola e poi toccando il posto dove metterla.
 function ocBoard(wrap,lvl,rows,onChange,readonly){
  var colors=ocColors(lvl);var n=colors[0].length;
- var board=div("oc-board oc-n"+n+(readonly?" ro":""));wrap.appendChild(board);
- var sel=null; // {r,i}
- function paint(){
-  board.innerHTML="";
+ if(typeof rows._r!=="number")rows._r=0;
+ var box=div("oc-board2");wrap.appendChild(box);
+ var over=div("oc-over");box.appendChild(over);
+ var tabs=div("oc-tabs");box.appendChild(tabs);
+ var col=div("oc-col oc-n"+n);box.appendChild(col);
+ var sel=null;
+ function paintOver(){
+  over.innerHTML="";tabs.innerHTML="";
   rows.forEach(function(row,r){
-   var line=div("oc-row");line.dataset.r=r;
-   row.forEach(function(ci,i){
-    var cap=div("oc-cap"+(i===0||i===n-1?" fix":"")+(sel&&sel.r===r&&sel.i===i?" sel":""));
-    cap.style.background=colors[r][ci];cap.dataset.i=i;
-    if(i===0||i===n-1){var d=div("oc-dot");cap.appendChild(d);}
-    line.appendChild(cap);
-   });
-   board.appendChild(line);
-   if(!readonly)ocDrag(line,r);
+   var line=div("oc-row mini"+(r===rows._r?" on":""));
+   row.forEach(function(ci){var c=div("oc-cap");c.style.background=colors[r][ci];line.appendChild(c);});
+   line.onclick=function(){if(rows._r===r)return;rows._r=r;sel=null;paintOver();paintCol();};
+   over.appendChild(line);
+   tabs.appendChild(btn("oc-tab"+(r===rows._r?" on":""),T("ocRow").replace("{n}",r+1),function(){if(rows._r===r)return;rows._r=r;sel=null;paintOver();paintCol();}));
   });
  }
- function move(r,from,to){
-  if(from===to)return;var row=rows[r];var v=row.splice(from,1)[0];row.splice(to,0,v);
+ // Altezza delle strisce: tutta la fila deve stare nello schermo insieme al pulsante "Ho finito"
+ function barH(){
+  var top=col.getBoundingClientRect().top;var vh=window.innerHeight||700;
+  var avail=vh-top-96;
+  var h=Math.floor((avail-(n-1)*3)/n);
+  return Math.max(16,Math.min(54,h));
+ }
+ function paintCol(){
+  col.innerHTML="";var r=rows._r;var h=barH();
+  rows[r].forEach(function(ci,i){
+   var bar=div("oc-bar"+(i===0||i===n-1?" fix":"")+(sel===i?" sel":""));
+   bar.style.background=colors[r][ci];bar.style.height=h+"px";bar.dataset.i=i;
+   if(i===0||i===n-1)bar.appendChild(div("oc-dot"));
+   col.appendChild(bar);
+  });
+ }
+ function move(from,to){
+  if(from===to)return;var row=rows[rows._r];var v=row.splice(from,1)[0];row.splice(to,0,v);
   if(onChange)onChange(rows);
  }
- function ocDrag(line,r){
+ function recolor(hold){
+  var r=rows._r;var bars=col.children;
+  rows[r].forEach(function(ci,i){bars[i].style.background=colors[r][ci];bars[i].classList.toggle("sel",i===hold);});
+  // aggiorna anche la fila piccola
+  var mini=over.children[r];if(mini)rows[r].forEach(function(ci,i){mini.children[i].style.background=colors[r][ci];});
+ }
+ if(!readonly){
   var st=null;
-  function idxAt(x){var caps=line.children;var best=1,bd=1e9;for(var k=1;k<caps.length-1;k++){var b=caps[k].getBoundingClientRect();var c=b.left+b.width/2;var d=Math.abs(x-c);if(d<bd){bd=d;best=k;}}return best;}
-  line.addEventListener("pointerdown",function(e){
-   var cap=e.target.closest(".oc-cap");if(!cap)return;var i=+cap.dataset.i;
+  function idxAt(y){var bars=col.children;var best=1,bd=1e9;for(var k=1;k<bars.length-1;k++){var b=bars[k].getBoundingClientRect();var c=b.top+b.height/2;var d=Math.abs(y-c);if(d<bd){bd=d;best=k;}}return best;}
+  col.addEventListener("pointerdown",function(e){
+   var bar=e.target.closest(".oc-bar");if(!bar)return;var i=+bar.dataset.i;
    st={i:i,x:e.clientX,y:e.clientY,drag:false,id:e.pointerId,fix:(i===0||i===n-1)};
   });
-  line.addEventListener("pointermove",function(e){
+  col.addEventListener("pointermove",function(e){
    if(!st||st.fix||e.pointerId!==st.id)return;
-   if(!st.drag&&Math.abs(e.clientX-st.x)>8){st.drag=true;sel=null;try{line.setPointerCapture(e.pointerId);}catch(er){}}
-   if(st.drag){e.preventDefault();var to=idxAt(e.clientX);if(to!==st.i){move(r,st.i,to);st.i=to;paint2(line,r,to);}}
+   if(!st.drag&&Math.abs(e.clientY-st.y)>8){st.drag=true;sel=null;try{col.setPointerCapture(e.pointerId);}catch(er){}}
+   if(st.drag){e.preventDefault();var to=idxAt(e.clientY);if(to!==st.i){move(st.i,to);st.i=to;}recolor(st.i);}
   });
-  function end(e){
-   if(!st||e.pointerId!==st.id)return;var s=st;st=null;
-   if(s.drag){paint();return;}
-   // Tocco: il primo sceglie il quadratino, il secondo dice dove metterlo
-   if(s.fix){sel=null;paint();return;}
-   if(sel&&sel.r===r&&sel.i!==s.i){move(r,sel.i,s.i);sel=null;paint();return;}
-   if(sel&&sel.r===r&&sel.i===s.i){sel=null;paint();return;}
-   sel={r:r,i:s.i};paint();
-  }
-  line.addEventListener("pointerup",end);
-  line.addEventListener("pointercancel",function(e){if(st&&e.pointerId===st.id){st=null;paint();}});
+  col.addEventListener("pointerup",function(e){
+   if(!st||e.pointerId!==st.id)return;var s2=st;st=null;
+   if(s2.drag){paintCol();return;}
+   if(s2.fix){sel=null;paintCol();return;}
+   if(sel!==null&&sel!==s2.i){move(sel,s2.i);sel=null;paintCol();recolor(-1);return;}
+   sel=(sel===s2.i)?null:s2.i;paintCol();
+  });
+  col.addEventListener("pointercancel",function(e){if(st&&e.pointerId===st.id){st=null;paintCol();}});
  }
- // Durante il trascinamento si ridisegna solo la fila, tenendo evidenziato il quadratino preso
- function paint2(line,r,hold){
-  var caps=line.children;rows[r].forEach(function(ci,i){caps[i].style.background=colors[r][ci];caps[i].classList.toggle("sel",i===hold);});
- }
- paint();
- return board;
+ paintOver();paintCol();
+ return box;
 }
 // Confronto: le file messe dal giocatore e, sotto ognuna, quella giusta
 function ocCompare(wrap,lvl,rows){
@@ -227,7 +246,6 @@ function renderOc(){
   if(!OCL.cur)OCL.cur=ocShuffled(rd.lvl,rd.seed);
   wrap.appendChild(div("agr-round",(isTb?T("ocTbRound"):ocTitle())+" · "+ocLvlName(rd.lvl)));
   if(!OCL.solo)wrap.appendChild(div("codice-big oc-who",T("codiceTurnBig").replace("{n}",who)));
-  wrap.appendChild(div("codice-sub oc-hint",T("ocHint")));
   ocBoard(wrap,rd.lvl,OCL.cur,null,false);
   wrap.appendChild(btn("codice-cta",T("ocDone"),function(){
    rd.res[who]=OCL.cur.map(function(r){return r.slice();});OCL.cur=null;
@@ -507,7 +525,6 @@ function ocrScreenPlay(wrap,st){
  var key=st.game+"|"+st.k;
  if(OCR.curKey!==key){OCR.curKey=key;OCR.cur=ocShuffled(st.rd.lvl,st.rd.seed);}
  ocrTimer(wrap,st);
- wrap.appendChild(div("codice-sub oc-hint",T("ocHint")));
  ocBoard(wrap,st.rd.lvl,OCR.cur,null,false);
  var ok=btn("codice-cta",T("ocDone"),function(){if(ok.disabled)return;ok.disabled=true;ocrSend(OCR.cur);});
  wrap.appendChild(ok);
@@ -569,7 +586,7 @@ function ocrScreenEnd(wrap,st){
 // ── Testi ──
 function ocStrings(){
  if(typeof STRINGS==="undefined"||STRINGS.it.ocTitle)return;
- Object.assign(STRINGS.it,{ocTitle:"L'OCCHIO DEI COLORI",ocRulesSolo:"Metti in ordine di sfumatura le quattro file di quadratini. Il primo e l'ultimo di ogni fila (con il puntino) restano fermi. Sposta gli altri trascinandoli, oppure tocca un quadratino e poi il posto dove metterlo. Conta solo la precisione.",ocRulesFriends:"A turno, sullo stesso telefono, ognuno mette in ordine di sfumatura le stesse quattro file di quadratini. Il primo e l'ultimo di ogni fila (con il puntino) restano fermi. Vince chi è più preciso; se c'è parità si rifà una prova più difficile solo tra chi è pari.",ocIntroRemote:"Ognuno gioca dal proprio telefono, anche da tavoli diversi: tutti ricevono gli stessi colori da mettere in ordine di sfumatura. Ci sono 3 minuti. Vince chi è più preciso; se c'è parità, prova più difficile solo per chi è pari.",ocChooseLevel:"SCEGLI IL LIVELLO",ocLvlDesc:"{n} quadratini",ocExpert:"Esperto",ocYou:"Tu",ocPassSub:"Gli altri non devono guardare lo schermo mentre metti in ordine i colori.",ocHint:"Trascina i quadratini, oppure toccane uno e poi il posto dove metterlo. Quelli con il puntino restano fermi.",ocDone:"Ho finito",ocPrec:"Precisione {p}%",ocPerfect:"Perfetto! Ordine senza errori.",ocCompare:"IL TUO ORDINE E QUELLO GIUSTO",ocRanking:"CLASSIFICA",ocTbRound:"Spareggio",ocTbSub:"{n} sono pari: prova più difficile solo per loro.",ocWaiting:"Hanno finito {a} su {t}",ocNoAnswer:"non ha finito"});
- Object.assign(STRINGS.en,{ocTitle:"THE COLOR EYE",ocRulesSolo:"Put the four rows of squares in order of shade. The first and last square of each row (with the dot) stay fixed. Move the others by dragging them, or tap a square and then the spot where it goes. Only accuracy counts.",ocRulesFriends:"Taking turns on the same phone, everyone puts the same four rows of squares in order of shade. The first and last square of each row (with the dot) stay fixed. The most accurate player wins; if there is a tie, the tied players play a harder round.",ocIntroRemote:"Everyone plays on their own phone, even from different tables: all players get the same colors to put in order of shade. You have 3 minutes. The most accurate player wins; if there is a tie, only the tied players play a harder round.",ocChooseLevel:"CHOOSE THE LEVEL",ocLvlDesc:"{n} squares",ocExpert:"Expert",ocYou:"You",ocPassSub:"Nobody else should look at the screen while you sort the colors.",ocHint:"Drag the squares, or tap one and then the spot where it goes. The ones with a dot stay fixed.",ocDone:"I'm done",ocPrec:"Accuracy {p}%",ocPerfect:"Perfect! No mistakes.",ocCompare:"YOUR ORDER AND THE RIGHT ONE",ocRanking:"RANKING",ocTbRound:"Tie-break",ocTbSub:"{n} are tied: a harder round just for them.",ocWaiting:"{a} of {t} have finished",ocNoAnswer:"didn't finish"});
- Object.assign(STRINGS.es,{ocTitle:"EL OJO DE LOS COLORES",ocRulesSolo:"Ordena por matices las cuatro filas de cuadraditos. El primero y el último de cada fila (con el punto) no se mueven. Mueve los demás arrastrándolos, o toca un cuadradito y luego el sitio donde va. Solo cuenta la precisión.",ocRulesFriends:"Por turnos, en el mismo móvil, cada uno ordena por matices las mismas cuatro filas de cuadraditos. El primero y el último de cada fila (con el punto) no se mueven. Gana quien es más preciso; si hay empate, los empatados juegan una prueba más difícil.",ocIntroRemote:"Cada uno juega desde su móvil, incluso desde mesas distintas: todos reciben los mismos colores para ordenar por matices. Hay 3 minutos. Gana quien es más preciso; si hay empate, solo los empatados juegan una prueba más difícil.",ocChooseLevel:"ELIGE EL NIVEL",ocLvlDesc:"{n} cuadraditos",ocExpert:"Experto",ocYou:"Tú",ocPassSub:"Los demás no deben mirar la pantalla mientras ordenas los colores.",ocHint:"Arrastra los cuadraditos, o toca uno y luego el sitio donde va. Los que tienen un punto no se mueven.",ocDone:"He terminado",ocPrec:"Precisión {p}%",ocPerfect:"¡Perfecto! Sin errores.",ocCompare:"TU ORDEN Y EL CORRECTO",ocRanking:"CLASIFICACIÓN",ocTbRound:"Desempate",ocTbSub:"{n} están empatados: prueba más difícil solo para ellos.",ocWaiting:"Han terminado {a} de {t}",ocNoAnswer:"no ha terminado"});
+ Object.assign(STRINGS.it,{ocTitle:"L'OCCHIO DEI COLORI",ocRulesSolo:"Metti in ordine di sfumatura le quattro file di quadratini. Il primo e l'ultimo di ogni fila (con il puntino) restano fermi. Sposta gli altri trascinandoli, oppure tocca un quadratino e poi il posto dove metterlo. Conta solo la precisione.",ocRulesFriends:"A turno, sullo stesso telefono, ognuno mette in ordine di sfumatura le stesse quattro file di quadratini. Il primo e l'ultimo di ogni fila (con il puntino) restano fermi. Vince chi è più preciso; se c'è parità si rifà una prova più difficile solo tra chi è pari.",ocIntroRemote:"Ognuno gioca dal proprio telefono, anche da tavoli diversi: tutti ricevono gli stessi colori da mettere in ordine di sfumatura. Ci sono 3 minuti. Vince chi è più preciso; se c'è parità, prova più difficile solo per chi è pari.",ocChooseLevel:"SCEGLI IL LIVELLO",ocLvlDesc:"{n} quadratini",ocExpert:"Esperto",ocYou:"Tu",ocPassSub:"Gli altri non devono guardare lo schermo mentre metti in ordine i colori.",ocHint:"Scegli una fila, poi trascina le strisce su o giù, oppure toccane una e poi il posto dove metterla. Quelle con il puntino restano ferme.",ocRow:"Fila {n}",ocDone:"Ho finito",ocPrec:"Precisione {p}%",ocPerfect:"Perfetto! Ordine senza errori.",ocCompare:"IL TUO ORDINE E QUELLO GIUSTO",ocRanking:"CLASSIFICA",ocTbRound:"Spareggio",ocTbSub:"{n} sono pari: prova più difficile solo per loro.",ocWaiting:"Hanno finito {a} su {t}",ocNoAnswer:"non ha finito"});
+ Object.assign(STRINGS.en,{ocTitle:"THE COLOR EYE",ocRulesSolo:"Put the four rows of squares in order of shade. The first and last square of each row (with the dot) stay fixed. Move the others by dragging them, or tap a square and then the spot where it goes. Only accuracy counts.",ocRulesFriends:"Taking turns on the same phone, everyone puts the same four rows of squares in order of shade. The first and last square of each row (with the dot) stay fixed. The most accurate player wins; if there is a tie, the tied players play a harder round.",ocIntroRemote:"Everyone plays on their own phone, even from different tables: all players get the same colors to put in order of shade. You have 3 minutes. The most accurate player wins; if there is a tie, only the tied players play a harder round.",ocChooseLevel:"CHOOSE THE LEVEL",ocLvlDesc:"{n} squares",ocExpert:"Expert",ocYou:"You",ocPassSub:"Nobody else should look at the screen while you sort the colors.",ocHint:"Pick a row, then drag the stripes up or down, or tap one and then the spot where it goes. The ones with a dot stay fixed.",ocRow:"Row {n}",ocDone:"I'm done",ocPrec:"Accuracy {p}%",ocPerfect:"Perfect! No mistakes.",ocCompare:"YOUR ORDER AND THE RIGHT ONE",ocRanking:"RANKING",ocTbRound:"Tie-break",ocTbSub:"{n} are tied: a harder round just for them.",ocWaiting:"{a} of {t} have finished",ocNoAnswer:"didn't finish"});
+ Object.assign(STRINGS.es,{ocTitle:"EL OJO DE LOS COLORES",ocRulesSolo:"Ordena por matices las cuatro filas de cuadraditos. El primero y el último de cada fila (con el punto) no se mueven. Mueve los demás arrastrándolos, o toca un cuadradito y luego el sitio donde va. Solo cuenta la precisión.",ocRulesFriends:"Por turnos, en el mismo móvil, cada uno ordena por matices las mismas cuatro filas de cuadraditos. El primero y el último de cada fila (con el punto) no se mueven. Gana quien es más preciso; si hay empate, los empatados juegan una prueba más difícil.",ocIntroRemote:"Cada uno juega desde su móvil, incluso desde mesas distintas: todos reciben los mismos colores para ordenar por matices. Hay 3 minutos. Gana quien es más preciso; si hay empate, solo los empatados juegan una prueba más difícil.",ocChooseLevel:"ELIGE EL NIVEL",ocLvlDesc:"{n} cuadraditos",ocExpert:"Experto",ocYou:"Tú",ocPassSub:"Los demás no deben mirar la pantalla mientras ordenas los colores.",ocHint:"Elige una fila y luego arrastra las franjas arriba o abajo, o toca una y luego el sitio donde va. Las que tienen un punto no se mueven.",ocRow:"Fila {n}",ocDone:"He terminado",ocPrec:"Precisión {p}%",ocPerfect:"¡Perfecto! Sin errores.",ocCompare:"TU ORDEN Y EL CORRECTO",ocRanking:"CLASIFICACIÓN",ocTbRound:"Desempate",ocTbSub:"{n} están empatados: prueba más difícil solo para ellos.",ocWaiting:"Han terminado {a} de {t}",ocNoAnswer:"no ha terminado"});
 }

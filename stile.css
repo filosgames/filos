@@ -475,3 +475,20 @@ body[data-cat="cultura"]{--f-cat:#DCE3F7;}body[data-cat="adulti"]{--f-cat:#EEDCE
 .tp-hole .tp-big{width:100%!important;height:100%!important;margin:0!important;transition:none!important;}
 .tp-big.red:active,.tp-big.green:active{transform:none!important;}
 .tp-big{box-shadow:0 10px 28px rgba(0,0,0,.16)!important;}
+
+/* 21. L'occhio dei colori: una fila alla volta, in verticale */
+.oc-board2{max-width:420px;margin:0 auto 16px;display:flex;flex-direction:column;gap:10px;}
+.oc-over{display:flex;flex-direction:column;gap:2px;}
+.oc-row.mini{gap:1px;touch-action:auto;padding:3px;border-radius:7px;border:2px solid transparent;cursor:pointer;}
+.oc-row.mini .oc-cap{height:9px;border-radius:2px;box-shadow:none;cursor:pointer;}
+.oc-row.mini.on{border-color:var(--f-ink);}
+.oc-tabs{display:flex;gap:6px;justify-content:center;}
+.oc-tab{flex:1;max-width:90px;padding:8px 0;border:none;border-radius:999px;background:var(--f-fill);color:var(--f-ink-2);font-weight:700;font-size:14px;cursor:pointer;}
+.oc-tab.on{background:var(--f-sand);color:var(--f-sand-ink);}
+.oc-col{display:flex;flex-direction:column;gap:3px;touch-action:none;-webkit-user-select:none;user-select:none;}
+.oc-bar{width:100%;border-radius:8px;position:relative;cursor:grab;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06);transition:transform .12s,box-shadow .12s;}
+.oc-bar.fix{cursor:default;}
+.oc-bar .oc-dot{width:8px;height:8px;margin:-4px 0 0 -4px;}
+.oc-bar.sel{transform:scale(1.04);box-shadow:0 6px 16px rgba(0,0,0,.25),0 0 0 2px #fff,0 0 0 4px var(--f-ink);z-index:2;}
+.oc .codice-cta{margin-top:4px!important;}
+.oc-board2{margin-bottom:10px!important;}
