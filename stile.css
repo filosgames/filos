@@ -498,3 +498,13 @@ body[data-cat="cultura"]{--f-cat:#DCE3F7;}body[data-cat="adulti"]{--f-cat:#EEDCE
  .cb{padding:0 0 16px!important;}
  .cb .cn{margin-top:10px;line-height:1.25;}
 }
+
+/* 23 — Che lingua è: la frase nel suo alfabeto e la soluzione con paese e bandiera */
+.lg-phrase{font-size:26px;line-height:1.35;font-weight:700;color:var(--f-ink,#1A1D21);text-align:center;overflow-wrap:anywhere;unicode-bidi:plaintext;}
+.quiz-q.lg-phrase{font-size:26px;letter-spacing:0;text-transform:none;}
+.lg-remote{background:#fff;border-radius:20px;padding:26px 18px;margin:4px auto 16px;max-width:420px;box-shadow:0 0 0 1px #E9EDF1,0 6px 18px rgba(26,29,33,0.05);}
+.lg-sol{display:flex;flex-direction:column;align-items:center;gap:8px;margin:6px 0 14px;}
+.lg-country{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;color:var(--f-ink,#1A1D21);}
+.lg-country img{height:24px;width:auto;border-radius:3px;box-shadow:0 0 0 1px rgba(0,0,0,0.1);}
+.lg-mean{font-size:15px;color:var(--f-ink-2,#5A6270);text-align:center;line-height:1.4;}
+@media(max-width:380px){.lg-phrase,.quiz-q.lg-phrase{font-size:22px;}}

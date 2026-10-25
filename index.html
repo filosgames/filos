@@ -803,7 +803,7 @@ button:disabled{opacity:0.35!important;transform:none;}
 #cdr-toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 28px);transform:translate(-50%,20px);background:rgba(28,28,30,0.92);color:#fff;font-size:15px;font-weight:600;padding:11px 18px;border-radius:999px;opacity:0;transition:all .25s;pointer-events:none;z-index:9999;}
 #cdr-toast.on{opacity:1;transform:translate(-50%,0);}
 </style>
-<link rel="stylesheet" href="stile.css?v=36">
+<link rel="stylesheet" href="stile.css?v=37">
 
 <!-- Firebase SDK (bundled) -->
 <script>
@@ -1137,14 +1137,16 @@ try {
 <script src="data-ag.js?v=4"></script>
 <script src="data-qv.js?v=4"></script>
 <script src="data-sp.js?v=5"></script>
-<script src="data-cats.js?v=22"></script>
+<script src="data-cats.js?v=23"></script>
 <script src="data-quizdata.js?v=5"></script>
+<script src="data-lingua.js?v=1"></script>
 <script src="data-adulti.js?v=3"></script>
-<script src="data-quiz.js?v=64"></script>
+<script src="data-quiz.js?v=65"></script>
 <script src="data-cdr.js?v=11"></script>
 <script src="data-agr.js?v=5"></script>
 <script src="data-pdr.js?v=5"></script>
 <script src="data-fgr.js?v=4"></script>
+<script src="data-lgr.js?v=1"></script>
 <script src="data-qxr.js?v=1"></script>
 <script src="data-occhio.js?v=6"></script>
 <script src="data-tempo.js?v=4"></script>
@@ -2521,7 +2523,8 @@ var GAMES={
  {name:T("codiceTitle"),players:"2+",time:"15 min",hot:true,codice:true,
  rules:"Ognuno sceglie di nascosto un codice segreto di 4 cifre (es. 3-7-1-9) e l'app lo ricorda. A turno provi a indovinare il codice di un avversario scrivendo tutte e 4 le cifre: l'app ti dice quante sono giuste al posto giusto (verde) e quante sono giuste ma al posto sbagliato (giallo). Chi per primo indovina un codice intero vince!",
  tip:"Usa i tentativi precedenti, anche quelli degli altri: sono tutti visibili. Se una cifra non dà né verde né giallo, scartala subito."},
- {name:"L'OCCHIO DEI COLORI",players:"2-8",time:"10 min",isnew:true,occhio:true,rules:"A turno, sullo stesso telefono, ognuno mette in ordine di sfumatura le stesse quattro file di strisce colorate. La prima e l'ultima di ogni fila (con il puntino) restano ferme; le altre si spostano trascinandole, oppure toccandone una e poi il posto dove metterla. Vince chi è più preciso. Niente pareggi: chi è pari in testa rifà una prova più difficile, finché uno vince.",tip:"Chi aspetta il proprio turno non deve guardare: i colori sono gli stessi per tutti."}
+ {name:"L'OCCHIO DEI COLORI",players:"2-8",time:"10 min",isnew:true,occhio:true,rules:"A turno, sullo stesso telefono, ognuno mette in ordine di sfumatura le stesse quattro file di strisce colorate. La prima e l'ultima di ogni fila (con il puntino) restano ferme; le altre si spostano trascinandole, oppure toccandone una e poi il posto dove metterla. Vince chi è più preciso. Niente pareggi: chi è pari in testa rifà una prova più difficile, finché uno vince.",tip:"Chi aspetta il proprio turno non deve guardare: i colori sono gli stessi per tutti."},
+ {name:"CHE LINGUA È?",players:"2-8",time:"15 min",isnew:true,lingua:true,rules:"L'app mostra una frase scritta in un'altra lingua, nel suo alfabeto originale. A turno, sullo stesso telefono, ognuno sceglie tra 4 lingue quella giusta senza far vedere la risposta agli altri. Poi si scopre la soluzione, con il paese d'origine e il significato della frase. 10 frasi a partita, tre livelli di difficoltà. Niente pareggi: chi è pari in testa gioca altre 3 frasi più difficili, finché uno vince.",tip:"Guarda le lettere strane e gli accenti: ogni lingua ha i suoi segni particolari."}
  ],
  coppia:[
  {name:"36 DOMANDE",players:"2",time:"45-60 min",hot:true,rules:"Le 36 domande di Arthur Aron per creare vera intimità. Tre round di intensità crescente. Si risponde a turno, ascoltando davvero.",tip:"Non correte: la pausa dopo ogni risposta è parte del gioco.",questions:Q36R},
@@ -2680,6 +2683,7 @@ var GAMES={
  {name:"ANNO GIUSTO",players:"1+",time:"15 min",isnew:true,annogiusto:true,rules:"L'app mostra un evento storico o una invenzione. I giocatori indovinano l'anno il più vicino possibile. Vince chi sbaglia meno.",tip:"Le invenzioni sono spesso molto più antiche di quanto si pensi."},
  {name:"PRIMA O DOPO?",players:"2+",time:"15 min",rules:"L'app mostra due eventi storici. I giocatori dicono quale dei due è venuto prima.",tip:"Ottimo per scoprire connessioni inaspettate."},
  {name:"CHE BANDIERA È?",players:"2+",time:"20 min",isnew:true,rules:"L'app mostra la bandiera di un paese. I giocatori devono indovinare di quale nazione si tratta. Tre livelli di difficoltà.",tip:"Le bandiere più simili tra loro sono le più difficili!"},
+ {name:"CHE LINGUA È?",players:"1+",time:"15 min",isnew:true,lingua:true,rules:"L'app mostra una frase scritta in un'altra lingua, nel suo alfabeto originale. Si sceglie la lingua giusta tra 4; nella soluzione si scoprono il paese d'origine e il significato. 10 frasi a partita, tre livelli di difficoltà. Si può giocare anche da soli; in più giocatori si risponde a turno sullo stesso telefono e, in caso di pareggio, chi è pari gioca altre 3 frasi più difficili finché uno vince.",tip:"Guarda le lettere strane e gli accenti: ogni lingua ha i suoi segni particolari."},
  {name:"VERO O FALSO? SCIENTIFICO",players:"2+",time:"15 min",rules:"L'app mostra fatti scientifici. I giocatori votano vero o falso.",tip:"I falsi più convincenti sono quelli che suonano plausibili."},
  {name:"CHI L'HA INVENTATO?",players:"2+",time:"20 min",rules:"L'app mostra un oggetto o invenzione. Ognuno propone chi l'ha inventata. Poi si rivela.",tip:"Molte invenzioni famose nascono per caso."},
  {name:"CAPITALI DEL MONDO",players:"3+",time:"15 min",rules:"L'app mostra un paese. I giocatori rispondono con la capitale in meno di cinque secondi.",tip:"Iniziate con paesi semplici, poi aumentate la difficoltà."},
@@ -2741,6 +2745,7 @@ var GAMES={
  {name:"CHE BANDIERA È?",players:"2-8",time:"15 min",isnew:true,bandieraremote:true,
  rules:"Ognuno gioca dal proprio telefono, anche da tavoli diversi. Uno lancia la sfida e agli altri arriva una notifica: toccando Gioca entrano nella partita. L'app mostra la bandiera di un paese e ognuno sceglie tra quattro nazioni. Ogni risposta giusta vale un punto. Dieci bandiere: vince chi fa più punti. Hai 30 secondi per rispondere; poi per 20 secondi si vedono la risposta giusta e la classifica, e si passa da soli alla bandiera dopo. Niente pareggi: chi è pari in testa gioca uno spareggio con 3 bandiere più difficili.",
  tip:"Le bandiere più simili tra loro sono le più difficili!"},
+ {name:"CHE LINGUA È?",players:"2-8",time:"15 min",isnew:true,linguaremote:true,rules:"Ognuno gioca dal proprio telefono, anche da tavoli diversi. Uno lancia la sfida e agli altri arriva una notifica: toccando Gioca entrano nella partita. L'app mostra una frase scritta in un'altra lingua e ognuno sceglie la lingua giusta tra 4, con 30 secondi di tempo. Poi si vedono la soluzione, il paese d'origine e il significato. 10 frasi a partita. Niente pareggi: chi è pari in testa gioca altre 3 frasi più difficili, finché uno vince.",tip:"Le lingue vicine si somigliano molto: cerca le lettere che solo una di loro usa."},
  {name:"QUANTO VALE?",players:"2-8",time:"15 min",hot:true,quantovale:true,
  rules:"Ognuno gioca dal proprio telefono, anche da tavoli diversi. Uno lancia la sfida e agli altri arriva una notifica: toccando Gioca entrano nella partita. L'app mostra una domanda con un valore numerico (es. 'Quanti neonati nascono ogni giorno nel mondo?') e ognuno sceglie la sua risposta con il cursore. Chi si avvicina di più prende un punto. Dieci domande: vince chi fa più punti. Hai 30 secondi per rispondere; poi per 20 secondi si vedono la risposta giusta e la classifica, e si passa da soli alla domanda dopo. Niente pareggi: chi è pari in testa gioca uno spareggio con altre 3 domande.",
  tip:"Non sparare un numero a caso — ragiona per difetto o per eccesso. E ricorda: quasi tutto è sempre più grande di quanto pensiamo."},
@@ -3877,6 +3882,7 @@ else if(S.screen==="specchio")renderSpecchio();
  else if(S.screen==="occhio")renderOc();
  else if(S.screen==="pdr")renderPdRemote();
  else if(S.screen==="fgr")renderFlRemote();
+ else if(S.screen==="lgr")renderLgRemote();
  else if(S.screen==="annogiusto")renderAnnoGiusto();
  else if(S.screen==="ag_end")renderAgEnd();
  else if(S.screen==="lex")renderLex();
@@ -4200,7 +4206,7 @@ function showInviteBanner(inv, key){
  top.appendChild(ic);top.appendChild(app);top.appendChild(when);
  var who = document.createElement("div");who.className="inv-title";
  who.textContent=(inv.from||T("ui_qualcuno"))+T("invChallenges");
- var gameLbl = inv.kind==="codice" ? T("codiceTitle") : inv.kind==="anno" ? T("ui_anno_giusto") : inv.kind==="primadopo" ? ((typeof pdrStrings==="function"&&pdrStrings()),T("pdrTitle")) : inv.kind==="bandiera" ? ((typeof fgrStrings==="function"&&fgrStrings()),T("fgrTitle")) : inv.kind==="qvx" ? T("qvTitle") : inv.kind==="tempo" ? ((typeof tpStrings==="function"&&tpStrings()),T("tpTitle")) : inv.kind==="occhio" ? ((typeof ocStrings==="function"&&ocStrings()),T("ocTitle")) : (inv.cat && inv.cat!=="quantovale" && typeof getCatName==="function") ? getCatName(inv.cat) : (inv.roomCode ? T("invQv") : (inv.game||T("ui_un_gioco")));
+ var gameLbl = inv.kind==="codice" ? T("codiceTitle") : inv.kind==="anno" ? T("ui_anno_giusto") : inv.kind==="primadopo" ? ((typeof pdrStrings==="function"&&pdrStrings()),T("pdrTitle")) : inv.kind==="bandiera" ? ((typeof fgrStrings==="function"&&fgrStrings()),T("fgrTitle")) : inv.kind==="lingua" ? ((typeof lgrStrings==="function"&&lgrStrings()),T("lgrTitle")) : inv.kind==="qvx" ? T("qvTitle") : inv.kind==="tempo" ? ((typeof tpStrings==="function"&&tpStrings()),T("tpTitle")) : inv.kind==="occhio" ? ((typeof ocStrings==="function"&&ocStrings()),T("ocTitle")) : (inv.cat && inv.cat!=="quantovale" && typeof getCatName==="function") ? getCatName(inv.cat) : (inv.roomCode ? T("invQv") : (inv.game||T("ui_un_gioco")));
  gameLbl=String(gameLbl);if(gameLbl===gameLbl.toUpperCase())gameLbl=gameLbl.charAt(0)+gameLbl.slice(1).toLowerCase();
  var what = document.createElement("div");what.className="inv-body";what.textContent=T("invGame")+gameLbl;
  var btns = document.createElement("div");btns.className="inv-btns";
@@ -4247,6 +4253,15 @@ function showInviteBanner(inv, key){
     S.cat="relax";S.game=null;
     if(!ok){S.screen="games";render();if(typeof cdrToast==="function")cdrToast(msg||T("ui_stanza_non_trovata_o_scaduta"));return;}
     S.screen="fgr";render();
+   });
+   return;
+  }
+  // Invito a Che lingua è a distanza: entra direttamente nella partita
+  if(inv.roomCode && inv.kind === "lingua" && typeof lgrJoin==="function"){
+   lgrJoin(inv.roomCode,function(ok,msg){
+    S.cat="relax";S.game=null;
+    if(!ok){S.screen="games";render();if(typeof cdrToast==="function")cdrToast(msg||T("ui_stanza_non_trovata_o_scaduta"));return;}
+    S.screen="lgr";render();
    });
    return;
   }

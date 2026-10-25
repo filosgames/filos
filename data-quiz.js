@@ -226,7 +226,7 @@ function setCatBg(){
  }
 }
 function stopAllTimers(){["_appelloTimer","_cicTimer","_csdTimer","_lexTimer","_mimoTimer","_pubTimer","_robotTimer","_sculTimer","_sinonTimer","_sopTimer","_specTimer","_superTimer","alfaInterval"].forEach(function(n){try{if(window[n]){clearInterval(window[n]);window[n]=null;}}catch(e){}});if(typeof QZ!=="undefined"&&QZ&&QZ.timer){clearInterval(QZ.timer);QZ.timer=null;}["pubRunning","lexRunning","mimoRunning","robotRunning","sculRunning","sinonRunning","sopRunning","specRunning","superRunning","appelloRunning","cicRunning","csdRunning","alfaRunning","intesaRunning"].forEach(function(k){if(S[k])S[k]=false;});if(typeof intesaInterval!=='undefined'&&intesaInterval){clearInterval(intesaInterval);intesaInterval=null;}if(window._qvAutoTimer){clearTimeout(window._qvAutoTimer);window._qvAutoTimer=null;}if(window._qvCountdownInterval){clearInterval(window._qvCountdownInterval);window._qvCountdownInterval=null;}if(window._qvRevealTimer){clearTimeout(window._qvRevealTimer);window._qvRevealTimer=null;}if(window._qvRevealInterval){clearInterval(window._qvRevealInterval);window._qvRevealInterval=null;}if(window._qvNextTimer){clearTimeout(window._qvNextTimer);window._qvNextTimer=null;}if(window._qvNextInterval){clearInterval(window._qvNextInterval);window._qvNextInterval=null;}}
-function goHome(){if(typeof tpLeave==="function"&&typeof TP!=="undefined"&&TP.code)tpLeave();if(typeof ocrLeave==="function"&&typeof OCR!=="undefined"&&OCR.code)ocrLeave();if(typeof qxrLeave==="function"&&typeof QXR!=="undefined"&&QXR.code)qxrLeave();if(typeof fgrLeave==="function"&&typeof FGR!=="undefined"&&FGR.code)fgrLeave();if(typeof pdrLeave==="function"&&typeof PDR!=="undefined"&&PDR.code)pdrLeave();if(typeof agrLeave==="function"&&typeof AGR!=="undefined"&&AGR.code)agrLeave();if(typeof qvrInLobby==="function"&&qvrInLobby())qvrLeave();if(typeof cdrLeave==="function"&&typeof CDR!=="undefined"&&CDR.code)cdrLeave();stopAllTimers();S.screen="home";S.cat=null;S.game=null;render();fbSync();}
+function goHome(){if(typeof tpLeave==="function"&&typeof TP!=="undefined"&&TP.code)tpLeave();if(typeof ocrLeave==="function"&&typeof OCR!=="undefined"&&OCR.code)ocrLeave();if(typeof qxrLeave==="function"&&typeof QXR!=="undefined"&&QXR.code)qxrLeave();if(typeof fgrLeave==="function"&&typeof FGR!=="undefined"&&FGR.code)fgrLeave();if(typeof lgrLeave==="function"&&typeof LGR!=="undefined"&&LGR.code)lgrLeave();if(typeof pdrLeave==="function"&&typeof PDR!=="undefined"&&PDR.code)pdrLeave();if(typeof agrLeave==="function"&&typeof AGR!=="undefined"&&AGR.code)agrLeave();if(typeof qvrInLobby==="function"&&qvrInLobby())qvrLeave();if(typeof cdrLeave==="function"&&typeof CDR!=="undefined"&&CDR.code)cdrLeave();stopAllTimers();S.screen="home";S.cat=null;S.game=null;render();fbSync();}
 function addBackArrow(action){
  var left=document.getElementById("hdrLeft");
  if(!left) return;
@@ -237,7 +237,7 @@ function addBackArrow(action){
  b.onclick=action;
  left.appendChild(b);
 }
-function goBackToGames(){if(typeof tpLeave==="function"&&typeof TP!=="undefined"&&TP.code)tpLeave();if(typeof ocrLeave==="function"&&typeof OCR!=="undefined"&&OCR.code)ocrLeave();if(typeof qxrLeave==="function"&&typeof QXR!=="undefined"&&QXR.code)qxrLeave();if(typeof fgrLeave==="function"&&typeof FGR!=="undefined"&&FGR.code)fgrLeave();if(typeof pdrLeave==="function"&&typeof PDR!=="undefined"&&PDR.code)pdrLeave();if(typeof agrLeave==="function"&&typeof AGR!=="undefined"&&AGR.code)agrLeave();if(typeof qvrInLobby==="function"&&qvrInLobby())qvrLeave();if(typeof cdrLeave==="function"&&typeof CDR!=="undefined"&&CDR.code)cdrLeave();stopAllTimers();logPlayEnd();S.screen="games";S.game=null;render();}
+function goBackToGames(){if(typeof tpLeave==="function"&&typeof TP!=="undefined"&&TP.code)tpLeave();if(typeof ocrLeave==="function"&&typeof OCR!=="undefined"&&OCR.code)ocrLeave();if(typeof qxrLeave==="function"&&typeof QXR!=="undefined"&&QXR.code)qxrLeave();if(typeof fgrLeave==="function"&&typeof FGR!=="undefined"&&FGR.code)fgrLeave();if(typeof lgrLeave==="function"&&typeof LGR!=="undefined"&&LGR.code)lgrLeave();if(typeof pdrLeave==="function"&&typeof PDR!=="undefined"&&PDR.code)pdrLeave();if(typeof agrLeave==="function"&&typeof AGR!=="undefined"&&AGR.code)agrLeave();if(typeof qvrInLobby==="function"&&qvrInLobby())qvrLeave();if(typeof cdrLeave==="function"&&typeof CDR!=="undefined"&&CDR.code)cdrLeave();stopAllTimers();logPlayEnd();S.screen="games";S.game=null;render();}
 function endGame(name){stopAllTimers();logPlayEnd();S.lastGame=name;S.screen="end";S.stars=0;S.menuTab="drink";render();}
 function getMsg(n){return n>=4?T("endMsg4"):n===3?T("endMsg3"):T("endMsgElse");}
 
@@ -680,10 +680,13 @@ function renderGames(){
  if(g.bandieraremote){
  S.screen="fgr";render();return;
  }
+ if(g.linguaremote){
+ S.screen="lgr";render();return;
+ }
  if(g.traditore){
  S.screen="traditore_setup";render();return;
  }
- if(S.cat==="cultura"&&QUIZ_DATA[gname]){
+ if((S.cat==="cultura"||g.lingua)&&QUIZ_DATA[gname]){
  S.quizGame=gname;S.quizLevel=null;S.screen="quizlevel";render();
  } else if(spDeck(g.name,g._it)){
  S.starterGame=g.name;S.starterGameIt=g._it;S.starterIdx=0;S.screen="starter";render();
@@ -5173,6 +5176,11 @@ function startQuizWithLevel(level){
  S.quizPickIdx=picks.slice();S.quizMain=picks.length;S.quizTb=null;
  S.quizQuestions=picks.map(function(i){return allQ[i];});
  S.quizOpts=null;S.quizQIdx=null;S.quizChoice={};S.quizTurn=0;
+ if(S.quizGame===LINGUA_QUIZ_ID){
+  // Che lingua è: 4 lingue tra cui scegliere (numeri dell'elenco lingue, così si traducono cambiando lingua)
+  S.quizQIdx=picks.slice();
+  S.quizOpts=picks.map(function(qi){return lgOpts(qi);});
+ }
  if(S.quizGame===FLAG_QUIZ){
   // Bandiere: 4 paesi tra cui scegliere, quello giusto più 3 bandiere che le somigliano.
   // Si ricordano per numero, così cambiando lingua i nomi si traducono
@@ -5182,6 +5190,9 @@ function startQuizWithLevel(level){
  S.screen="quiz";render();
 }
 var FLAG_QUIZ="CHE BANDIERA \u00c8?";
+var LINGUA_QUIZ_ID="CHE LINGUA \u00c8?";
+// Quiz con 4 risposte tra cui scegliere (bandiere, lingue)
+function quizIsOpts(g){return g===FLAG_QUIZ||g===LINGUA_QUIZ_ID;}
 var RL_TB_LOCAL=3;
 function quizLevelIdx(n,level){var t=Math.floor(n/3);var a=level==="facile"?0:level==="media"?t:2*t,b=level==="facile"?t:level==="media"?2*t:n;var o=[];for(var i=a;i<b;i++)o.push(i);return o;}
 // Chi gioca la domanda attuale: tutti, oppure solo chi è a pari punti durante lo spareggio
@@ -5192,7 +5203,7 @@ function quizStartTb(top){
  var add=freshPick("q_"+S.quizGame+"_difficile",quizLevelIdx(allQ.length,"difficile"),3,S.quizPickIdx||[]);
  if(!add.length)return false;
  S.quizTb={f:S.quizQuestions.length,p:top.slice()};
- add.forEach(function(i){S.quizPickIdx.push(i);S.quizQuestions.push(allQ[i]);if(S.quizQIdx){S.quizQIdx.push(i);S.quizOpts.push(flagOpts(i));}});
+ add.forEach(function(i){S.quizPickIdx.push(i);S.quizQuestions.push(allQ[i]);if(S.quizQIdx){S.quizQIdx.push(i);S.quizOpts.push(S.quizGame===LINGUA_QUIZ_ID?lgOpts(i):flagOpts(i));}});
  S.quizRevealed=false;S.quizChoice={};S.quizTurn=0;S.quizPick={};
  return true;
 }
@@ -5208,7 +5219,10 @@ function quizFlagBody(body,q){
  var qi=S.quizQIdx[S.quizIdx],opts=S.quizOpts[S.quizIdx]||[];
  var pl=quizPlaying();
  if(!S.quizChoice)S.quizChoice={};
- var name=function(i){return all[i]?String(all[i].a):"";};
+ var isLg=S.quizGame===LINGUA_QUIZ_ID;
+ var name=function(i){return isLg?lgLangName(i):(all[i]?String(all[i].a):"");};
+ // Risposta giusta: per le bandiere il paese stesso, per le lingue la lingua della frase
+ var key=isLg?lgAnswer(qi):qi;
  if(!S.quizRevealed){
   var who=pl[S.quizTurn]||pl[0];
   if(pl.length>1){
@@ -5225,7 +5239,7 @@ function quizFlagBody(body,q){
     if(S.quizTurn>=pl.length){
      S.quizRevealed=true;
      // Punti contati una volta sola per bandiera
-     if(S.quizCountedIdx!==S.quizIdx){S.quizCountedIdx=S.quizIdx;pl.forEach(function(p){if(S.quizChoice[p]===qi)S.quizScores[p]=(S.quizScores[p]||0)+1;});}
+     if(S.quizCountedIdx!==S.quizIdx){S.quizCountedIdx=S.quizIdx;pl.forEach(function(p){if(S.quizChoice[p]===key)S.quizScores[p]=(S.quizScores[p]||0)+1;});}
     }
     renderQuiz();
    }));
@@ -5233,11 +5247,12 @@ function quizFlagBody(body,q){
   body.appendChild(box);
   return;
  }
- var ans=div("quiz-answer correct");ans.textContent=name(qi);body.appendChild(ans);
- if(all[qi]&&all[qi].extra)body.appendChild(div("quiz-answer-sub",all[qi].extra));
+ var ans=div("quiz-answer correct");ans.textContent=name(key);body.appendChild(ans);
+ if(isLg)body.appendChild(lgSolutionEl(qi));
+ else if(all[qi]&&all[qi].extra)body.appendChild(div("quiz-answer-sub",all[qi].extra));
  var list=div("agr-list quiz-flag-res");
  pl.forEach(function(p){
-  var c=S.quizChoice[p],ok=c===qi;
+  var c=S.quizChoice[p],ok=c===key;
   var r=div("agr-row"+(ok?" win":""));
   r.appendChild(div("agr-row-n",pl.length>1?p:(ok?T("quizFlagRight"):T("quizFlagWrong"))));
   r.appendChild(div("agr-row-v",(c!==undefined?name(c):"")+(ok?"  ✓":"  ✗")));
@@ -5352,7 +5367,7 @@ function renderQuiz(){
  btns.appendChild(btn("ebtn out",T("exitBtn"),goHome));
  document.getElementById("root").appendChild(wrap);return;
  }
- if(S.quizOpts&&S.quizQIdx&&S.quizGame===FLAG_QUIZ){var _all=quizDataFor(S.quizGame).questions;S.quizQuestions=S.quizQIdx.map(function(i){return _all[i];});}
+ if(S.quizOpts&&S.quizQIdx&&quizIsOpts(S.quizGame)){var _all=quizDataFor(S.quizGame).questions;S.quizQuestions=S.quizQIdx.map(function(i){return _all[i];});}
  var q=S.quizQuestions[S.quizIdx];
  var wrap=div("quiz-wrap");
  var hdr=div("quiz-header");wrap.appendChild(hdr);
@@ -5372,10 +5387,11 @@ function renderQuiz(){
  qnav.appendChild(btn("card-nav-btn back",T("backToGames"),goBackToGames));
  qnav.appendChild(btn("card-nav-btn",T("exitBtn"),goHome));
  var qqEl=document.createElement("div");qqEl.className="quiz-q";
- if(q.q.indexOf("<img")>=0||q.q.indexOf("data:image")>=0||q.q.indexOf("flagcdn")>=0){qqEl.innerHTML=q.q;}else{qqEl.textContent=q.q;}
+ if(S.quizGame===LINGUA_QUIZ_ID&&S.quizQIdx)qqEl=lgPhraseEl(S.quizQIdx[S.quizIdx],"quiz-q lg-phrase");
+ else if(q.q.indexOf("<img")>=0||q.q.indexOf("data:image")>=0||q.q.indexOf("flagcdn")>=0){qqEl.innerHTML=q.q;}else{qqEl.textContent=q.q;}
  chdr.appendChild(qqEl);chdr.appendChild(div("quiz-hint",qdata.hint));
  var body=div("quiz-body");card.appendChild(body);
- if(S.quizOpts&&S.quizQIdx&&S.quizGame===FLAG_QUIZ){quizFlagBody(body,q);document.getElementById("root").appendChild(wrap);return;}
+ if(S.quizOpts&&S.quizQIdx&&quizIsOpts(S.quizGame)){quizFlagBody(body,q);document.getElementById("root").appendChild(wrap);return;}
  if(!S.quizRevealed){
  body.appendChild(btn("quiz-reveal-btn",T("quizReveal"),function(){S.quizRevealed=true;renderQuiz();}));
  } else {
