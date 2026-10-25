@@ -231,20 +231,57 @@ function pubProfileSave(v,p,cb){
 }
 // Link scritto dal gestore: si aggiunge https:// se manca; solo link web
 function pubHref(u){u=String(u||"").trim();if(!u)return "";if(!/^https?:\/\//i.test(u))u="https://"+u.replace(/^\/+/,"");return /^https?:\/\/[^\s\/]+\.[^\s]+/i.test(u)?u:"";}
-// Logo: ritaglio quadrato al centro, 256×256, sfondo bianco (si vede tondo)
+// Logo: si adatta da solo al cerchio.
+// Se l'immagine ha uno sfondo uniforme (bianco, trasparente o colorato) si trova il disegno, si toglie lo sfondo
+// in più e lo si rimpicciolisce quanto basta perché entri tutto nel cerchio, con lo sfondo del logo intorno.
+// Se è una foto o un logo che riempie tutta l'immagine, la si ritaglia al centro (come su Instagram).
+function pubLogoFit(img){
+ var W=img.naturalWidth||img.width,H=img.naturalHeight||img.height;if(!W||!H)return null;
+ var k=Math.min(1,512/Math.max(W,H)),w=Math.max(1,Math.round(W*k)),h=Math.max(1,Math.round(H*k));
+ var a=document.createElement("canvas");a.width=w;a.height=h;var ax=a.getContext("2d");ax.drawImage(img,0,0,w,h);
+ var d=ax.getImageData(0,0,w,h).data;
+ function px(x,y){var i=(y*w+x)*4;return [d[i],d[i+1],d[i+2],d[i+3]];}
+ // Colore dello sfondo: i pixel del bordo
+ var edge=[];for(var x=0;x<w;x++){edge.push(px(x,0));edge.push(px(x,h-1));}for(var y=0;y<h;y++){edge.push(px(0,y));edge.push(px(w-1,y));}
+ var transp=edge.filter(function(p){return p[3]<24;}).length;
+ var bg=null,TOL=34;
+ if(transp>=edge.length*0.85)bg=[255,255,255,0];
+ else{
+  var op=edge.filter(function(p){return p[3]>=24;});
+  function med(i){var v=op.map(function(p){return p[i];}).sort(function(a,b){return a-b;});return v[v.length>>1];}
+  var c=[med(0),med(1),med(2),255];
+  var near=edge.filter(function(p){return p[3]<24||(Math.abs(p[0]-c[0])+Math.abs(p[1]-c[1])+Math.abs(p[2]-c[2]))<=TOL*1.5;}).length;
+  if(near>=edge.length*0.85)bg=c;
+ }
+ var O=320,out=document.createElement("canvas");out.width=O;out.height=O;var ox=out.getContext("2d");
+ ox.imageSmoothingQuality="high";
+ if(!bg){
+  // Riempie il cerchio: ritaglio quadrato al centro
+  ox.fillStyle="#fff";ox.fillRect(0,0,O,O);
+  var m=Math.min(W,H);ox.drawImage(img,(W-m)/2,(H-m)/2,m,m,0,0,O,O);
+  return out;
+ }
+ // Riquadro del disegno (tutto ciò che non è sfondo)
+ var minX=w,minY=h,maxX=-1,maxY=-1;
+ for(var yy=0;yy<h;yy++)for(var xx=0;xx<w;xx++){
+  var p=px(xx,yy);var isBg=bg[3]===0?p[3]<24:(p[3]<24||(Math.abs(p[0]-bg[0])+Math.abs(p[1]-bg[1])+Math.abs(p[2]-bg[2]))<=TOL);
+  if(!isBg){if(xx<minX)minX=xx;if(xx>maxX)maxX=xx;if(yy<minY)minY=yy;if(yy>maxY)maxY=yy;}
+ }
+ ox.fillStyle=bg[3]===0?"#fff":"rgb("+bg[0]+","+bg[1]+","+bg[2]+")";ox.fillRect(0,0,O,O);
+ if(maxX<0){return out;}
+ var sx=minX/k,sy=minY/k,sw=(maxX-minX+1)/k,sh=(maxY-minY+1)/k;
+ // Tutto il disegno dentro il cerchio: la sua diagonale resta dentro il diametro
+ var sc=Math.min(O*0.96/Math.sqrt(sw*sw+sh*sh),O*0.88/Math.max(sw,sh));
+ var dw=sw*sc,dh=sh*sc;
+ ox.drawImage(img,sx,sy,sw,sh,(O-dw)/2,(O-dh)/2,dw,dh);
+ return out;
+}
 function pubLogoFromFile(file,cb){
  if(!file||!/^image\//.test(file.type||"")){cb(null);return;}
  var rd=new FileReader();
  rd.onload=function(){
   var img=new Image();
-  img.onload=function(){
-   try{
-    var S2=256,c=document.createElement("canvas");c.width=S2;c.height=S2;var x=c.getContext("2d");
-    x.fillStyle="#fff";x.fillRect(0,0,S2,S2);
-    var m=Math.min(img.width,img.height);x.drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,S2,S2);
-    cb(c.toDataURL("image/jpeg",0.86));
-   }catch(e){cb(null);}
-  };
+  img.onload=function(){try{var c=pubLogoFit(img);cb(c?c.toDataURL("image/jpeg",0.88):null);}catch(e){cb(null);}};
   img.onerror=function(){cb(null);};
   img.src=rd.result;
  };
