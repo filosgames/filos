@@ -492,3 +492,9 @@ body[data-cat="cultura"]{--f-cat:#DCE3F7;}body[data-cat="adulti"]{--f-cat:#EEDCE
 .oc-bar.sel{transform:scale(1.04);box-shadow:0 6px 16px rgba(0,0,0,.25),0 0 0 2px #fff,0 0 0 4px var(--f-ink);z-index:2;}
 .oc .codice-cta{margin-top:4px!important;}
 .oc-board2{margin-bottom:10px!important;}
+
+/* 22 — Home sul telefono: il nome della categoria non tocca il bordo in basso della scheda */
+@media(max-width:768px){
+ .cb{padding:0 0 16px!important;}
+ .cb .cn{margin-top:10px;line-height:1.25;}
+}
