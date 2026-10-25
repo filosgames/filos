@@ -328,23 +328,24 @@ function tpTotTxt(v){return v>=TP_MISS?"—":T("tpOff")+" "+(v/1000).toFixed(3).
 function tpScreenPlayer(wrap,st){
  tpHead(wrap,st);
  var inRound=st.elig.indexOf(TP.me)>=0;
- // Pulsante al centro dello schermo: verde = aspetta, rosso = il tempo è partito, premi STOP
- var mid=div("tp-mid");
+ // Il pulsante sta sempre nello stesso punto: al centro dello schermo, senza spostarsi.
+ // Sopra e sotto ci sono due spazi di altezza fissa per le scritte.
+ function mid(){var m=div("tp-mid");var top=div("tp-slot top");var bot=div("tp-slot bot");m.appendChild(top);var hole=div("tp-hole");m.appendChild(hole);m.appendChild(bot);wrap.appendChild(m);return {top:top,bot:bot,hole:hole};}
  if(st.stage==="set"){
-  wrap.classList.add("tp-fill");wrap.appendChild(mid);
-  mid.appendChild(div("codice-sub tp-hint",T("tpWaitTarget").replace("{n}",st.host||"")));
-  mid.appendChild(div("tp-big green",T("tpWait")));
-  if(st.k>0)tpPlayerLast(mid,st);
+  var a=mid();
+  a.top.appendChild(div("codice-sub tp-hint",T("tpWaitTarget").replace("{n}",st.host||"")));
+  a.hole.appendChild(div("tp-big green",T("tpWait")));
+  if(st.k>0)tpPlayerLast(a.bot,st);
   return;
  }
  if(st.stage==="run"){
-  wrap.classList.add("tp-fill");wrap.appendChild(mid);
-  mid.appendChild(div("tp-target",T("tpTarget")+" "+tpFmt(st.rd.target)));
-  if(!inRound){mid.appendChild(div("codice-sub",T("rlTbWatch").replace("{n}",rlNames(st.elig,TP.me))));return;}
+  var c=mid();
+  c.top.appendChild(div("tp-target",T("tpTarget")+" "+tpFmt(st.rd.target)));
+  if(!inRound){c.hole.appendChild(div("tp-big done",T("tpWait")));c.bot.appendChild(div("codice-sub tp-hint",T("rlTbWatch").replace("{n}",rlNames(st.elig,TP.me))));return;}
   var mine=st.cur[TP.me]!==undefined||TP.pressed===st.game+"|"+st.k;
-  if(mine){mid.appendChild(div("tp-big done",T("tpDone")));mid.appendChild(div("codice-sub tp-hint",T("tpDoneSub")));return;}
-  var b=div("tp-big green");b.textContent=T("tpWait");mid.appendChild(b);
-  var hint=div("codice-sub tp-hint",T("tpWaitGo"));mid.appendChild(hint);
+  if(mine){c.hole.appendChild(div("tp-big done",T("tpDone")));c.bot.appendChild(div("codice-sub tp-hint",T("tpDoneSub")));return;}
+  var b=div("tp-big green");b.textContent=T("tpWait");c.hole.appendChild(b);
+  var hint=div("codice-sub tp-hint",T("tpWaitGo"));c.bot.appendChild(hint);
   var go=function(){b.className="tp-big red";b.textContent=T("tpPress");hint.textContent=T("tpPressSub");};
   var wait=st.rd.st-fbNow();
   if(wait<=0)go();else TP.goT=setTimeout(go,wait);
