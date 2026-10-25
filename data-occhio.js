@@ -5,21 +5,23 @@
  */
 // ══════════════════════════════════════════
 // L'OCCHIO DEI COLORI
-// Quattro file di quadratini colorati da mettere in ordine di sfumatura.
-// Il primo e l'ultimo quadratino di ogni fila restano fermi: gli altri si spostano
-// trascinandoli oppure toccandone uno e poi il posto dove metterlo.
+// Quattro file di strisce colorate da mettere in ordine di sfumatura.
+// La prima e l'ultima striscia di ogni fila restano ferme: le altre si spostano
+// trascinandole oppure toccandone una e poi il posto dove metterla.
 // Conta solo la precisione. Si gioca da soli (SOLO), a turni sullo stesso telefono
 // (TRA AMICI) o ognuno dal proprio telefono (A DISTANZA, 3 minuti).
 // Niente pareggi: chi è pari in testa rifà una prova più difficile, finché uno vince.
 // ══════════════════════════════════════════
 
 // ── Colori ──
-// Livelli: quadratini per fila, saturazione e luminosità (più quadratini e colori più tenui = più difficile)
+// Livelli: pochi colori per fila (strisce grandi, comode da toccare); la difficoltà sta nelle sfumature:
+// a ogni livello il salto di tinta tra un colore e il successivo (step, in gradi) è più piccolo
+// e i colori sono più tenui (C). Tutti i colori restano dentro la gamma dello schermo (sRGB).
 var OC_LEVELS={
- facile:{n:7,C:62,L:70},
- media:{n:11,C:46,L:68},
- difficile:{n:16,C:34,L:66},
- esperto:{n:21,C:26,L:65}
+ facile:{n:6,C:38,L:70,step:13},
+ media:{n:7,C:36,L:70,step:9},
+ difficile:{n:8,C:33,L:70,step:6},
+ esperto:{n:9,C:30,L:70,step:4.5}
 };
 var OC_ROWS=4,OC_MS=180000,OC_REV_MS=20000,OC_MAX_PLAYERS=8;
 function ocNextLevel(l){return l==="facile"?"media":l==="media"?"difficile":"esperto";}
@@ -33,13 +35,13 @@ function ocLch(L,C,h){
  function c(v){v=v<=0.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-0.055;v=Math.round(Math.max(0,Math.min(1,v))*255);return ("0"+v.toString(16)).slice(-2);}
  return "#"+c(r)+c(g)+c(bl);
 }
-// Le 4 file coprono insieme tutto il cerchio dei colori: ogni fila è un quarto, in ordine
+// Ogni fila prende un tratto del cerchio dei colori, al centro del proprio quarto (rossi, gialli, verdi, blu)
 function ocColors(lvl){
  var cfg=OC_LEVELS[lvl]||OC_LEVELS.facile;var n=cfg.n;var rows=[];
- var step=90/(n-1);
+ var step=cfg.step;var start=(90-step*(n-1))/2;
  for(var r=0;r<OC_ROWS;r++){
   var row=[];
-  for(var i=0;i<n;i++)row.push(ocLch(cfg.L,cfg.C,r*90+i*step+8));
+  for(var i=0;i<n;i++)row.push(ocLch(cfg.L,cfg.C,r*90+start+i*step+8));
   rows.push(row);
  }
  return rows;
@@ -59,7 +61,7 @@ function ocShuffled(lvl,seed){
  }
  return out;
 }
-// Errore come nel test di Farnsworth: per ogni quadratino si guarda quanto sono lontani
+// Errore come nel test di Farnsworth: per ogni colore si guarda quanto sono lontani
 // i vicini rispetto al giusto; 0 = ordine perfetto
 function ocRowErr(row){var e=0;for(var i=1;i<row.length-1;i++){e+=Math.abs(row[i]-row[i-1])+Math.abs(row[i+1]-row[i])-2;}return e;}
 function ocErr(rows){var e=0;(rows||[]).forEach(function(r){e+=ocRowErr(r);});return e;}
@@ -105,7 +107,7 @@ function ocBoard(wrap,lvl,rows,onChange,readonly){
   var top=col.getBoundingClientRect().top;var vh=window.innerHeight||700;
   var avail=vh-top-96;
   var h=Math.floor((avail-(n-1)*3)/n);
-  return Math.max(16,Math.min(54,h));
+  return Math.max(30,Math.min(76,h));
  }
  function paintCol(){
   col.innerHTML="";var r=rows._r;var h=barH();
@@ -209,7 +211,7 @@ function renderOcSetup(){
  var lg=div("oc-levels");
  ["facile","media","difficile"].forEach(function(l){
   var c=div("oc-level");c.appendChild(el("span","oc-level-n",rlLevelName(l)));
-  c.appendChild(el("span","oc-level-d",T("ocLvlDesc").replace("{n}",OC_LEVELS[l].n*OC_ROWS)));
+  c.appendChild(el("span","oc-level-d",T("ocLvlDesc").replace("{n}",OC_LEVELS[l].n)));
   // anteprima della sfumatura
   var pv=div("oc-level-pv");var cols=ocColors(l)[0];cols.forEach(function(h){var s=div("");s.style.background=h;pv.appendChild(s);});c.appendChild(pv);
   c.onclick=function(){
@@ -586,7 +588,7 @@ function ocrScreenEnd(wrap,st){
 // ── Testi ──
 function ocStrings(){
  if(typeof STRINGS==="undefined"||STRINGS.it.ocTitle)return;
- Object.assign(STRINGS.it,{ocTitle:"L'OCCHIO DEI COLORI",ocRulesSolo:"Metti in ordine di sfumatura le quattro file di quadratini. Il primo e l'ultimo di ogni fila (con il puntino) restano fermi. Sposta gli altri trascinandoli, oppure tocca un quadratino e poi il posto dove metterlo. Conta solo la precisione.",ocRulesFriends:"A turno, sullo stesso telefono, ognuno mette in ordine di sfumatura le stesse quattro file di quadratini. Il primo e l'ultimo di ogni fila (con il puntino) restano fermi. Vince chi è più preciso; se c'è parità si rifà una prova più difficile solo tra chi è pari.",ocIntroRemote:"Ognuno gioca dal proprio telefono, anche da tavoli diversi: tutti ricevono gli stessi colori da mettere in ordine di sfumatura. Ci sono 3 minuti. Vince chi è più preciso; se c'è parità, prova più difficile solo per chi è pari.",ocChooseLevel:"SCEGLI IL LIVELLO",ocLvlDesc:"{n} quadratini",ocExpert:"Esperto",ocYou:"Tu",ocPassSub:"Gli altri non devono guardare lo schermo mentre metti in ordine i colori.",ocHint:"Scegli una fila, poi trascina le strisce su o giù, oppure toccane una e poi il posto dove metterla. Quelle con il puntino restano ferme.",ocRow:"Fila {n}",ocDone:"Ho finito",ocPrec:"Precisione {p}%",ocPerfect:"Perfetto! Ordine senza errori.",ocCompare:"IL TUO ORDINE E QUELLO GIUSTO",ocRanking:"CLASSIFICA",ocTbRound:"Spareggio",ocTbSub:"{n} sono pari: prova più difficile solo per loro.",ocWaiting:"Hanno finito {a} su {t}",ocNoAnswer:"non ha finito"});
- Object.assign(STRINGS.en,{ocTitle:"THE COLOR EYE",ocRulesSolo:"Put the four rows of squares in order of shade. The first and last square of each row (with the dot) stay fixed. Move the others by dragging them, or tap a square and then the spot where it goes. Only accuracy counts.",ocRulesFriends:"Taking turns on the same phone, everyone puts the same four rows of squares in order of shade. The first and last square of each row (with the dot) stay fixed. The most accurate player wins; if there is a tie, the tied players play a harder round.",ocIntroRemote:"Everyone plays on their own phone, even from different tables: all players get the same colors to put in order of shade. You have 3 minutes. The most accurate player wins; if there is a tie, only the tied players play a harder round.",ocChooseLevel:"CHOOSE THE LEVEL",ocLvlDesc:"{n} squares",ocExpert:"Expert",ocYou:"You",ocPassSub:"Nobody else should look at the screen while you sort the colors.",ocHint:"Pick a row, then drag the stripes up or down, or tap one and then the spot where it goes. The ones with a dot stay fixed.",ocRow:"Row {n}",ocDone:"I'm done",ocPrec:"Accuracy {p}%",ocPerfect:"Perfect! No mistakes.",ocCompare:"YOUR ORDER AND THE RIGHT ONE",ocRanking:"RANKING",ocTbRound:"Tie-break",ocTbSub:"{n} are tied: a harder round just for them.",ocWaiting:"{a} of {t} have finished",ocNoAnswer:"didn't finish"});
- Object.assign(STRINGS.es,{ocTitle:"EL OJO DE LOS COLORES",ocRulesSolo:"Ordena por matices las cuatro filas de cuadraditos. El primero y el último de cada fila (con el punto) no se mueven. Mueve los demás arrastrándolos, o toca un cuadradito y luego el sitio donde va. Solo cuenta la precisión.",ocRulesFriends:"Por turnos, en el mismo móvil, cada uno ordena por matices las mismas cuatro filas de cuadraditos. El primero y el último de cada fila (con el punto) no se mueven. Gana quien es más preciso; si hay empate, los empatados juegan una prueba más difícil.",ocIntroRemote:"Cada uno juega desde su móvil, incluso desde mesas distintas: todos reciben los mismos colores para ordenar por matices. Hay 3 minutos. Gana quien es más preciso; si hay empate, solo los empatados juegan una prueba más difícil.",ocChooseLevel:"ELIGE EL NIVEL",ocLvlDesc:"{n} cuadraditos",ocExpert:"Experto",ocYou:"Tú",ocPassSub:"Los demás no deben mirar la pantalla mientras ordenas los colores.",ocHint:"Elige una fila y luego arrastra las franjas arriba o abajo, o toca una y luego el sitio donde va. Las que tienen un punto no se mueven.",ocRow:"Fila {n}",ocDone:"He terminado",ocPrec:"Precisión {p}%",ocPerfect:"¡Perfecto! Sin errores.",ocCompare:"TU ORDEN Y EL CORRECTO",ocRanking:"CLASIFICACIÓN",ocTbRound:"Desempate",ocTbSub:"{n} están empatados: prueba más difícil solo para ellos.",ocWaiting:"Han terminado {a} de {t}",ocNoAnswer:"no ha terminado"});
+ Object.assign(STRINGS.it,{ocTitle:"L'OCCHIO DEI COLORI",ocRulesSolo:"Metti in ordine di sfumatura le quattro file di strisce colorate. La prima e l'ultima di ogni fila (con il puntino) restano ferme. Sposta le altre trascinandole su o giù, oppure tocca una striscia e poi il posto dove metterla. Conta solo la precisione.",ocRulesFriends:"A turno, sullo stesso telefono, ognuno mette in ordine di sfumatura le stesse quattro file di strisce colorate. La prima e l'ultima di ogni fila (con il puntino) restano ferme. Vince chi è più preciso; se c'è parità si rifà una prova più difficile solo tra chi è pari.",ocIntroRemote:"Ognuno gioca dal proprio telefono, anche da tavoli diversi: tutti ricevono gli stessi colori da mettere in ordine di sfumatura. Ci sono 3 minuti. Vince chi è più preciso; se c'è parità, prova più difficile solo per chi è pari.",ocChooseLevel:"SCEGLI IL LIVELLO",ocLvlDesc:"{n} colori per fila",ocExpert:"Esperto",ocYou:"Tu",ocPassSub:"Gli altri non devono guardare lo schermo mentre metti in ordine i colori.",ocHint:"Scegli una fila, poi trascina le strisce su o giù, oppure toccane una e poi il posto dove metterla. Quelle con il puntino restano ferme.",ocRow:"Fila {n}",ocDone:"Ho finito",ocPrec:"Precisione {p}%",ocPerfect:"Perfetto! Ordine senza errori.",ocCompare:"IL TUO ORDINE E QUELLO GIUSTO",ocRanking:"CLASSIFICA",ocTbRound:"Spareggio",ocTbSub:"{n} sono pari: prova più difficile solo per loro.",ocWaiting:"Hanno finito {a} su {t}",ocNoAnswer:"non ha finito"});
+ Object.assign(STRINGS.en,{ocTitle:"THE COLOR EYE",ocRulesSolo:"Put the four rows of colored stripes in order of shade. The first and last stripe of each row (with the dot) stay fixed. Move the others by dragging them up or down, or tap a stripe and then the spot where it goes. Only accuracy counts.",ocRulesFriends:"Taking turns on the same phone, everyone puts the same four rows of colored stripes in order of shade. The first and last stripe of each row (with the dot) stay fixed. The most accurate player wins; if there is a tie, the tied players play a harder round.",ocIntroRemote:"Everyone plays on their own phone, even from different tables: all players get the same colors to put in order of shade. You have 3 minutes. The most accurate player wins; if there is a tie, only the tied players play a harder round.",ocChooseLevel:"CHOOSE THE LEVEL",ocLvlDesc:"{n} colors per row",ocExpert:"Expert",ocYou:"You",ocPassSub:"Nobody else should look at the screen while you sort the colors.",ocHint:"Pick a row, then drag the stripes up or down, or tap one and then the spot where it goes. The ones with a dot stay fixed.",ocRow:"Row {n}",ocDone:"I'm done",ocPrec:"Accuracy {p}%",ocPerfect:"Perfect! No mistakes.",ocCompare:"YOUR ORDER AND THE RIGHT ONE",ocRanking:"RANKING",ocTbRound:"Tie-break",ocTbSub:"{n} are tied: a harder round just for them.",ocWaiting:"{a} of {t} have finished",ocNoAnswer:"didn't finish"});
+ Object.assign(STRINGS.es,{ocTitle:"EL OJO DE LOS COLORES",ocRulesSolo:"Ordena por matices las cuatro filas de franjas de colores. La primera y la última de cada fila (con el punto) no se mueven. Mueve las demás arrastrándolas arriba o abajo, o toca una franja y luego el sitio donde va. Solo cuenta la precisión.",ocRulesFriends:"Por turnos, en el mismo móvil, cada uno ordena por matices las mismas cuatro filas de franjas de colores. La primera y la última de cada fila (con el punto) no se mueven. Gana quien es más preciso; si hay empate, los empatados juegan una prueba más difícil.",ocIntroRemote:"Cada uno juega desde su móvil, incluso desde mesas distintas: todos reciben los mismos colores para ordenar por matices. Hay 3 minutos. Gana quien es más preciso; si hay empate, solo los empatados juegan una prueba más difícil.",ocChooseLevel:"ELIGE EL NIVEL",ocLvlDesc:"{n} colores por fila",ocExpert:"Experto",ocYou:"Tú",ocPassSub:"Los demás no deben mirar la pantalla mientras ordenas los colores.",ocHint:"Elige una fila y luego arrastra las franjas arriba o abajo, o toca una y luego el sitio donde va. Las que tienen un punto no se mueven.",ocRow:"Fila {n}",ocDone:"He terminado",ocPrec:"Precisión {p}%",ocPerfect:"¡Perfecto! Sin errores.",ocCompare:"TU ORDEN Y EL CORRECTO",ocRanking:"CLASIFICACIÓN",ocTbRound:"Desempate",ocTbSub:"{n} están empatados: prueba más difícil solo para ellos.",ocWaiting:"Han terminado {a} de {t}",ocNoAnswer:"no ha terminado"});
 }

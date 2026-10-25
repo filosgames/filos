@@ -1784,9 +1784,9 @@ function renderCodiceSecret(){
 }
 // Con 3 o più giocatori: elenco chiaro degli avversari, con quanti tentativi sono stati fatti
 // sul loro codice e il miglior indizio ottenuto finora. Si tocca una riga per scegliere.
-function codicePicker(opps,target,histOf,onPick,labelOf){
+function codicePicker(opps,target,histOf,onPick,labelOf,title){
  var box=div("codice-pick");
- box.appendChild(div("codice-section",T("codiceWho")));
+ box.appendChild(div("codice-section",title||T("codiceWho")));
  opps.forEach(function(p){
   var h=histOf(p)||[];var best=null;
   h.forEach(function(x){if(!best||x.g>best.g||(x.g===best.g&&x.y>best.y))best=x;});
