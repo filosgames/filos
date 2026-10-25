@@ -19,7 +19,7 @@ var TP={code:null,me:null,data:null,unsub:null,sig:"",busy:false,closed:false,tm
 function tpPath(p){return "rooms/"+TP.code+"/tp"+(p?"/"+p:"");}
 function tpFmt(ms){
  ms=Math.max(0,Math.round(ms));var m=Math.floor(ms/60000),s=Math.floor(ms%60000/1000),x=ms%1000;
- return m+":"+("0"+s).slice(-2)+"."+("00"+x).slice(-3);
+ return m+":"+("0"+s).slice(-2)+(typeof LANG!=="undefined"&&LANG==="en"?".":",")+("00"+x).slice(-3);
 }
 function tpDiffTxt(d){var sg=d>0?"+":d<0?"−":"±";return sg+(Math.abs(d)/1000).toFixed(3).replace(".",LANG==="en"?".":",")+" s";}
 function tpState(){
@@ -231,22 +231,29 @@ function tpHead(wrap,st){
  if(st.k>=TP_ROUNDS)wrap.appendChild(div("rl-tb",T("rlTbBetween").replace("{n}",rlNames(st.rd.p||[],TP.me))));
 }
 // Scelta del tempo (host): minuti e secondi
+// Scelta del tempo (host): minuti, secondi e millesimi. Ogni numero si può anche toccare e scrivere.
 function tpPicker(wrap){
- if(!TP.tm)TP.tm={m:1,s:0};
+ if(!TP.tm)TP.tm={m:1,s:0,x:0};
+ if(TP.tm.x===undefined)TP.tm.x=0;
  var box=div("tp-pick");
- function col(key,max,step){
-  var c=div("tp-pick-col");
-  var v=div("tp-pick-v");
-  function show(){v.textContent=key==="m"?String(TP.tm.m):("0"+TP.tm.s).slice(-2);}
-  c.appendChild(btn("tp-pick-b","+",function(){TP.tm[key]=(TP.tm[key]+step)%(max+1);show();}));
+ function col(key,max,digits,label){
+  var c=div("tp-pick-col tp-col-"+key);
+  var v=document.createElement("input");v.className="tp-pick-v";v.type="text";v.inputMode="numeric";v.pattern="[0-9]*";v.maxLength=digits;v.setAttribute("aria-label",label);
+  function show(){var n=String(TP.tm[key]);while(n.length<digits)n="0"+n;v.value=n;}
+  v.addEventListener("focus",function(){try{v.select();}catch(e){}});
+  v.addEventListener("input",function(){var n=parseInt(String(v.value).replace(/\D/g,""),10);if(isNaN(n))n=0;TP.tm[key]=Math.max(0,Math.min(max,n));});
+  v.addEventListener("blur",show);
+  c.appendChild(btn("tp-pick-b","+",function(){TP.tm[key]=(TP.tm[key]+1)%(max+1);show();}));
   c.appendChild(v);
-  c.appendChild(btn("tp-pick-b","−",function(){TP.tm[key]=(TP.tm[key]-step+max+1)%(max+1);show();}));
+  c.appendChild(btn("tp-pick-b","−",function(){TP.tm[key]=(TP.tm[key]-1+max+1)%(max+1);show();}));
+  c.appendChild(div("tp-pick-l",label));
   show();return c;
  }
- box.appendChild(col("m",9,1));box.appendChild(div("tp-pick-sep",":"));box.appendChild(col("s",59,1));
+ box.appendChild(col("m",9,1,T("tpMin")));box.appendChild(div("tp-pick-sep",":"));
+ box.appendChild(col("s",59,2,T("tpSec")));box.appendChild(div("tp-pick-sep",LANG==="en"?".":","));
+ box.appendChild(col("x",999,3,T("tpMs")));
  wrap.appendChild(box);
- var lbl=div("tp-pick-l");lbl.appendChild(el("span","",T("tpMin")));lbl.appendChild(el("span","",T("tpSec")));wrap.appendChild(lbl);
- wrap.appendChild(btn("cdr-link",T("tpRandom"),function(){var t=10+Math.floor(Math.random()*170);TP.tm={m:Math.floor(t/60),s:t%60};TP.sig="";tpRender(true);}));
+ wrap.appendChild(btn("cdr-link",T("tpRandom"),function(){var t=3000+Math.floor(Math.random()*177000);TP.tm={m:Math.floor(t/60000),s:Math.floor(t%60000/1000),x:t%1000};TP.sig="";tpRender(true);}));
 }
 function tpScreenHost(wrap,st){
  tpHead(wrap,st);
@@ -254,7 +261,7 @@ function tpScreenHost(wrap,st){
   wrap.appendChild(div("codice-big",T("tpChoose")));
   wrap.appendChild(div("codice-sub",T("tpChooseSub")));
   tpPicker(wrap);
-  var go=btn("codice-cta tp-go",T("tpGo"),function(){var t=(TP.tm.m*60+TP.tm.s)*1000;if(t<1000){cdrToast(T("tpTooShort"));return;}go.disabled=true;tpGo(t);});
+  var go=btn("codice-cta tp-go",T("tpGo"),function(){var t=(TP.tm.m*60+TP.tm.s)*1000+(TP.tm.x||0);if(t<1000){cdrToast(T("tpTooShort"));return;}go.disabled=true;tpGo(t);});
   wrap.appendChild(go);
   tpHostList(wrap,st,false);
   return;
@@ -281,7 +288,7 @@ function tpHostLive(st){
  var c=document.getElementById("tpClock");if(!c)return;var start=st.rd.st;
  (function tick(){
   var cc=document.getElementById("tpClock");if(!cc)return;
-  var t=fbNow()-start;cc.textContent=t<0?"0:00.000":tpFmt(t);cc.classList.toggle("wait",t<0);
+  var t=fbNow()-start;cc.textContent=tpFmt(Math.max(0,t));cc.classList.toggle("wait",t<0);
   TP.raf=requestAnimationFrame(tick);
  })();
 }
@@ -321,26 +328,31 @@ function tpTotTxt(v){return v>=TP_MISS?"—":T("tpOff")+" "+(v/1000).toFixed(3).
 function tpScreenPlayer(wrap,st){
  tpHead(wrap,st);
  var inRound=st.elig.indexOf(TP.me)>=0;
+ // Pulsante al centro dello schermo: verde = aspetta, rosso = il tempo è partito, premi STOP
+ var mid=div("tp-mid");
  if(st.stage==="set"){
-  wrap.appendChild(div("codice-big",T("tpWaitTarget").replace("{n}",st.host||"")));
-  wrap.appendChild(div("tp-big red off",T("tpWait")));
-  if(st.k>0)tpPlayerLast(wrap,st);
+  wrap.classList.add("tp-fill");wrap.appendChild(mid);
+  mid.appendChild(div("codice-sub tp-hint",T("tpWaitTarget").replace("{n}",st.host||"")));
+  mid.appendChild(div("tp-big green",T("tpWait")));
+  if(st.k>0)tpPlayerLast(mid,st);
   return;
  }
- wrap.appendChild(div("tp-target",T("tpTarget")+" "+tpFmt(st.rd.target)));
  if(st.stage==="run"){
-  if(!inRound){wrap.appendChild(div("codice-sub",T("rlTbWatch").replace("{n}",rlNames(st.elig,TP.me))));return;}
+  wrap.classList.add("tp-fill");wrap.appendChild(mid);
+  mid.appendChild(div("tp-target",T("tpTarget")+" "+tpFmt(st.rd.target)));
+  if(!inRound){mid.appendChild(div("codice-sub",T("rlTbWatch").replace("{n}",rlNames(st.elig,TP.me))));return;}
   var mine=st.cur[TP.me]!==undefined||TP.pressed===st.game+"|"+st.k;
-  if(mine){var b0=div("tp-big done",T("tpDone"));wrap.appendChild(b0);wrap.appendChild(div("codice-sub",T("tpDoneSub")));return;}
-  var b=div("tp-big red");b.textContent=T("tpWait");wrap.appendChild(b);
-  var hint=div("codice-sub tp-hint",T("tpWaitGo"));wrap.appendChild(hint);
-  var go=function(){b.className="tp-big green";b.textContent=T("tpPress");hint.textContent=T("tpPressSub");};
+  if(mine){mid.appendChild(div("tp-big done",T("tpDone")));mid.appendChild(div("codice-sub tp-hint",T("tpDoneSub")));return;}
+  var b=div("tp-big green");b.textContent=T("tpWait");mid.appendChild(b);
+  var hint=div("codice-sub tp-hint",T("tpWaitGo"));mid.appendChild(hint);
+  var go=function(){b.className="tp-big red";b.textContent=T("tpPress");hint.textContent=T("tpPressSub");};
   var wait=st.rd.st-fbNow();
   if(wait<=0)go();else TP.goT=setTimeout(go,wait);
-  var press=function(e){if(e)e.preventDefault();if(!b.classList.contains("green"))return;tpPress();};
+  var press=function(e){if(e)e.preventDefault();if(!b.classList.contains("red"))return;tpPress();};
   b.addEventListener("pointerdown",press);
   return;
  }
+ wrap.appendChild(div("tp-target",T("tpTarget")+" "+tpFmt(st.rd.target)));
  tpRoundResults(wrap,st);
  wrap.appendChild(div("cdr-wait",T("tpWaitHost").replace("{n}",st.host||"")));
 }
@@ -368,7 +380,7 @@ function tpScreenEnd(wrap,st){
 // ── Testi ──
 function tpStrings(){
  if(typeof STRINGS==="undefined"||STRINGS.it.tpTitle)return;
- Object.assign(STRINGS.it,{tpTitle:"IL TEMPO PERFETTO",tpIntro:"Chi lancia la sfida fa l'host: sceglie un tempo (per esempio 2 minuti e 46 secondi) e fa partire il cronometro. Gli altri, ognuno dal proprio telefono, devono premere il pulsante esattamente a quel tempo, senza vedere il cronometro. 3 turni: vince chi in totale si avvicina di più.",tpYouHost:"Sei l'host: scegli i tempi e fai partire il cronometro. Non giochi.",tpPlayers:"Giocatori:",tpHost:"Host",tpNeedOne:"Aspetta che si colleghi almeno un giocatore.",tpRound:"Turno {n} di {t}",tpTbRound:"Spareggio",tpChoose:"Scegli il tempo",tpChooseSub:"I giocatori lo vedranno sul loro telefono.",tpMin:"minuti",tpSec:"secondi",tpRandom:"Tempo a caso",tpGo:"Via!",tpTooShort:"Scegli almeno 1 secondo.",tpTarget:"Tempo da indovinare:",tpStopRound:"Chiudi il turno",tpInRace:"IN GARA",tpStopped:"fermato a",tpRunning:"in corsa…",tpReady:"pronto",tpRoundRes:"RISULTATI DEL TURNO",tpNoPress:"non ha premuto",tpTotal:"TOTALE FINORA",tpOff:"lontano",tpNextRound:"Prossimo turno",tpFinal:"Risultati finali",tpWaitTarget:"{n} sta scegliendo il tempo",tpWait:"ASPETTA",tpWaitGo:"Quando diventa verde il tempo è partito.",tpPress:"STOP",tpPressSub:"Premi quando pensi di essere arrivato al tempo esatto!",tpDone:"FERMATO",tpDoneSub:"Aspetta i risultati del turno.",tpWaitHost:"Aspetta che {n} vada avanti",tpLastMine:"Turno prima: {t} ({d})",tpHostLeft:"L'host è uscito dalla partita.",tpFinalRank:"CLASSIFICA",tpRoomFull:"La partita è al completo (massimo 8 giocatori più l'host)"});
- Object.assign(STRINGS.en,{tpTitle:"THE PERFECT TIME",tpIntro:"Whoever sends the challenge is the host: they choose a time (for example 2 minutes and 46 seconds) and start the stopwatch. The others, each on their own phone, must press the button at exactly that time, without seeing the stopwatch. 3 rounds: whoever gets closest overall wins.",tpYouHost:"You are the host: you choose the times and start the stopwatch. You don't play.",tpPlayers:"Players:",tpHost:"Host",tpNeedOne:"Wait for at least one player to join.",tpRound:"Round {n} of {t}",tpTbRound:"Tie-break",tpChoose:"Choose the time",tpChooseSub:"The players will see it on their phones.",tpMin:"minutes",tpSec:"seconds",tpRandom:"Random time",tpGo:"Go!",tpTooShort:"Choose at least 1 second.",tpTarget:"Time to hit:",tpStopRound:"Close the round",tpInRace:"RACING",tpStopped:"stopped at",tpRunning:"running…",tpReady:"ready",tpRoundRes:"ROUND RESULTS",tpNoPress:"didn't press",tpTotal:"TOTAL SO FAR",tpOff:"off by",tpNextRound:"Next round",tpFinal:"Final results",tpWaitTarget:"{n} is choosing the time",tpWait:"WAIT",tpWaitGo:"When it turns green, the time has started.",tpPress:"STOP",tpPressSub:"Press when you think you've hit the exact time!",tpDone:"STOPPED",tpDoneSub:"Wait for the round results.",tpWaitHost:"Waiting for {n} to move on",tpLastMine:"Last round: {t} ({d})",tpHostLeft:"The host left the game.",tpFinalRank:"RANKING",tpRoomFull:"The game is full (maximum 8 players plus the host)"});
- Object.assign(STRINGS.es,{tpTitle:"EL TIEMPO PERFECTO",tpIntro:"Quien lanza el desafío es el anfitrión: elige un tiempo (por ejemplo 2 minutos y 46 segundos) y pone en marcha el cronómetro. Los demás, cada uno desde su móvil, deben pulsar el botón exactamente en ese tiempo, sin ver el cronómetro. 3 rondas: gana quien en total se acerca más.",tpYouHost:"Eres el anfitrión: eliges los tiempos y pones en marcha el cronómetro. No juegas.",tpPlayers:"Jugadores:",tpHost:"Anfitrión",tpNeedOne:"Espera a que se conecte al menos un jugador.",tpRound:"Ronda {n} de {t}",tpTbRound:"Desempate",tpChoose:"Elige el tiempo",tpChooseSub:"Los jugadores lo verán en su móvil.",tpMin:"minutos",tpSec:"segundos",tpRandom:"Tiempo al azar",tpGo:"¡Ya!",tpTooShort:"Elige al menos 1 segundo.",tpTarget:"Tiempo a acertar:",tpStopRound:"Cerrar la ronda",tpInRace:"EN CARRERA",tpStopped:"parado en",tpRunning:"en marcha…",tpReady:"listo",tpRoundRes:"RESULTADOS DE LA RONDA",tpNoPress:"no ha pulsado",tpTotal:"TOTAL HASTA AHORA",tpOff:"a",tpNextRound:"Siguiente ronda",tpFinal:"Resultados finales",tpWaitTarget:"{n} está eligiendo el tiempo",tpWait:"ESPERA",tpWaitGo:"Cuando se ponga verde, el tiempo habrá empezado.",tpPress:"STOP",tpPressSub:"¡Pulsa cuando creas que has llegado al tiempo exacto!",tpDone:"PARADO",tpDoneSub:"Espera los resultados de la ronda.",tpWaitHost:"Esperando a que {n} siga",tpLastMine:"Ronda anterior: {t} ({d})",tpHostLeft:"El anfitrión ha salido de la partida.",tpFinalRank:"CLASIFICACIÓN",tpRoomFull:"La partida está completa (máximo 8 jugadores más el anfitrión)"});
+ Object.assign(STRINGS.it,{tpTitle:"IL TEMPO PERFETTO",tpIntro:"Chi lancia la sfida fa l'host: sceglie un tempo con minuti, secondi e millesimi (per esempio 0:12,345) e fa partire il cronometro. Gli altri, ognuno dal proprio telefono, devono premere il pulsante esattamente a quel tempo, senza vedere il cronometro. 3 turni: vince chi in totale si avvicina di più.",tpYouHost:"Sei l'host: scegli i tempi e fai partire il cronometro. Non giochi.",tpPlayers:"Giocatori:",tpHost:"Host",tpNeedOne:"Aspetta che si colleghi almeno un giocatore.",tpRound:"Turno {n} di {t}",tpTbRound:"Spareggio",tpChoose:"Scegli il tempo",tpChooseSub:"I giocatori lo vedranno sul loro telefono.",tpMin:"minuti",tpSec:"secondi",tpMs:"millesimi",tpRandom:"Tempo a caso",tpGo:"Via!",tpTooShort:"Scegli almeno 1 secondo.",tpTarget:"Tempo da indovinare:",tpStopRound:"Chiudi il turno",tpInRace:"IN GARA",tpStopped:"fermato a",tpRunning:"in corsa…",tpReady:"pronto",tpRoundRes:"RISULTATI DEL TURNO",tpNoPress:"non ha premuto",tpTotal:"TOTALE FINORA",tpOff:"lontano",tpNextRound:"Prossimo turno",tpFinal:"Risultati finali",tpWaitTarget:"{n} sta scegliendo il tempo",tpWait:"ASPETTA",tpWaitGo:"Quando diventa rosso il tempo è partito: premi STOP.",tpPress:"STOP",tpPressSub:"Premi quando pensi di essere arrivato al tempo esatto!",tpDone:"FERMATO",tpDoneSub:"Aspetta i risultati del turno.",tpWaitHost:"Aspetta che {n} vada avanti",tpLastMine:"Turno prima: {t} ({d})",tpHostLeft:"L'host è uscito dalla partita.",tpFinalRank:"CLASSIFICA",tpRoomFull:"La partita è al completo (massimo 8 giocatori più l'host)"});
+ Object.assign(STRINGS.en,{tpTitle:"THE PERFECT TIME",tpIntro:"Whoever sends the challenge is the host: they choose a time with minutes, seconds and thousandths (for example 0:12.345) and start the stopwatch. The others, each on their own phone, must press the button at exactly that time, without seeing the stopwatch. 3 rounds: whoever gets closest overall wins.",tpYouHost:"You are the host: you choose the times and start the stopwatch. You don't play.",tpPlayers:"Players:",tpHost:"Host",tpNeedOne:"Wait for at least one player to join.",tpRound:"Round {n} of {t}",tpTbRound:"Tie-break",tpChoose:"Choose the time",tpChooseSub:"The players will see it on their phones.",tpMin:"minutes",tpSec:"seconds",tpMs:"thousandths",tpRandom:"Random time",tpGo:"Go!",tpTooShort:"Choose at least 1 second.",tpTarget:"Time to hit:",tpStopRound:"Close the round",tpInRace:"RACING",tpStopped:"stopped at",tpRunning:"running…",tpReady:"ready",tpRoundRes:"ROUND RESULTS",tpNoPress:"didn't press",tpTotal:"TOTAL SO FAR",tpOff:"off by",tpNextRound:"Next round",tpFinal:"Final results",tpWaitTarget:"{n} is choosing the time",tpWait:"WAIT",tpWaitGo:"When it turns red, the time has started: press STOP.",tpPress:"STOP",tpPressSub:"Press when you think you've hit the exact time!",tpDone:"STOPPED",tpDoneSub:"Wait for the round results.",tpWaitHost:"Waiting for {n} to move on",tpLastMine:"Last round: {t} ({d})",tpHostLeft:"The host left the game.",tpFinalRank:"RANKING",tpRoomFull:"The game is full (maximum 8 players plus the host)"});
+ Object.assign(STRINGS.es,{tpTitle:"EL TIEMPO PERFECTO",tpIntro:"Quien lanza el desafío es el anfitrión: elige un tiempo con minutos, segundos y milésimas (por ejemplo 0:12,345) y pone en marcha el cronómetro. Los demás, cada uno desde su móvil, deben pulsar el botón exactamente en ese tiempo, sin ver el cronómetro. 3 rondas: gana quien en total se acerca más.",tpYouHost:"Eres el anfitrión: eliges los tiempos y pones en marcha el cronómetro. No juegas.",tpPlayers:"Jugadores:",tpHost:"Anfitrión",tpNeedOne:"Espera a que se conecte al menos un jugador.",tpRound:"Ronda {n} de {t}",tpTbRound:"Desempate",tpChoose:"Elige el tiempo",tpChooseSub:"Los jugadores lo verán en su móvil.",tpMin:"minutos",tpSec:"segundos",tpMs:"milésimas",tpRandom:"Tiempo al azar",tpGo:"¡Ya!",tpTooShort:"Elige al menos 1 segundo.",tpTarget:"Tiempo a acertar:",tpStopRound:"Cerrar la ronda",tpInRace:"EN CARRERA",tpStopped:"parado en",tpRunning:"en marcha…",tpReady:"listo",tpRoundRes:"RESULTADOS DE LA RONDA",tpNoPress:"no ha pulsado",tpTotal:"TOTAL HASTA AHORA",tpOff:"a",tpNextRound:"Siguiente ronda",tpFinal:"Resultados finales",tpWaitTarget:"{n} está eligiendo el tiempo",tpWait:"ESPERA",tpWaitGo:"Cuando se ponga rojo, el tiempo habrá empezado: pulsa STOP.",tpPress:"STOP",tpPressSub:"¡Pulsa cuando creas que has llegado al tiempo exacto!",tpDone:"PARADO",tpDoneSub:"Espera los resultados de la ronda.",tpWaitHost:"Esperando a que {n} siga",tpLastMine:"Ronda anterior: {t} ({d})",tpHostLeft:"El anfitrión ha salido de la partida.",tpFinalRank:"CLASIFICACIÓN",tpRoomFull:"La partida está completa (máximo 8 jugadores más el anfitrión)"});
 }
