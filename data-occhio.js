@@ -72,6 +72,11 @@ function ocRandErr(lvl){
  return (ocRandErr.c[lvl]=Math.max(1,tot/N));
 }
 function ocPrec(rows,lvl){var e=ocErr(rows);return Math.max(0,Math.min(100,Math.round(100*(1-e/ocRandErr(lvl)))));}
+// Copia pulita dell'ordine: solo le 4 file di numeri (niente dati del tabellone come la fila scelta),
+// così il server la salva e la restituisce come elenco
+function ocPlain(rows){return (rows||[]).slice(0,OC_ROWS).map(function(r){return Array.isArray(r)?r.slice():r;});}
+// Il server può restituire un elenco come oggetto {0:..,1:..}: lo si rimette a elenco
+function ocArr(v){if(Array.isArray(v))return v;if(!v||typeof v!=="object")return v;var out=[];Object.keys(v).forEach(function(k){if(/^\d+$/.test(k))out[+k]=ocArr(v[k]);});return out;}
 function ocValid(rows,lvl){
  var n=(OC_LEVELS[lvl]||OC_LEVELS.facile).n;
  if(!Array.isArray(rows)||rows.length!==OC_ROWS)return false;
@@ -336,7 +341,7 @@ function ocrState(){
  var phase=meta.phase||"lobby";var game=meta.game||1;
  var rounds=meta.rounds||[];var k=Math.max(0,rounds.length-1);var rd=rounds[k]||null;
  var gd=d["g"+game]||{};
- function ansOf(i){var raw=gd["r"+i]||{};var out={};var r=rounds[i];if(!r)return out;order.forEach(function(n){var a=raw[cdrKey(n)];if(a&&ocValid(a.o,r.lvl))out[n]=a;});return out;}
+ function ansOf(i){var raw=gd["r"+i]||{};var out={};var r=rounds[i];if(!r)return out;order.forEach(function(n){var a=raw[cdrKey(n)];if(a){a={o:ocArr(a.o),t:a.t};if(ocValid(a.o,r.lvl))out[n]=a;}});return out;}
  var cur=ansOf(k);
  var elig=rd?active.filter(function(n){return (rd.p||[]).indexOf(n)>=0;}):[];
  var allIn=elig.length>0&&elig.every(function(n){return !!cur[n];});
@@ -424,12 +429,12 @@ function ocrSetLevel(l){
 function ocrSend(rows){
  var st=ocrState();
  if(st.phase!=="play"||st.ended||st.reveal||st.elig.indexOf(OCR.me)<0||st.cur[OCR.me]||OCR.busy)return;
- if(!ocValid(rows,st.rd.lvl))return;
+ if(!ocValid(ocPlain(rows),st.rd.lvl)){OCR.sig="";ocrRender(true);return;}
  OCR.busy=true;
  var ref=fbRef(fbDB,ocrPath("g"+st.game+"/r"+st.k+"/"+cdrKey(OCR.me)));
  cdrNet(fbGet(ref)).then(function(snap){
   if(snap.exists()){OCR.busy=false;OCR.sig="";ocrRender(true);return;}
-  return cdrNet(fbSet(ref,{o:rows,t:fbNow()})).then(function(){OCR.busy=false;OCR.sig="";ocrRender(true);});
+  return cdrNet(fbSet(ref,{o:ocPlain(rows),t:fbNow()})).then(function(){OCR.busy=false;OCR.sig="";ocrRender(true);});
  }).catch(function(){OCR.busy=false;cdrToast(T("connErr"));OCR.sig="";ocrRender(true);});
 }
 // Allo scadere dei 3 minuti l'ordine fatto fin lì parte da solo, poi si mostrano i risultati
