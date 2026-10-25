@@ -57,25 +57,37 @@ function flagOpts(qi,n){
 var ANALYTICS={plays:[],ratings:{},menuClicks:{}};
 try{var _d=localStorage.getItem("filos13");if(_d){var _p=JSON.parse(_d);ANALYTICS.plays=_p.plays||[];ANALYTICS.ratings=_p.ratings||{};ANALYTICS.menuClicks=_p.menuClicks||{};}}catch(e){}
 function getPubCode(){try{return localStorage.getItem("filos_pub_code")||"";}catch(e){return "";}}
+// Locale in cui si gioca: sul telefono del gestore il suo codice; sul telefono di un cliente
+// il locale del tag NFC toccato (vale finché è valido l'accesso del tag, 2 ore)
+function filosVenue(){
+ var own=nfcCleanVenue(getPubCode());if(own)return own;
+ try{if(isNfcValid())return nfcCleanVenue(localStorage.getItem("filos_nfc_venue")||"");}catch(e){}
+ return "";
+}
 function fbUniqueKey(){return Date.now()+"_"+Math.random().toString(36).slice(2,7);}
-function fbLogPlay(cat,game){
- var code=getPubCode();if(!code||!window.fbDB||!window.fbSet||!window.fbRef)return;
- try{window.fbSet(window.fbRef(window.fbDB,"filos_stats/"+code+"/plays/"+fbUniqueKey()),{cat:cat,game:game,ts:Date.now(),device:FILOS_NAME||"anonimo"});}catch(e){}
+// Statistiche del locale su Firebase: filos_stats/{locale}/{plays|ratings|menu|links}/{id}
+// (senza nomi dei giocatori: servono solo i numeri)
+function fbStat(kind,data,id){
+ var v=filosVenue();if(!v||!window.fbDB||!window.fbSet||!window.fbRef)return null;
+ id=id||fbUniqueKey();
+ try{window.fbSet(window.fbRef(window.fbDB,"filos_stats/"+v+"/"+kind+"/"+id),data).catch(function(){});}catch(e){}
+ return id;
 }
-function fbLogRating(game,stars){
- var code=getPubCode();if(!code||!window.fbDB||!window.fbSet||!window.fbRef)return;
- try{window.fbSet(window.fbRef(window.fbDB,"filos_stats/"+code+"/ratings/"+fbUniqueKey()),{game:game,stars:stars,ts:Date.now(),device:FILOS_NAME||"anonimo"});}catch(e){}
-}
+function fbLogPlay(cat,game){S._playKey=fbStat("plays",{cat:String(cat||""),game:String(game||""),ts:Date.now()});S._playVenue=filosVenue();}
+function fbLogRating(game,stars){fbStat("ratings",{game:String(game||""),stars:stars,ts:Date.now()});}
 function saveA(){try{localStorage.setItem("filos13",JSON.stringify(ANALYTICS));}catch(e){}}
 function logPlay(cat,game){S._playStart=Date.now();ANALYTICS.plays.push({cat:cat,game:game,ts:Date.now(),dur:0});saveA();fbLogPlay(cat,game);}
 function logPlayEnd(){
  if(!S._playStart)return;
  var dur=Math.round((Date.now()-S._playStart)/1000);
- if(dur<2||dur>7200)return; // ignora <2s o >2h (outlier)
+ var key=S._playKey,ven=S._playVenue;S._playKey=null;
+ if(dur<2||dur>7200){S._playStart=null;return;} // ignora <2s o >2h (outlier)
  if(ANALYTICS.plays.length){
  var last=ANALYTICS.plays[ANALYTICS.plays.length-1];
  if(!last.dur||last.dur===0)last.dur=dur;
  }
+ // Durata anche nella partita salvata per il locale
+ if(key&&ven&&ven===filosVenue()&&window.fbDB&&window.fbSet&&window.fbRef){try{window.fbSet(window.fbRef(window.fbDB,"filos_stats/"+ven+"/plays/"+key+"/dur"),dur).catch(function(){});}catch(e){}}
  S._playStart=null;
  saveA();
 }
@@ -84,8 +96,7 @@ function logMenuClick(tab,itemName){
  var key=tab+":"+itemName;
  ANALYTICS.menuClicks[key]=(ANALYTICS.menuClicks[key]||0)+1;
  saveA();
- var code=getPubCode();if(!code||!window.fbDB||!window.fbSet||!window.fbRef)return;
- try{window.fbSet(window.fbRef(window.fbDB,"filos_stats/"+code+"/menu/"+fbUniqueKey()),{tab:tab,item:itemName,ts:Date.now()});}catch(e){}
+ fbStat("menu",{tab:String(tab||""),item:String(itemName||""),ts:Date.now()});
 }
 
 var PIN="1234";
@@ -180,21 +191,65 @@ function nfcVerify(){
 })();
 // Pannello gestore: registra il locale e pubblica l'impronta del codice tag
 function nfcOwnerKey(){try{return localStorage.getItem("filos_nfc_owner_key")||"";}catch(e){return "";}}
+// Chiave del gestore registrata per il locale (la prima volta la registra; poi vale solo quella)
+function nfcEnsureOwner(venue){
+ var key=nfcOwnerKey();
+ if(!key){key=nfcRandom(24);try{localStorage.setItem("filos_nfc_owner_key",key);}catch(e){}}
+ return fbSet(fbRef(fbDB,"nfc_owner/"+venue+"/"+key),true).catch(function(){/* già registrato: va bene se la chiave è giusta */}).then(function(){return key;});
+}
 function nfcPublish(venue,cb){
  venue=nfcCleanVenue(venue);
  if(!venue){cb(false,"nopub");return;}
  if(!fbDB||!fbSet||!fbRef){cb(false,"offline");return;}
- var key=nfcOwnerKey();
- if(!key){key=nfcRandom(24);try{localStorage.setItem("filos_nfc_owner_key",key);}catch(e){}}
  var tok=nfcRandom(24);
- nfcHash(venue,tok).then(function(h){
-  return fbSet(fbRef(fbDB,"nfc_owner/"+venue+"/"+key),true).catch(function(){/* già registrato: va bene se la chiave è giusta */}).then(function(){
-   return fbSet(fbRef(fbDB,"nfc_h/"+venue),{h:h,k:key,at:Date.now()});
-  });
+ nfcEnsureOwner(venue).then(function(key){
+  return nfcHash(venue,tok).then(function(h){return fbSet(fbRef(fbDB,"nfc_h/"+venue),{h:h,k:key,at:Date.now()});});
  }).then(function(){
   try{localStorage.setItem("filos_nfc_master_token",tok);localStorage.setItem("filos_nfc_master_venue",venue);}catch(e){}
   cb(true);
  }).catch(function(){cb(false,"denied");});
+}
+// ── PROFILO DEL LOCALE (logo tondo, link e testo del link) ──
+// Su Firebase: filos_pub/{locale}/p = {name, logo, url, txt, resetAt}  (leggibile da tutti)
+//              filos_pub/{locale}/k = chiave del gestore (non leggibile: serve alle regole per permettere la scrittura)
+function pubProfileCached(v){if(!v)return null;try{var x=JSON.parse(localStorage.getItem("filos_pubp_"+v)||"null");return x&&typeof x==="object"?x:null;}catch(e){return null;}}
+function pubProfileCache(v,p){try{if(p)localStorage.setItem("filos_pubp_"+v,JSON.stringify(p));else localStorage.removeItem("filos_pubp_"+v);}catch(e){}}
+var PUB_FETCHED={};
+function pubProfileFetch(v,cb){
+ if(!v||!fbDB||!fbGet||!fbRef){if(cb)cb(pubProfileCached(v));return;}
+ fbGet(fbRef(fbDB,"filos_pub/"+v+"/p")).then(function(snap){
+  var p=snap&&snap.val?snap.val():null;PUB_FETCHED[v]=Date.now();pubProfileCache(v,p);if(cb)cb(p);
+ }).catch(function(){if(cb)cb(pubProfileCached(v));});
+}
+function pubProfileSave(v,p,cb){
+ v=nfcCleanVenue(v);
+ if(!v){cb(false,"nopub");return;}
+ if(!fbDB||!fbSet||!fbRef){cb(false,"offline");return;}
+ var clean={name:String(p.name||"").slice(0,60),logo:String(p.logo||""),url:String(p.url||"").slice(0,300),txt:String(p.txt||"").slice(0,60),resetAt:+p.resetAt||0,at:Date.now()};
+ nfcEnsureOwner(v).then(function(key){return fbSet(fbRef(fbDB,"filos_pub/"+v),{p:clean,k:key});})
+ .then(function(){pubProfileCache(v,clean);cb(true);}).catch(function(){cb(false,"denied");});
+}
+// Link scritto dal gestore: si aggiunge https:// se manca; solo link web
+function pubHref(u){u=String(u||"").trim();if(!u)return "";if(!/^https?:\/\//i.test(u))u="https://"+u.replace(/^\/+/,"");return /^https?:\/\/[^\s\/]+\.[^\s]+/i.test(u)?u:"";}
+// Logo: ritaglio quadrato al centro, 256×256, sfondo bianco (si vede tondo)
+function pubLogoFromFile(file,cb){
+ if(!file||!/^image\//.test(file.type||"")){cb(null);return;}
+ var rd=new FileReader();
+ rd.onload=function(){
+  var img=new Image();
+  img.onload=function(){
+   try{
+    var S2=256,c=document.createElement("canvas");c.width=S2;c.height=S2;var x=c.getContext("2d");
+    x.fillStyle="#fff";x.fillRect(0,0,S2,S2);
+    var m=Math.min(img.width,img.height);x.drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,S2,S2);
+    cb(c.toDataURL("image/jpeg",0.86));
+   }catch(e){cb(null);}
+  };
+  img.onerror=function(){cb(null);};
+  img.src=rd.result;
+ };
+ rd.onerror=function(){cb(null);};
+ rd.readAsDataURL(file);
 }
 function nfcTagUrl(){
  var tok="",venue="";try{tok=localStorage.getItem("filos_nfc_master_token")||"";venue=localStorage.getItem("filos_nfc_master_venue")||"";}catch(e){}
@@ -333,11 +388,18 @@ function renderOnboarding(){
  var wrap=div("splash");
  wrap.style.cssText="min-height:calc(100vh - 68px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 32px;background:#fff;gap:0;";
 
- // Logo
+ // Logo: quello del locale (tondo) se si è entrati dal tag del locale, altrimenti la scritta Filòs
+ var _ven=filosVenue();var _prof=pubProfileCached(_ven);
+ if(_ven&&!PUB_FETCHED[_ven]){PUB_FETCHED[_ven]=1;pubProfileFetch(_ven,function(np){if(S.screen==="onboarding"&&JSON.stringify(np||null)!==JSON.stringify(_prof||null))renderOnboarding();});}
+ if(_prof&&_prof.logo&&/^data:image\//.test(_prof.logo)){
+  var plogo=document.createElement("img");plogo.className="pub-logo";plogo.src=_prof.logo;plogo.alt=_prof.name||"";
+  wrap.appendChild(plogo);
+ } else {
  var logo=div("","Filòs");
  logo.setAttribute("translate","no");
  logo.style.cssText="font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:14px;letter-spacing:4px;color:#1A1D21;text-transform:uppercase;margin-bottom:40px;";
  wrap.appendChild(logo);
+ }
 
  // Titolo
  var hd=div("");
@@ -361,6 +423,9 @@ function renderOnboarding(){
  inp.type="text";inp.placeholder=T("ui_il_tuo_nome_o_soprannome");inp.maxLength=24;
  inp.autocomplete="off";inp.autocorrect="off";inp.spellcheck=false;
  if(_savedName){inp.value=_savedName;}
+ // Se la schermata si ridisegna (arriva il logo del locale) quello che si stava scrivendo resta
+ if(typeof window._obTyped==="string")inp.value=window._obTyped;
+ inp.addEventListener("input",function(){window._obTyped=inp.value;});
  inp.style.cssText="flex:1;border:none;outline:none;background:transparent;font-size:17px;font-family:'DM Sans',sans-serif;color:#111;padding:14px 0;-webkit-appearance:none;";
  inputRow.appendChild(icon);inputRow.appendChild(inp);
  inputWrap.appendChild(inputRow);
@@ -390,6 +455,14 @@ function renderOnboarding(){
  var note=div("",_savedName?T("ui_puoi_cambiare_il_tuo_nome"):T("ui_il_nome_verra_chiesto_ogni"));
  note.style.cssText="margin-top:18px;font-size:13px;color:#8E8E93;line-height:1.5;text-align:center;max-width:310px;";
  wrap.appendChild(note);
+ // Link del locale (sito o Instagram), con il testo scelto dal gestore: ogni clic si conta nel report
+ var _href=_prof?pubHref(_prof.url):"";
+ if(_href){
+  var pl=document.createElement("a");pl.className="pub-link";pl.href=_href;pl.target="_blank";pl.rel="noopener noreferrer";
+  pl.textContent=String(_prof.txt||"").trim()||_href.replace(/^https?:\/\/(www\.)?/i,"").replace(/\/$/,"");
+  pl.addEventListener("click",function(){fbStat("links",{ts:Date.now()});});
+  wrap.appendChild(pl);
+ }
  root.appendChild(wrap);
  setTimeout(function(){inp.focus();},200);
 }
@@ -5608,6 +5681,76 @@ function renderMenuEditor(panel){
  buildEditor(S.menuEdTab);panel.appendChild(me);
 }
 
+// ── Editor di logo e link del locale (creazione del profilo e scheda Profilo) ──
+// Restituisce il riquadro; .get() dà {logo,url,txt}; .error() dice cosa non va (o "")
+function pubEditor(init){
+ init=init||{};var st={logo:init.logo||"",url:init.url||"",txt:init.txt||""};
+ var box=div("pub-ed");
+ var top=div("pub-ed-top");box.appendChild(top);
+ var pv=div("pub-ed-logo");top.appendChild(pv);
+ var side=div("pub-ed-side");top.appendChild(side);
+ var file=document.createElement("input");file.type="file";file.accept="image/*";file.style.display="none";box.appendChild(file);
+ var pick=btn("pub-ed-btn","",function(){file.click();});side.appendChild(pick);
+ var rm=btn("pub-ed-rm",T("pubLogoRemove"),function(){st.logo="";paint();});side.appendChild(rm);
+ var err=div("pub-ed-err");side.appendChild(err);
+ function paint(){
+  pv.innerHTML="";
+  if(st.logo){var im=document.createElement("img");im.src=st.logo;im.alt="";pv.appendChild(im);}
+  else pv.innerHTML='<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="3"/><circle cx="12" cy="12.5" r="3.5"/><path d="M8 5l1.5-2h5L16 5"/></svg>';
+  pick.textContent=st.logo?T("pubLogoChange"):T("pubLogoPick");
+  rm.style.display=st.logo?"":"none";
+ }
+ file.onchange=function(){
+  var f=file.files&&file.files[0];file.value="";if(!f)return;
+  err.textContent="";
+  pubLogoFromFile(f,function(d){if(!d){err.textContent=T("pubLogoBad");return;}st.logo=d;paint();});
+ };
+ function field(label,ph,val,max,key){
+  var w=div("pub-ed-f");w.appendChild(div("pub-ed-l",label));
+  var i=document.createElement("input");i.type="text";i.placeholder=ph;i.value=val;i.maxLength=max;i.autocapitalize="off";i.spellcheck=false;
+  i.addEventListener("input",function(){st[key]=i.value;});
+  w.appendChild(i);box.appendChild(w);return i;
+ }
+ var iu=field(T("pubUrlLabel"),T("pubUrlPH"),st.url,300,"url");iu.inputMode="url";
+ field(T("pubTxtLabel"),T("pubTxtPH"),st.txt,60,"txt");
+ box.appendChild(div("pub-ed-hint",T("pubHint")));
+ paint();
+ box.get=function(){return {logo:st.logo,url:String(st.url||"").trim(),txt:String(st.txt||"").trim()};};
+ box.error=function(){var u=String(st.url||"").trim();return (u&&!pubHref(u))?T("pubUrlBad"):"";};
+ return box;
+}
+// ── DATI DEL LOCALE PER ANALYTICS E REPORT ──
+// Si leggono da Firebase (partite, stelle, menu e clic sul link di tutti i telefoni entrati dal tag del locale).
+// Se la connessione non c'è, si usano i dati salvati su questo telefono.
+function anBuild(raw,resetAt){
+ raw=raw||{};resetAt=+resetAt||0;
+ function list(o){var out=[];if(o&&typeof o==="object")Object.keys(o).forEach(function(k){var x=o[k];if(x&&typeof x==="object"&&(+x.ts||0)>=resetAt)out.push(x);});return out.sort(function(a,b){return (+a.ts||0)-(+b.ts||0);});}
+ var D={plays:[],ratings:{},menuClicks:{},ratingList:[],menuList:[],linkList:[],remote:true};
+ list(raw.plays).forEach(function(x){D.plays.push({cat:String(x.cat||""),game:String(x.game||""),ts:+x.ts||0,dur:+x.dur||0});});
+ list(raw.ratings).forEach(function(x){var st=+x.stars||0;if(st<1||st>5)return;var g=String(x.game||"");D.ratingList.push({game:g,stars:st,ts:+x.ts||0});if(!D.ratings[g])D.ratings[g]={t:0,c:0};D.ratings[g].t+=st;D.ratings[g].c++;});
+ list(raw.menu).forEach(function(x){var k=String(x.tab||"")+":"+String(x.item||"");D.menuList.push({key:k,ts:+x.ts||0});D.menuClicks[k]=(D.menuClicks[k]||0)+1;});
+ list(raw.links).forEach(function(x){D.linkList.push({ts:+x.ts||0});});
+ return D;
+}
+function anLoad(v,cb){
+ if(!v||!fbDB||!fbGet||!fbRef){cb(null);return;}
+ var done=false;var tm=setTimeout(function(){if(!done){done=true;cb(null);}},12000);
+ Promise.all([fbGet(fbRef(fbDB,"filos_stats/"+v)),fbGet(fbRef(fbDB,"filos_pub/"+v+"/p"))]).then(function(r){
+  if(done)return;done=true;clearTimeout(tm);
+  var raw=r[0]&&r[0].val?r[0].val():null;var prof=r[1]&&r[1].val?r[1].val():null;
+  if(prof)pubProfileCache(v,prof);
+  cb(anBuild(raw,prof&&prof.resetAt));
+ }).catch(function(){if(done)return;done=true;clearTimeout(tm);cb(null);});
+}
+// Dati da mostrare: quelli del locale se arrivati, altrimenti quelli di questo telefono
+function anData(){var v=filosVenue();if(S.anRemote&&S.anRemote.v===v&&S.anRemote.d)return S.anRemote.d;return ANALYTICS;}
+function anRefresh(force){
+ var v=filosVenue();if(!v||!fbDB)return;
+ if(S.anLoading===v)return;
+ if(!force&&S.anRemote&&S.anRemote.v===v&&Date.now()-S.anRemote.at<60000)return;
+ S.anLoading=v;
+ anLoad(v,function(d){S.anLoading=null;S.anRemote={v:v,d:d,at:Date.now(),ok:!!d};if(S.screen==="analytics"&&S.pinOK&&(S.settingsTab==="analytics"||S.settingsTab==="report"))renderAnalytics();});
+}
 function renderAnalytics(){
  clr();
  addBackArrow(goHome);
@@ -5685,12 +5828,15 @@ function renderAnalytics(){
    return wrap;
   }
   var fNome=obField(T("obFieldName"),T("obFieldNamePH"),"",40);
-  var fCode=obField(T("obFieldCode"),T("obFieldCodePH"),"",30,function(v){return v.toLowerCase().replace(/[^a-z0-9_.\-]/g,"");});
+  var fCode=obField(T("obFieldCode"),T("obFieldCodePH"),"",30,function(v){return v.toLowerCase().replace(/[^a-z0-9_]/g,"");});
   // rimuovi bordo ultimo
   fCode.style.borderBottom="none";
   obCard.appendChild(fNome);obCard.appendChild(fCode);
   ob.appendChild(obCard);
   var obHint=div("");obHint.style.cssText="font-size:12px;color:#aeaeb2;text-align:center;margin-top:-12px;";obHint.textContent=T("ui_il_codice_pub_identifica_il");ob.appendChild(obHint);
+  // Logo tondo e link del locale (si possono mettere anche dopo, dal Profilo)
+  var obEd=pubEditor({});
+  var obEdCard=div("pub-ed-card");obEdCard.appendChild(div("pub-ed-title",T("pubLogoTitle")));obEdCard.appendChild(obEd);ob.appendChild(obEdCard);
   // Bottone
   var obErr=div("");obErr.style.cssText="font-size:13px;color:#ff3b30;font-weight:600;text-align:center;min-height:18px;";ob.appendChild(obErr);
   var obBtn=document.createElement("button");
@@ -5701,13 +5847,17 @@ function renderAnalytics(){
    var code=fCode.querySelector("input").value.trim();
    if(!nome){obErr.textContent=T("obErrName");return;}
    if(!code||code.length<3){obErr.textContent=T("obErrCode");return;}
+   var edErr=obEd.error();if(edErr){obErr.textContent=edErr;return;}
    try{localStorage.setItem("filos_pub_name",nome);}catch(e){}
    try{localStorage.setItem("filos_pub_code",code);}catch(e){}
    // Azzera analytics alla prima configurazione
    ANALYTICS={plays:[],ratings:{},menuClicks:{}};saveA();
-   // Mostra conferma
-   obBtn.textContent=T("obBtnDone");obBtn.style.background="#D8F0E6";
-   setTimeout(function(){S.settingsTab="profilo";renderAnalytics();},800);
+   // Mostra conferma; logo e link si salvano per il locale (se ci sono)
+   obBtn.textContent=T("obBtnDone");obBtn.style.background="#D8F0E6";obBtn.disabled=true;
+   var ed=obEd.get();var go=function(){setTimeout(function(){S.settingsTab="profilo";renderAnalytics();},800);};
+   if(ed.logo||ed.url||ed.txt){
+    pubProfileSave(code,{name:nome,logo:ed.logo,url:ed.url,txt:ed.txt},function(ok){if(!ok)alert(T("pubObWarn"));go();});
+   } else go();
   };
   ob.appendChild(obBtn);
   return;
@@ -5903,28 +6053,56 @@ function renderAnalytics(){
    section(T("nfcSection"),[box]);
   })();
 
+  // ── LOGO E LINK DEL LOCALE ──
+  (function(){
+   var v=nfcCleanVenue(pubCode);
+   var wrapP=div("");wrapP.style.cssText="padding:12px 16px;display:flex;flex-direction:column;gap:10px;";
+   if(!v){var np=div("",T("pubNeedCode"));np.style.cssText="font-size:13px;color:#ff9f0a;font-weight:600;";wrapP.appendChild(np);section(T("pubLogoTitle"),[wrapP]);return;}
+   var cur=pubProfileCached(v)||{};
+   var ed=pubEditor(cur);wrapP.appendChild(ed);
+   var m=div("");m.style.cssText="font-size:13px;font-weight:600;min-height:18px;";
+   var sb=document.createElement("button");sb.className="as-btn as-btn-primary";sb.style.margin="4px 0 0";sb.textContent=T("pubSave");
+   sb.onclick=function(){
+    var e=ed.error();if(e){m.style.color="#ff3b30";m.textContent=e;return;}
+    var g=ed.get();var base=pubProfileCached(v)||{};
+    sb.disabled=true;m.style.color="#636366";m.textContent=T("nfcSaving");
+    pubProfileSave(v,{name:pubName,logo:g.logo,url:g.url,txt:g.txt,resetAt:base.resetAt||0},function(ok){
+     sb.disabled=false;m.style.color=ok?"#34c759":"#ff3b30";m.textContent=ok?T("pubSaved"):T("pubSaveErr");
+    });
+   };
+   wrapP.appendChild(sb);wrapP.appendChild(m);
+   section(T("pubLogoTitle"),[wrapP]);
+   // Se sul server c'è una versione più recente (salvata da un altro telefono) si aggiorna la scheda
+   if(!PUB_FETCHED[v]){PUB_FETCHED[v]=1;pubProfileFetch(v,function(np){if(np&&JSON.stringify(np)!==JSON.stringify(cur)&&S.screen==="analytics"&&S.settingsTab==="profilo")renderAnalytics();});}
+  })();
+
  // ═══════════════════════════════════════════════
  // TAB ANALYTICS
  // ═══════════════════════════════════════════════
  } else if(S.settingsTab==="analytics"){
-  var total=ANALYTICS.plays.length;
+  anRefresh(false);
+  var AD=anData();
+  // Da dove vengono i numeri
+  var _src=S.anLoading?T("anSrcLoading"):(S.anRemote&&S.anRemote.ok&&AD.remote)?T("anSrcVenue"):filosVenue()?T("anSrcLocal"):T("anSrcNoVenue");
+  page.appendChild(div("as-src",_src));
+  var total=AD.plays.length;
   var todayStr=new Date().toDateString();
-  var today=0;for(var i=0;i<ANALYTICS.plays.length;i++){if(new Date(ANALYTICS.plays[i].ts).toDateString()===todayStr)today++;}
+  var today=0;for(var i=0;i<AD.plays.length;i++){if(new Date(AD.plays[i].ts).toDateString()===todayStr)today++;}
   
   // Sessioni uniche (per giorno diverso)
-  var days={};for(var i=0;i<ANALYTICS.plays.length;i++){days[new Date(ANALYTICS.plays[i].ts).toDateString()]=1;}
+  var days={};for(var i=0;i<AD.plays.length;i++){days[new Date(AD.plays[i].ts).toDateString()]=1;}
   var dayCount=Object.keys(days).length;
 
   // Tempo totale
-  var totalSec=0;for(var i=0;i<ANALYTICS.plays.length;i++){totalSec+=(ANALYTICS.plays[i].dur||0);}
+  var totalSec=0;for(var i=0;i<AD.plays.length;i++){totalSec+=(AD.plays[i].dur||0);}
   function fmtTime(s){if(!s||s===0)return"0s";if(s<60)return s+"s";if(s<3600)return Math.floor(s/60)+"m";return Math.floor(s/3600)+"h "+Math.floor((s%3600)/60)+"m";}
   
   // Valutazione media
-  var rVals=[];for(var k in ANALYTICS.ratings)rVals.push(ANALYTICS.ratings[k]);
+  var rVals=[];for(var k in AD.ratings)rVals.push(AD.ratings[k]);
   var avgR=rVals.length?(rVals.reduce(function(s,r){return s+r.t/r.c;},0)/rVals.length).toFixed(1):"—";
   
   // Menu clicks totali
-  var totalMenuClicks=0;for(var k in ANALYTICS.menuClicks)totalMenuClicks+=ANALYTICS.menuClicks[k];
+  var totalMenuClicks=0;for(var k in AD.menuClicks)totalMenuClicks+=AD.menuClicks[k];
 
   // Stat grid
   var grid=div("as-stat-grid");page.appendChild(grid);
@@ -5933,9 +6111,10 @@ function renderAnalytics(){
   grid.appendChild(stat(today,T("ui_oggi")));
   grid.appendChild(stat(fmtTime(totalSec),T("ui_tempo_totale")));
   grid.appendChild(stat(avgR,T("ui_valutazione")));
+  grid.appendChild(stat((AD.linkList||[]).length,T("anLinkClicks")));
 
   // Giochi top
-  var gc={};for(var i=0;i<ANALYTICS.plays.length;i++){var p=ANALYTICS.plays[i];gc[p.game]=(gc[p.game]||0)+1;}
+  var gc={};for(var i=0;i<AD.plays.length;i++){var p=AD.plays[i];gc[p.game]=(gc[p.game]||0)+1;}
   var topGames=[];for(var k in gc)topGames.push([k,gc[k]]);topGames.sort(function(a,b){return b[1]-a[1];});topGames=topGames.slice(0,8);
   var maxG=topGames.length?topGames[0][1]:1;
 
@@ -5955,7 +6134,7 @@ function renderAnalytics(){
 
   // Menu click
   if(totalMenuClicks>0){
-   var menuArr=[];for(var k in ANALYTICS.menuClicks){var parts=k.split(":");menuArr.push({tab:parts[0],name:parts[1]||k,count:ANALYTICS.menuClicks[k]});}
+   var menuArr=[];for(var k in AD.menuClicks){var parts=k.split(":");menuArr.push({tab:parts[0],name:parts[1]||k,count:AD.menuClicks[k]});}
    menuArr.sort(function(a,b){return b.count-a.count;});menuArr=menuArr.slice(0,8);
    var maxM=menuArr[0].count;
    var mSec=div("as-section");page.appendChild(mSec);
@@ -5974,7 +6153,7 @@ function renderAnalytics(){
   }
 
   // Ultimi 10
-  var recent=ANALYTICS.plays.slice().reverse().slice(0,10);
+  var recent=AD.plays.slice().reverse().slice(0,10);
   if(recent.length){
    var rSec=div("as-section");page.appendChild(rSec);
    rSec.appendChild(Object.assign(div("as-section-title"),{textContent:T("ui_recenti")}));
@@ -5989,7 +6168,14 @@ function renderAnalytics(){
   // Reset
   var resetSec=div("as-section");page.appendChild(resetSec);
   var resetB=document.createElement("button");resetB.className="as-btn as-btn-destructive";resetB.textContent=T("ui_reset_tutti_i_dati");
-  resetB.onclick=function(){if(confirm(T("ui_cancellare_tutti_i_dati_analytics"))){ANALYTICS={plays:[],ratings:{},menuClicks:{}};saveA();renderAnalytics();}};
+  resetB.onclick=function(){
+   if(!confirm(T("ui_cancellare_tutti_i_dati_analytics")))return;
+   ANALYTICS={plays:[],ratings:{},menuClicks:{}};saveA();
+   // Per i dati del locale si segna da quando ricominciare a contare (i vecchi dati non si vedono più)
+   var v=filosVenue();
+   if(v&&fbDB){var pr=pubProfileCached(v)||{};pr.resetAt=Date.now();pubProfileSave(v,pr,function(ok){S.anRemote=null;if(!ok)alert(T("anResetErr"));renderAnalytics();});}
+   else renderAnalytics();
+  };
   resetSec.appendChild(resetB);
 
  // ═══════════════════════════════════════════════
@@ -6022,12 +6208,14 @@ function renderAnalytics(){
   };
   repSec.appendChild(genBtn);
 
+  anRefresh(false);
   section(T("ui_cosa_include_il_report"),[
    row("","#5856d6",T("ui_partite_totali_e_giornaliere"),T("ui_conteggio_per_periodo"),"",""),
    row("","#ff9f0a",T("ui_giochi_piu_popolari"),T("ui_top_10_con_barra_di"),"",""),
    row("","#34c759",T("ui_menu_piu_richiesti_2"),T("ui_click_su_drink_e_food"),"",""),
    row("","#ff9f0a",T("ui_valutazioni_medie"),T("ui_per_gioco"),"",""),
-   row("","#636366",T("ui_tempo_di_gioco"),T("ui_totale_e_per_gioco"),"","")
+   row("","#636366",T("ui_tempo_di_gioco"),T("ui_totale_e_per_gioco"),"",""),
+   row("","#3478f6",T("anLinkClicks"),T("anLinkSub"),"","")
   ]);
 
  // ═══════════════════════════════════════════════
@@ -6089,8 +6277,9 @@ function generatePDFReport(pubName, period){
  else if(period==="mese"){var d=new Date();d.setDate(1);d.setHours(0,0,0,0);fromTs=d.getTime();periodLabel=T("ui_mese")+new Date().toLocaleDateString(anLoc(),{month:"long",year:"numeric"});}
  else if(period==="trimestre"){var d=new Date();d.setMonth(d.getMonth()-2);d.setDate(1);d.setHours(0,0,0,0);fromTs=d.getTime();periodLabel=T("ui_ultimo_trimestre");}
 
- // Filtra dati
- var plays=ANALYTICS.plays.filter(function(p){return p.ts>=fromTs;});
+ // Filtra dati (quelli del locale se disponibili)
+ var AD=anData();
+ var plays=AD.plays.filter(function(p){return p.ts>=fromTs;});
  var total=plays.length;
  var days={};plays.forEach(function(p){days[new Date(p.ts).toDateString()]=1;});
  var dayCount=Object.keys(days).length;
@@ -6105,12 +6294,17 @@ function generatePDFReport(pubName, period){
  var maxG=topGames.length?topGames[0][1]:1;
 
  // Valutazioni
- var allRatings={};for(var k in ANALYTICS.ratings){if(ANALYTICS.ratings[k].c>0)allRatings[k]=ANALYTICS.ratings[k];}
+ var allRatings={};
+ if(AD.ratingList){AD.ratingList.forEach(function(r){if(r.ts<fromTs)return;if(!allRatings[r.game])allRatings[r.game]={t:0,c:0};allRatings[r.game].t+=r.stars;allRatings[r.game].c++;});}
+ else{for(var k in AD.ratings){if(AD.ratings[k].c>0)allRatings[k]=AD.ratings[k];}}
  var rVals=Object.values(allRatings);
  var avgR=rVals.length?(rVals.reduce(function(s,r){return s+r.t/r.c;},0)/rVals.length).toFixed(1):"—";
 
  // Menu clicks
- var menuArr=[];for(var k in ANALYTICS.menuClicks){var parts=k.split(":");menuArr.push({tab:parts[0],name:parts[1]||k,count:ANALYTICS.menuClicks[k]});}
+ var menuCount={};
+ if(AD.menuList){AD.menuList.forEach(function(m){if(m.ts>=fromTs)menuCount[m.key]=(menuCount[m.key]||0)+1;});}else menuCount=AD.menuClicks;
+ var menuArr=[];for(var k in menuCount){var parts=k.split(":");menuArr.push({tab:parts[0],name:parts[1]||k,count:menuCount[k]});}
+ var linkClicks=(AD.linkList||[]).filter(function(l){return l.ts>=fromTs;}).length;
  menuArr.sort(function(a,b){return b.count-a.count;});
  var totalClicks=menuArr.reduce(function(s,m){return s+m.count;},0);
 
@@ -6125,6 +6319,8 @@ function generatePDFReport(pubName, period){
  function bar(pct,color){return '<div style="height:8px;background:#f0f0f0;border-radius:4px;overflow:hidden;flex:1;"><div style="width:'+Math.round(pct)+'%;height:100%;background:'+(color||"#1A1D21")+';border-radius:4px;"></div></div>';}
 
  // HTML del report
+ function esc(x){return String(x==null?"":x).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+ pubName=esc(pubName);
  var html='<!DOCTYPE html><html lang="'+LANG+'"><head><meta charset="UTF-8"><title>Report '+pubName+'</title><style>';
  html+='*{box-sizing:border-box;margin:0;padding:0;}body{font-family:-apple-system,"Helvetica Neue",sans-serif;color:#111;background:#fff;padding:32px;max-width:800px;margin:0 auto;}';
  html+='h1{font-size:28px;font-weight:700;margin-bottom:4px;}h2{font-size:16px;font-weight:600;color:#333;margin:28px 0 10px;border-bottom:1.5px solid #e0e0e0;padding-bottom:6px;}';
@@ -6153,11 +6349,12 @@ function generatePDFReport(pubName, period){
  html+='<div class="stat-box"><div class="stat-val">'+totalClicks+T("ui_click_menu");
  html+='<div class="stat-box"><div class="stat-val">'+peakHour+T("ui_ora_di_punta");
  html+='</div>';
+ html+='<div class="stat-grid" style="grid-template-columns:1fr 1fr;margin-top:12px;"><div class="stat-box"><div class="stat-val">'+linkClicks+'</div><div class="stat-label">'+T("anLinkClicks")+'</div></div></div>';
 
  if(topGames.length){
   html+=T("ui_giochi_piu_giocati_2");
   topGames.slice(0,10).forEach(function(g,i){
-   html+='<div class="bar-row"><span class="bar-rank">'+(i+1)+'</span><span class="bar-name">'+g[0]+'</span>'+bar(g[1]/maxG*100,"#1A1D21")+'<span class="bar-val">'+g[1]+T("ui_pt");
+   html+='<div class="bar-row"><span class="bar-rank">'+(i+1)+'</span><span class="bar-name">'+esc(g[0])+'</span>'+bar(g[1]/maxG*100,"#1A1D21")+'<span class="bar-val">'+g[1]+T("ui_pt");
   });
  }
 
@@ -6166,7 +6363,7 @@ function generatePDFReport(pubName, period){
   html+=T("ui_menu_piu_richiesti_3");
   menuArr.slice(0,10).forEach(function(m,i){
    var icon="";
-   html+='<div class="bar-row"><span class="bar-rank">'+(i+1)+'</span><span class="bar-name">'+icon+' '+m.name+'</span>'+bar(m.count/maxM*100,"#F9DB4A")+'<span class="bar-val">'+m.count+T("ui_x");
+   html+='<div class="bar-row"><span class="bar-rank">'+(i+1)+'</span><span class="bar-name">'+icon+' '+esc(m.name)+'</span>'+bar(m.count/maxM*100,"#F9DB4A")+'<span class="bar-val">'+m.count+T("ui_x");
   });
  }
 
@@ -6176,7 +6373,7 @@ function generatePDFReport(pubName, period){
   html+=T("ui_valutazioni_per_gioco");
   ratArr.slice(0,10).forEach(function(r,i){
    var avg=(r[1].t/r[1].c).toFixed(1);
-   html+='<div class="bar-row"><span class="bar-rank">'+(i+1)+'</span><span class="bar-name">'+r[0]+'</span>'+bar(r[1].t/r[1].c/5*100,"#F9DB4A")+'<span class="bar-val">&nbsp;'+avg+'</span></div>';
+   html+='<div class="bar-row"><span class="bar-rank">'+(i+1)+'</span><span class="bar-name">'+esc(r[0])+'</span>'+bar(r[1].t/r[1].c/5*100,"#F9DB4A")+'<span class="bar-val">&nbsp;'+avg+'</span></div>';
   });
  }
 
