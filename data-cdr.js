@@ -453,7 +453,7 @@ function rlTop(meta,r,active,scores){
 }
 // Nuovo stato della partita dopo la domanda q: domanda successiva, spareggio o fine
 function rlNextMeta(meta,q,rt,active,scores){
- var m=JSON.parse(JSON.stringify(meta));var qs=m.qs||[];var nt=rt+RL_REV_MS;
+ var m=JSON.parse(JSON.stringify(meta));var qs=m.qs||[];var nt=rt+(+meta.rev||RL_REV_MS); // pausa dopo la soluzione: quella del gioco (meta.rev) o 20 secondi
  if(q<qs.length-1){m.q=q+1;m.rv=-1;m.qt=nt;return m;}
  var top=rlTop(meta,q,active,scores);
  var pool=m.tbp||[];
@@ -484,7 +484,7 @@ function rlRevealCountdown(wrap,st,rt,onEnd){
  if(st.last){var top=rlTop(st.meta,st.q,st.active,st.scores);willTb=top.length>1&&((st.meta.tbp||[]).length>0);}
  var lbl=st.last?(willTb?T("rlNextTb"):T("rlNextFinal")):T("rlNextQ");
  var box=div("rl-next");box.appendChild(div("rl-next-l",lbl));wrap.appendChild(box);
- rlTimer(box,rt||fbNow(),RL_REV_MS,onEnd);
+ rlTimer(box,rt||fbNow(),(st.meta&&+st.meta.rev)||RL_REV_MS,onEnd);
 }
 // Stringhe del gioco a distanza (aggiunte quando l'interfaccia è pronta)
 function cdrStrings(){

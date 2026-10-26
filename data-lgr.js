@@ -16,6 +16,7 @@
 // per tutti: ognuno le legge nella propria lingua.
 // ══════════════════════════════════════════
 var LGR_Q_MS=RL_ANS_MS; // tempo per rispondere a ogni domanda
+var LGR_REV_MS=10000; // pausa dopo la soluzione, prima della frase successiva (gli altri giochi: 20 secondi)
 var LGR_MAX_PLAYERS=8,LGR_ROUNDS=10,LGR_FORCE_MS=45000;
 var LGR={code:null,me:null,data:null,unsub:null,sig:"",val:null,valKey:"",busy:false,closed:false};
 
@@ -72,7 +73,7 @@ function lgrRoundData(lvl){
  var n=lgrCount();
  var qs=freshPick("r_lg_"+lvl,rlThirds(n,lvl),LGR_ROUNDS);
  var tbp=fShuffle(rlThirds(n,"difficile").filter(function(x){return qs.indexOf(x)<0;})).slice(0,12);
- return {qs:qs,opts:qs.map(function(q){return lgOpts(q);}),main:qs.length,tbp:tbp,tbo:tbp.map(function(q){return lgOpts(q);})};
+ return {qs:qs,opts:qs.map(function(q){return lgOpts(q);}),main:qs.length,tbp:tbp,tbo:tbp.map(function(q){return lgOpts(q);}),rev:LGR_REV_MS};
 }
 // ── Stanza: crea, entra, esci ──
 function lgrCreate(done){
