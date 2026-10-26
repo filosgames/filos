@@ -209,25 +209,79 @@ function nfcPublish(venue,cb){
   cb(true);
  }).catch(function(){cb(false,"denied");});
 }
-// ── PROFILO DEL LOCALE (logo tondo, link e testo del link) ──
-// Su Firebase: filos_pub/{locale}/p = {name, logo, url, txt, resetAt}  (leggibile da tutti)
+// ── PROFILO DEL LOCALE (logo tondo, link, menu e proposta del momento) ──
+// Su Firebase: filos_pub/{locale}/p = {name, logo, url, txt, resetAt, at, menu, offer}  (leggibile da tutti)
 //              filos_pub/{locale}/k = chiave del gestore (non leggibile: serve alle regole per permettere la scrittura)
+// Sul telefono si tengono in memoria solo i campi piccoli (il menu con le foto si carica a fine partita).
+var PUB_SMALL=["name","logo","url","txt","resetAt","at"];
+function pubSmall(p){if(!p||typeof p!=="object")return null;var o={};PUB_SMALL.forEach(function(k){if(p[k]!==undefined&&p[k]!==null)o[k]=p[k];});return o;}
 function pubProfileCached(v){if(!v)return null;try{var x=JSON.parse(localStorage.getItem("filos_pubp_"+v)||"null");return x&&typeof x==="object"?x:null;}catch(e){return null;}}
-function pubProfileCache(v,p){try{if(p)localStorage.setItem("filos_pubp_"+v,JSON.stringify(p));else localStorage.removeItem("filos_pubp_"+v);}catch(e){}}
+function pubProfileCache(v,p){try{p=pubSmall(p);if(p)localStorage.setItem("filos_pubp_"+v,JSON.stringify(p));else localStorage.removeItem("filos_pubp_"+v);}catch(e){}}
 var PUB_FETCHED={};
+// Solo i campi piccoli (nome, logo, link): si leggono uno per uno, così non si scarica il menu con le foto
 function pubProfileFetch(v,cb){
  if(!v||!fbDB||!fbGet||!fbRef){if(cb)cb(pubProfileCached(v));return;}
- fbGet(fbRef(fbDB,"filos_pub/"+v+"/p")).then(function(snap){
-  var p=snap&&snap.val?snap.val():null;PUB_FETCHED[v]=Date.now();pubProfileCache(v,p);if(cb)cb(p);
+ Promise.all(PUB_SMALL.map(function(k){return fbGet(fbRef(fbDB,"filos_pub/"+v+"/p/"+k));})).then(function(r){
+  var p={},any=false;PUB_SMALL.forEach(function(k,i){var x=r[i]&&r[i].val?r[i].val():null;if(x!==null&&x!==undefined){p[k]=x;any=true;}});
+  if(!any)p=null;PUB_FETCHED[v]=Date.now();pubProfileCache(v,p);if(cb)cb(pubProfileCached(v));
  }).catch(function(){if(cb)cb(pubProfileCached(v));});
+}
+// Proposta del momento scelta dal gestore (sul suo telefono): {on, tab, name, note}
+function offerLocal(){try{var o=JSON.parse(localStorage.getItem("filos_offer")||"null");return o&&typeof o==="object"?o:null;}catch(e){return null;}}
+function offerSaveLocal(o){try{localStorage.setItem("filos_offer",JSON.stringify(o||null));}catch(e){}}
+// Menu pulito da pubblicare (solo i campi che servono ai clienti)
+function pubMenuClean(m){
+ var out={drink:[],food:[]};
+ function arr(x){if(Array.isArray(x))return x;if(x&&typeof x==="object")return Object.keys(x).sort(function(a,b){return (+a)-(+b);}).map(function(k){return x[k];});return [];}
+ ["drink","food"].forEach(function(t){arr(m&&m[t]).forEach(function(it){
+  if(!it||!String(it.name||"").trim())return;
+  var o={name:String(it.name).slice(0,60),desc:String(it.desc||"").slice(0,160),price:String(it.price||"").slice(0,12)};
+  if(typeof it.photo==="string"&&/^data:image\//.test(it.photo)&&it.photo.length<400000)o.photo=it.photo;
+  var al=arr(it.allergeni);if(al.length)o.allergeni=al.slice(0,14).map(String);
+  out[t].push(o);
+ });});
+ return out;
 }
 function pubProfileSave(v,p,cb){
  v=nfcCleanVenue(v);
  if(!v){cb(false,"nopub");return;}
  if(!fbDB||!fbSet||!fbRef){cb(false,"offline");return;}
- var clean={name:String(p.name||"").slice(0,60),logo:String(p.logo||""),url:String(p.url||"").slice(0,300),txt:String(p.txt||"").slice(0,60),resetAt:+p.resetAt||0,at:Date.now()};
+ // Prima si legge la versione sul server, così i campi non cambiati (es. il logo) non si perdono
+ if(!PUB_FETCHED[v]||PUB_FETCHED[v]===1){pubProfileFetch(v,function(){PUB_FETCHED[v]=PUB_FETCHED[v]||Date.now();pubProfileSave2(v,p,cb);});return;}
+ pubProfileSave2(v,p,cb);
+}
+function pubProfileSave2(v,p,cb){
+ var base=pubProfileCached(v)||{};p=p||{};
+ function pick(k){return p[k]!==undefined?p[k]:base[k];}
+ var clean={name:String(pick("name")||"").slice(0,60),logo:String(pick("logo")||""),url:String(pick("url")||"").slice(0,300),txt:String(pick("txt")||"").slice(0,60),resetAt:+pick("resetAt")||0,at:Date.now()};
+ // Sul telefono del gestore si pubblicano insieme anche menu e proposta del momento
+ if(v===nfcCleanVenue(getPubCode())){
+  clean.menu=pubMenuClean(typeof MENU!=="undefined"?MENU:null);
+  var of=offerLocal();if(of&&of.on&&of.name)clean.offer={on:true,tab:of.tab==="food"?"food":"drink",name:String(of.name).slice(0,60),note:String(of.note||"").slice(0,80)};
+ }
  nfcEnsureOwner(v).then(function(key){return fbSet(fbRef(fbDB,"filos_pub/"+v),{p:clean,k:key});})
  .then(function(){pubProfileCache(v,clean);cb(true);}).catch(function(){cb(false,"denied");});
+}
+// Il gestore cambia il menu o la proposta: si pubblica poco dopo l'ultima modifica
+var PUB_SYNC_T=null;
+function pubMenuChanged(){
+ var v=nfcCleanVenue(getPubCode());if(!v||!fbDB)return;
+ clearTimeout(PUB_SYNC_T);
+ PUB_SYNC_T=setTimeout(function(){pubProfileSave(v,{},function(ok){PUB_SYNC_STATE=ok?"ok":"err";var e=document.getElementById("menu-sync");if(e){e.textContent=T(ok?"menuSyncOk":"menuSyncErr");e.style.color=ok?"#34c759":"#ff3b30";}});},1500);
+}
+var PUB_SYNC_STATE="";
+// Menu e proposta per la fine partita: sul telefono del gestore quelli suoi, sui clienti quelli del locale
+var PUB_MENU={v:"",at:0,menu:null,offer:null,loading:false};
+function pubMenuFor(v,cb){
+ if(v&&v===nfcCleanVenue(getPubCode())){var of=offerLocal();cb({menu:typeof MENU!=="undefined"?MENU:{drink:[],food:[]},offer:(of&&of.on&&of.name)?of:null});return;}
+ if(!v||!fbDB||!fbGet||!fbRef){cb(null);return;}
+ if(PUB_MENU.v===v&&PUB_MENU.menu&&Date.now()-PUB_MENU.at<300000){cb({menu:PUB_MENU.menu,offer:PUB_MENU.offer});return;}
+ Promise.all([fbGet(fbRef(fbDB,"filos_pub/"+v+"/p/menu")),fbGet(fbRef(fbDB,"filos_pub/"+v+"/p/offer"))]).then(function(r){
+  var m=r[0]&&r[0].val?r[0].val():null,o=r[1]&&r[1].val?r[1].val():null;
+  m=pubMenuClean(m);
+  PUB_MENU={v:v,at:Date.now(),menu:m,offer:(o&&o.on&&o.name)?o:null};
+  cb({menu:PUB_MENU.menu,offer:PUB_MENU.offer});
+ }).catch(function(){cb(null);});
 }
 // Link scritto dal gestore: si aggiunge https:// se manca; solo link web
 function pubHref(u){u=String(u||"").trim();if(!u)return "";if(!/^https?:\/\//i.test(u))u="https://"+u.replace(/^\/+/,"");return /^https?:\/\/[^\s\/]+\.[^\s]+/i.test(u)?u:"";}
@@ -299,7 +353,7 @@ var S={screen: "onboarding",players:0,cat:null,game:null,stars:0,prevScreen:"hom
 function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e;}
 function div(cls,txt){return el("div",cls,txt);}
 function btn(cls,txt,fn){var b=el("button",cls,txt);b.onclick=fn;return b;}
-function clr(){document.getElementById("root").innerHTML="";var _l=document.getElementById("hdrLeft");if(_l)_l.innerHTML="";document.body.style.overflow='';document.body.style.userSelect='';document.body.style.webkitUserSelect='';}
+function clr(){document.getElementById("root").innerHTML="";var _sh=document.getElementById("end2-sheet");if(_sh)_sh.remove();var _l=document.getElementById("hdrLeft");if(_l)_l.innerHTML="";document.body.style.overflow='';document.body.style.userSelect='';document.body.style.webkitUserSelect='';}
 function getCatById(id){for(var i=0;i<CATS.length;i++){if(CATS[i].id===id)return CATS[i];}return null;}
 // Lista giochi della lingua attiva (ricade sull'italiano se manca la traduzione della categoria)
 function gameTable(){var t=(LANG==="en"&&typeof GAMES_EN!=="undefined")?GAMES_EN:(LANG==="es"&&typeof GAMES_ES!=="undefined")?GAMES_ES:null;return (t&&S.cat&&t[S.cat])?t:GAMES;}
@@ -5218,62 +5272,122 @@ function renderGame(){
 
 function renderEnd(){
  clr();
- addBackArrow(goHome);
- var panel=div("panel");var screen=div("endscreen");panel.appendChild(screen);
-  screen.appendChild(div("end-title",T("gameOver")));
- screen.appendChild(div("end-sub",T("rateGame")+S.lastGame));
- var sw=div("stars");screen.appendChild(sw);
- var rMsg=div("rating-msg",T("rateStars"));screen.appendChild(rMsg);
+ addBackArrow(function(){S.screen="games";render();});
+ var panel=div("panel");var screen=div("endscreen end2");panel.appendChild(screen);
+ var v=filosVenue();var prof=pubProfileCached(v)||{};
+ // Il locale: logo tondo e nome
+ var head=div("end2-head");screen.appendChild(head);
+ if(prof.logo&&/^data:image\//.test(prof.logo)){var lg=document.createElement("img");lg.className="end2-logo";lg.src=prof.logo;lg.alt="";head.appendChild(lg);}
+ head.appendChild(div("end2-title",T("endThanks")));
+ if(prof.name)head.appendChild(div("end2-at",T("endAt").replace("{n}",prof.name)));
+ // Stelle
+ var rate=div("end2-rate");screen.appendChild(rate);
+ rate.appendChild(div("end2-q",T("endRateQ").replace("{g}",S.lastGame||"")));
+ var sw=div("stars");rate.appendChild(sw);
+ var rMsg=div("rating-msg",T("rateStars"));rate.appendChild(rMsg);
+ var follow=div("end2-follow");rate.appendChild(follow);
+ function showFollow(){
+  follow.innerHTML="";var href=pubHref(prof.url);if(!href)return;
+  var a=document.createElement("a");a.className="pub-link end2-link";a.href=href;a.target="_blank";a.rel="noopener noreferrer";
+  a.textContent=String(prof.txt||"").trim()||href.replace(/^https?:\/\/(www\.)?/i,"").replace(/\/$/,"");
+  a.addEventListener("click",function(){fbStat("links",{ts:Date.now()});});
+  follow.appendChild(a);
+ }
  for(var i=1;i<=5;i++){(function(n){
- var s=div("star "+(S.stars>=n?"lit":""));s.innerHTML=STAR_SVG;
- s.onclick=function(){S.stars=n;logRating(S.lastGame,n);var all=document.querySelectorAll(".star");for(var j=0;j<all.length;j++)all[j].className="star"+(j<n?" lit":"");rMsg.textContent=getMsg(n);};
- sw.appendChild(s);
+  var st=div("star "+(S.stars>=n?"lit":""));st.innerHTML=STAR_SVG;
+  st.onclick=function(){
+   if(!S.stars)logRating(S.lastGame,n);
+   S.stars=n;var all=document.querySelectorAll(".end2 .star");for(var j=0;j<all.length;j++)all[j].className="star"+(j<n?" lit":"");
+   rMsg.textContent=T("endRated")+" "+getMsg(n);showFollow();
+  };
+  sw.appendChild(st);
  })(i);}
- var ms=div("menu-section");screen.appendChild(ms);
- var toast=div("order-toast","");ms.appendChild(toast);
- var tabs=div("menu-tabs");ms.appendChild(tabs);
- var tD=div("menu-tab "+(S.menuTab==="drink"?"on":""));tD.textContent=T("menuDrink");tabs.appendChild(tD);
- var tF=div("menu-tab "+(S.menuTab==="food"?"on":""));tF.textContent=T("menuFood");tabs.appendChild(tF);
- var mgrid=div("menu-grid");ms.appendChild(mgrid);
- function buildMenu(tab){
- mgrid.innerHTML="";
- var items=MENU[tab]||[];
- for(var i=0;i<items.length;i++){(function(item,idx){
- var card=div("menu-card");
- card.style.padding="0";card.style.overflow="hidden";card.style.textAlign="center";
- if(item.photo){
-  var img=document.createElement("img");
-  img.src=item.photo;
-  img.style.cssText="width:100%;aspect-ratio:1/1;object-fit:cover;display:block;border-radius:14px 14px 0 0;";
-  card.appendChild(img);
-  var inner=document.createElement("div");inner.style.cssText="padding:6px 6px 10px;";
-  inner.appendChild(el("span","mc-name",item.name));
-  inner.appendChild(el("span","mc-desc",item.desc));
-  inner.appendChild(el("span","mc-price","\u20ac "+item.price));
-  card.appendChild(inner);
- } else {
-  var inner2=document.createElement("div");inner2.style.cssText="padding:18px 12px;";
-  inner2.appendChild(el("span","mc-emoji",String(item.name||"?").trim().charAt(0).toUpperCase()));
-  inner2.appendChild(el("span","mc-name",item.name));
-  inner2.appendChild(el("span","mc-desc",item.desc));
-  inner2.appendChild(el("span","mc-price","\u20ac "+item.price));
-  card.appendChild(inner2);
+ if(S.stars){rMsg.textContent=T("endRated")+" "+getMsg(S.stars);showFollow();}
+ // Proposta del momento e menu (del locale; sul telefono del gestore i suoi)
+ var shop=div("end2-shop");screen.appendChild(shop);
+ function fill(d){
+  if(S.screen!=="end")return;
+  shop.innerHTML="";
+  var menu=d&&d.menu?d.menu:{drink:[],food:[]};
+  var of=d&&d.offer;var ofItem=null;
+  if(of&&of.name){(menu[of.tab]||[]).forEach(function(it){if(!ofItem&&it&&it.name===of.name)ofItem=it;});}
+  if(ofItem){
+   var oc=div("end2-offer");shop.appendChild(oc);
+   oc.appendChild(div("end2-offer-l",T("offerTitle")));
+   var ob=div("end2-offer-b");oc.appendChild(ob);
+   ob.appendChild(endPic(ofItem,of.tab,"end2-offer-pic"));
+   var ot=div("end2-offer-t");ob.appendChild(ot);
+   ot.appendChild(div("end2-offer-n",ofItem.name));
+   if(of.note)ot.appendChild(div("end2-offer-note",of.note));
+   if(ofItem.price)ot.appendChild(div("end2-offer-p","€ "+ofItem.price));
+   oc.appendChild(btn("end2-offer-btn",T("offerWant"),function(){logMenuClick("offerta",ofItem.name);endSheet(ofItem,of.tab,of.note,true);}));
+  }
+  var tabs=["drink","food"].filter(function(t){return (menu[t]||[]).length>0;});
+  if(!tabs.length)return;
+  if(tabs.indexOf(S.menuTab)<0)S.menuTab=tabs[0];
+  var ms=div("end2-menu");shop.appendChild(ms);
+  ms.appendChild(div("end2-menu-t",T("endMenuTitle")));
+  var tb=null;
+  if(tabs.length>1){tb=div("menu-tabs");ms.appendChild(tb);}
+  var grid=div("end2-grid");ms.appendChild(grid);
+  function build(tab){
+   grid.innerHTML="";
+   if(tb)[].forEach.call(tb.children,function(x){x.classList.toggle("on",x._tab===tab);});
+   (menu[tab]||[]).forEach(function(it){
+    var c=document.createElement("button");c.type="button";c.className="end2-item";
+    c.appendChild(endPic(it,tab,"end2-item-pic"));
+    var tx=div("end2-item-tx");c.appendChild(tx);
+    tx.appendChild(div("end2-item-n",it.name));
+    if(it.desc)tx.appendChild(div("end2-item-d",it.desc));
+    if(it.price)tx.appendChild(div("end2-item-p","€ "+it.price));
+    c.onclick=function(){logMenuClick(tab,it.name);endSheet(it,tab,"",false);};
+    grid.appendChild(c);
+   });
+  }
+  if(tb)tabs.forEach(function(t){var x=div("menu-tab",t==="drink"?T("menuDrink"):T("menuFood"));x._tab=t;x.onclick=function(){S.menuTab=t;build(t);};tb.appendChild(x);});
+  build(S.menuTab);
+  ms.appendChild(div("menu-note",T("menuNote")));
  }
- card.onclick=(function(iname,itab){return function(){toast.textContent=iname+" (\u20ac "+item.price+") \u2014 "+T("menuCallWaiter");toast.style.display="block";setTimeout(function(){toast.style.display="none";},4000);logMenuClick(itab,iname);};})(item.name,tab);
- mgrid.appendChild(card);
- })(items[i],i);}
- }
- tD.onclick=function(){S.menuTab="drink";tD.className="menu-tab on";tF.className="menu-tab";buildMenu("drink");};
- tF.onclick=function(){S.menuTab="food";tF.className="menu-tab on";tD.className="menu-tab";buildMenu("food");};
- buildMenu(S.menuTab);
- ms.appendChild(div("menu-note",T("menuNote")));;
- var eb=div("endbtns");screen.appendChild(eb);
- eb.appendChild(btn("ebtn out",T("otherGames"),function(){S.screen="games";render();}));
+ pubMenuFor(v,function(d){
+  // Senza locale (o senza rete) si usa il menu salvato su questo telefono, se c'è
+  if(!d)d={menu:typeof MENU!=="undefined"?MENU:{drink:[],food:[]},offer:null};
+  fill(d);
+ });
+ // Pulsanti: restare a giocare è la scelta principale
+ var eb=div("endbtns end2-btns");screen.appendChild(eb);
+ eb.appendChild(btn("ebtn",T("otherGames"),function(){S.screen="games";render();}));
  eb.appendChild(btn("ebtn out",T("ui_chi_paga_il_conto"),function(){if(typeof openChiPaga==="function")openChiPaga();}));
- eb.appendChild(btn("ebtn",T("exitBtn"),goHome));
+ screen.appendChild(btn("end2-exit",T("exitBtn"),goHome));
  document.getElementById("root").appendChild(panel);
 }
-
+// Foto del prodotto, oppure un'icona pulita (bicchiere o piatto)
+function endPic(it,tab,cls){
+ var w=div(cls);
+ if(it&&typeof it.photo==="string"&&/^data:image\//.test(it.photo)){var im=document.createElement("img");im.src=it.photo;im.alt="";w.appendChild(im);}
+ else{w.classList.add("ico");w.innerHTML=tab==="food"
+  ?'<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="3.2"/><path d="M3 4v5a2 2 0 0 0 2 2v9M5 4v4M21 4c-1.5 1-2 3-2 5v2h2v9"/></svg>'
+  :'<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l-1.2 7.5A4.8 4.8 0 0 1 12 14.5a4.8 4.8 0 0 1-4.8-4l-1.2-7.5z"/><path d="M6.7 7.5h10.6M12 14.5V21M8.5 21h7"/></svg>';}
+ return w;
+}
+var ALLERG_TR={"Glutine":["Gluten","Gluten"],"Latte":["Milk","Leche"],"Uova":["Eggs","Huevos"],"Arachidi":["Peanuts","Cacahuetes"],"Frutta a guscio":["Tree nuts","Frutos de cáscara"],"Soia":["Soy","Soja"],"Pesce":["Fish","Pescado"],"Molluschi":["Molluscs","Moluscos"],"Sedano":["Celery","Apio"],"Senape":["Mustard","Mostaza"],"Sesamo":["Sesame","Sésamo"],"Lupini":["Lupin","Altramuces"],"Anidride solforosa":["Sulphites","Sulfitos"]};
+function allergName(a){var t=ALLERG_TR[a];if(!t||LANG==="it")return a;return LANG==="en"?t[0]:t[1];}
+// Scheda grande da mostrare al cameriere
+function endSheet(it,tab,note,isOffer){
+ var old=document.getElementById("end2-sheet");if(old)old.remove();
+ var ov=div("end2-sheet");ov.id="end2-sheet";
+ var card=div("end2-sheet-c");ov.appendChild(card);
+ card.appendChild(div("end2-sheet-l",isOffer?T("offerTitle"):T("showWaiterTitle")));
+ if(it.photo&&/^data:image\//.test(it.photo)){var im=document.createElement("img");im.className="end2-sheet-img";im.src=it.photo;im.alt="";card.appendChild(im);}
+ card.appendChild(div("end2-sheet-n",it.name));
+ if(note)card.appendChild(div("end2-offer-note",note));
+ if(it.price)card.appendChild(div("end2-sheet-p","€ "+it.price));
+ if(it.allergeni&&it.allergeni.length)card.appendChild(div("end2-sheet-a",T("allergLabel")+": "+it.allergeni.map(allergName).join(", ")));
+ if(isOffer){var code=String(1000+Math.floor(Math.random()*9000));card.appendChild(div("end2-sheet-code",T("offerCode").replace("{c}",code)));}
+ card.appendChild(div("end2-sheet-w",T("showWaiter")));
+ card.appendChild(btn("ebtn",T("closeBtn"),function(){ov.remove();}));
+ ov.onclick=function(e){if(e.target===ov)ov.remove();};
+ document.body.appendChild(ov);
+}
 
 function startQuizWithLevel(level){
  S.quizLevel=level;
@@ -5621,12 +5735,12 @@ function renderMenuEditor(panel){
      reader.onload=function(e){
       var img=new Image();
       img.onload=function(){
-       var mW=800,mH=600,w=img.width,h=img.height;
+       var mW=640,mH=480,w=img.width,h=img.height; // leggera: il menu si scarica anche sui telefoni dei clienti
        if(w>mW){h=Math.round(h*mW/w);w=mW;}
        if(h>mH){w=Math.round(w*mH/h);h=mH;}
        var c=document.createElement("canvas");c.width=w;c.height=h;
        c.getContext("2d").drawImage(img,0,0,w,h);
-       MENU[tab][idx].photo=c.toDataURL("image/jpeg",0.75);
+       MENU[tab][idx].photo=c.toDataURL("image/jpeg",0.72);
        saveMenu();refreshPhoto();
       };
       img.src=e.target.result;
@@ -5772,11 +5886,10 @@ function anBuild(raw,resetAt){
 function anLoad(v,cb){
  if(!v||!fbDB||!fbGet||!fbRef){cb(null);return;}
  var done=false;var tm=setTimeout(function(){if(!done){done=true;cb(null);}},12000);
- Promise.all([fbGet(fbRef(fbDB,"filos_stats/"+v)),fbGet(fbRef(fbDB,"filos_pub/"+v+"/p"))]).then(function(r){
+ Promise.all([fbGet(fbRef(fbDB,"filos_stats/"+v)),fbGet(fbRef(fbDB,"filos_pub/"+v+"/p/resetAt"))]).then(function(r){
   if(done)return;done=true;clearTimeout(tm);
-  var raw=r[0]&&r[0].val?r[0].val():null;var prof=r[1]&&r[1].val?r[1].val():null;
-  if(prof)pubProfileCache(v,prof);
-  cb(anBuild(raw,prof&&prof.resetAt));
+  var raw=r[0]&&r[0].val?r[0].val():null;var ra=r[1]&&r[1].val?r[1].val():null;
+  cb(anBuild(raw,ra));
  }).catch(function(){if(done)return;done=true;clearTimeout(tm);cb(null);});
 }
 // Dati da mostrare: quelli del locale se arrivati, altrimenti quelli di questo telefono
@@ -6139,7 +6252,8 @@ function renderAnalytics(){
   var avgR=rVals.length?(rVals.reduce(function(s,r){return s+r.t/r.c;},0)/rVals.length).toFixed(1):"—";
   
   // Menu clicks totali
-  var totalMenuClicks=0;for(var k in AD.menuClicks)totalMenuClicks+=AD.menuClicks[k];
+  // Le richieste della proposta del momento si contano a parte (non nel menu)
+  var totalMenuClicks=0,offerN=0;for(var k in AD.menuClicks){if(k.indexOf("offerta:")===0)offerN+=AD.menuClicks[k];else totalMenuClicks+=AD.menuClicks[k];}
 
   // Stat grid
   var grid=div("as-stat-grid");page.appendChild(grid);
@@ -6149,6 +6263,7 @@ function renderAnalytics(){
   grid.appendChild(stat(fmtTime(totalSec),T("ui_tempo_totale")));
   grid.appendChild(stat(avgR,T("ui_valutazione")));
   grid.appendChild(stat((AD.linkList||[]).length,T("anLinkClicks")));
+  grid.appendChild(stat(offerN,T("anOffer")));
 
   // Giochi top
   var gc={};for(var i=0;i<AD.plays.length;i++){var p=AD.plays[i];gc[p.game]=(gc[p.game]||0)+1;}
@@ -6171,7 +6286,7 @@ function renderAnalytics(){
 
   // Menu click
   if(totalMenuClicks>0){
-   var menuArr=[];for(var k in AD.menuClicks){var parts=k.split(":");menuArr.push({tab:parts[0],name:parts[1]||k,count:AD.menuClicks[k]});}
+   var menuArr=[];for(var k in AD.menuClicks){if(k.indexOf("offerta:")===0)continue;var ci=k.indexOf(":");menuArr.push({tab:k.slice(0,ci),name:ci>=0?k.slice(ci+1):k,count:AD.menuClicks[k]});}
    menuArr.sort(function(a,b){return b.count-a.count;});menuArr=menuArr.slice(0,8);
    var maxM=menuArr[0].count;
    var mSec=div("as-section");page.appendChild(mSec);
@@ -6219,6 +6334,37 @@ function renderAnalytics(){
  // TAB MENU
  // ═══════════════════════════════════════════════
  } else if(S.settingsTab==="menu"){
+  // ── PROPOSTA DEL MOMENTO ──
+  (function(){
+   var of=offerLocal()||{on:false,tab:"drink",name:"",note:""};
+   var box=div("offer-adm");
+   box.appendChild(div("offer-adm-sub",T("offerAdmSub")));
+   var all=[];["drink","food"].forEach(function(t){(MENU[t]||[]).forEach(function(it){if(it&&String(it.name||"").trim())all.push({tab:t,name:String(it.name)});});});
+   if(!all.length){box.appendChild(div("offer-adm-none",T("offerAdmNone")));}
+   else{
+    var rowOn=div("offer-adm-row");rowOn.appendChild(div("offer-adm-l",T("offerAdmOn")));
+    var tog=document.createElement("button");tog.className="as-toggle";var knob=div("as-toggle-knob");tog.appendChild(knob);
+    function paintTog(){tog.style.background=of.on?"#34c759":"#e5e5ea";knob.style.left=of.on?"23px":"3px";}
+    tog.onclick=function(){of.on=!of.on;if(of.on&&!of.name){of.tab=all[0].tab;of.name=all[0].name;sel.value="0";}paintTog();save();};
+    rowOn.appendChild(tog);box.appendChild(rowOn);
+    box.appendChild(div("offer-adm-l",T("offerAdmPick")));
+    var sel=document.createElement("select");sel.className="offer-adm-sel";
+    all.forEach(function(x,i){var o=document.createElement("option");o.value=String(i);o.textContent=(x.tab==="drink"?T("menuDrink"):T("menuFood"))+" · "+x.name;sel.appendChild(o);});
+    var cur=-1;all.forEach(function(x,i){if(x.tab===of.tab&&x.name===of.name)cur=i;});
+    sel.value=String(cur>=0?cur:0);
+    sel.onchange=function(){var x=all[+sel.value];of.tab=x.tab;of.name=x.name;save();};
+    box.appendChild(sel);
+    box.appendChild(div("offer-adm-l",T("offerAdmNote")));
+    var note=document.createElement("input");note.type="text";note.className="offer-adm-note";note.maxLength=80;note.placeholder=T("offerAdmNotePH");note.value=of.note||"";
+    note.oninput=function(){of.note=note.value;};note.onblur=function(){save();};
+    box.appendChild(note);
+    if(cur<0&&of.on){var x0=all[0];of.tab=x0.tab;of.name=x0.name;offerSaveLocal(of);}
+    paintTog();
+   }
+   function save(){offerSaveLocal(of);pubMenuChanged();}
+   var st=div("");st.id="menu-sync";st.className="offer-adm-sync";st.textContent=nfcCleanVenue(getPubCode())?T("menuSyncNote"):T("pubNeedCode");box.appendChild(st);
+   section(T("offerAdmTitle"),[box]);
+  })();
   var mWrap=div("as-section");page.appendChild(mWrap);
   renderMenuEditor(mWrap);
 
@@ -6252,7 +6398,8 @@ function renderAnalytics(){
    row("","#34c759",T("ui_menu_piu_richiesti_2"),T("ui_click_su_drink_e_food"),"",""),
    row("","#ff9f0a",T("ui_valutazioni_medie"),T("ui_per_gioco"),"",""),
    row("","#636366",T("ui_tempo_di_gioco"),T("ui_totale_e_per_gioco"),"",""),
-   row("","#3478f6",T("anLinkClicks"),T("anLinkSub"),"","")
+   row("","#3478f6",T("anLinkClicks"),T("anLinkSub"),"",""),
+   row("","#ff3b30",T("anOffer"),T("anOfferSub"),"","")
   ]);
 
  // ═══════════════════════════════════════════════
@@ -6340,7 +6487,7 @@ function generatePDFReport(pubName, period){
  // Menu clicks
  var menuCount={};
  if(AD.menuList){AD.menuList.forEach(function(m){if(m.ts>=fromTs)menuCount[m.key]=(menuCount[m.key]||0)+1;});}else menuCount=AD.menuClicks;
- var menuArr=[];for(var k in menuCount){var parts=k.split(":");menuArr.push({tab:parts[0],name:parts[1]||k,count:menuCount[k]});}
+ var menuArr=[],offerN=0;for(var k in menuCount){if(k.indexOf("offerta:")===0){offerN+=menuCount[k];continue;}var ci=k.indexOf(":");menuArr.push({tab:k.slice(0,ci),name:ci>=0?k.slice(ci+1):k,count:menuCount[k]});}
  var linkClicks=(AD.linkList||[]).filter(function(l){return l.ts>=fromTs;}).length;
  menuArr.sort(function(a,b){return b.count-a.count;});
  var totalClicks=menuArr.reduce(function(s,m){return s+m.count;},0);
@@ -6386,7 +6533,7 @@ function generatePDFReport(pubName, period){
  html+='<div class="stat-box"><div class="stat-val">'+totalClicks+T("ui_click_menu");
  html+='<div class="stat-box"><div class="stat-val">'+peakHour+T("ui_ora_di_punta");
  html+='</div>';
- html+='<div class="stat-grid" style="grid-template-columns:1fr 1fr;margin-top:12px;"><div class="stat-box"><div class="stat-val">'+linkClicks+'</div><div class="stat-label">'+T("anLinkClicks")+'</div></div></div>';
+ html+='<div class="stat-grid" style="grid-template-columns:1fr 1fr;margin-top:12px;"><div class="stat-box"><div class="stat-val">'+linkClicks+'</div><div class="stat-label">'+T("anLinkClicks")+'</div></div><div class="stat-box"><div class="stat-val">'+offerN+'</div><div class="stat-label">'+T("anOffer")+'</div></div></div>';
 
  if(topGames.length){
   html+=T("ui_giochi_piu_giocati_2");
