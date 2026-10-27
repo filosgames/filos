@@ -601,3 +601,10 @@ body[data-cat="cultura"]{--f-cat:#DCE3F7;}body[data-cat="adulti"]{--f-cat:#EEDCE
 /* Schede generate per le schermate senza intestazione: stesso aspetto delle altre */
 .shell-body{padding-top:18px;}
 .shell-body .codice-wrap,.shell-body .nc-wrap,.shell-body .alfa-wrap,.shell-body .mw-wrap,.shell-body .qv-wrap,.shell-body .quiz-level-wrap{padding-top:0;margin-top:0;}
+
+/* 28 — Logo Filòs scritto a mano (immagine) */
+.logo-img{display:block;height:34px;width:auto;margin:0 auto;}
+@media(max-width:768px){.logo-img{height:30px;}}
+.ob-logo{display:block;height:46px;width:auto;margin:0 auto 34px;}
+.splash-logo-img{display:block;height:72px;width:auto;margin:0 auto;}
+@media(max-width:360px){.logo-img{height:24px;}}

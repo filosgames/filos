@@ -486,9 +486,7 @@ function renderOnboarding(){
   var plogo=document.createElement("img");plogo.className="pub-logo";plogo.src=_prof.logo;plogo.alt=_prof.name||"";
   wrap.appendChild(plogo);
  } else {
- var logo=div("","Filòs");
- logo.setAttribute("translate","no");
- logo.style.cssText="font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:14px;letter-spacing:4px;color:#1A1D21;text-transform:uppercase;margin-bottom:40px;";
+ var logo=document.createElement("img");logo.className="ob-logo";logo.src="logo-filos.png?v=1";logo.alt="Filòs";logo.setAttribute("draggable","false");
  wrap.appendChild(logo);
  }
 
@@ -561,7 +559,7 @@ function renderOnboarding(){
 function renderSplash(){
  clr();
  var wrap=div("splash");
- (function(){var sl=div("splash-logo","Filòs");sl.setAttribute("translate","no");wrap.appendChild(sl);})();
+ (function(){var sl=div("splash-logo");sl.setAttribute("translate","no");sl.innerHTML='<img class="splash-logo-img" src="logo-filos.png?v=1" alt="Filòs" draggable="false">';wrap.appendChild(sl);})();
  wrap.appendChild(div("splash-tagline",T("tagline")));
  
  wrap.appendChild(div("splash-divider"));
