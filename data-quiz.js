@@ -956,7 +956,7 @@ function startMrWhite(numPlayers){
 function mwName(i){var n=S.mwPlayerNames&&S.mwPlayerNames[i];return n||(T("mrWhitePlayer")+(i+1));}
 function renderMrWhiteSetup(){
  clr();
- if(!S.mwNumPlayers||S.mwNumPlayers<3)S.mwNumPlayers=4;
+ if(!S.mwNumPlayers||S.mwNumPlayers<1)S.mwNumPlayers=1;
  var wrap=div("mw-wrap");
  wrap.appendChild(div("mw-title","MR. WHITE"));
  wrap.appendChild(div("mw-sub",T("mrWhiteHowMany")));
@@ -1067,7 +1067,7 @@ function startIntesa(level){
  S.intesaWords=intesaShuffle(level);
  S.intesaIdx=0;
  S.intesaScore=0;
- S.intesaTeamsN=S.intesaTeamsN||2;
+ S.intesaTeamsN=S.intesaTeamsN||1;
  S.intesaTeamScores=[];for(var k=0;k<S.intesaTeamsN;k++)S.intesaTeamScores.push(0);
  S.intesaTeam=0;S.intesaTurns=0;
  S.intesaTimer=60;
@@ -1122,7 +1122,7 @@ function renderIntesaSetup(){
  var body=div("dbody");card.appendChild(body);
  body.appendChild(div("rtext",T("intesaDesc")));
  var tq=div("rlabel",T("intesaTeamsQ"));tq.style.marginTop="24px";body.appendChild(tq);
- body.appendChild(makeStepperWidget(S.intesaTeamsN||2,1,6,function(n){S.intesaTeamsN=n;}));
+ body.appendChild(makeStepperWidget(S.intesaTeamsN||1,1,6,function(n){S.intesaTeamsN=n;}));
  var dl=div("rlabel",T("intesaDifficulty"));dl.style.marginTop="24px";body.appendChild(dl);
 
  var grid=div("intesa-level-grid");
@@ -1371,13 +1371,13 @@ function renderAlfaSetup(){
  });
  startWrap.appendChild(startB);
 
- body.appendChild(makeStepperWidget(S.alfaNumPlayers||2, 1, 20, function(n){
+ body.appendChild(makeStepperWidget(S.alfaNumPlayers||1, 1, 20, function(n){
  S.alfaNumPlayers=n;
  buildAlfaNamesGrid(n);
  }));
  body.appendChild(namesGrid);
  body.appendChild(startWrap);
- buildAlfaNamesGrid(S.alfaNumPlayers||2);
+ buildAlfaNamesGrid(S.alfaNumPlayers||1);
 
  wrap.appendChild(card);
  document.getElementById("root").appendChild(wrap);
@@ -1532,13 +1532,13 @@ function renderNcSetup(){
  });
  startWrap.appendChild(startB);
 
- body.appendChild(makeStepperWidget(S.ncNumPlayers||2, 1, 20, function(n){
+ body.appendChild(makeStepperWidget(S.ncNumPlayers||1, 1, 20, function(n){
  S.ncNumPlayers=n;
  buildNcNamesGrid(n);
  }));
  body.appendChild(namesGrid);
  body.appendChild(startWrap);
- buildNcNamesGrid(S.ncNumPlayers||2);
+ buildNcNamesGrid(S.ncNumPlayers||1);
 
  wrap.appendChild(card);
  document.getElementById("root").appendChild(wrap);
@@ -1698,13 +1698,13 @@ function renderDadoSetup(){
  startDado(names);
  }));
 
- body.appendChild(makeStepperWidget(S.dadoNumPlayers||2, 1, 20, function(n){
+ body.appendChild(makeStepperWidget(S.dadoNumPlayers||1, 1, 20, function(n){
  S.dadoNumPlayers=n;
  buildDadoNamesGrid(n);
  }));
  body.appendChild(namesGrid);
  body.appendChild(startWrap);
- buildDadoNamesGrid(S.dadoNumPlayers||2);
+ buildDadoNamesGrid(S.dadoNumPlayers||1);
  wrap.appendChild(card);
  document.getElementById("root").appendChild(wrap);
 }
@@ -1830,7 +1830,7 @@ function renderCodiceSetup(){
  body.appendChild(div("rlabel",T("howMany")));
  body.appendChild(div("rtext",T("codiceDesc")));
 
- if(!S.codiceNumPlayers) S.codiceNumPlayers=2;
+ if(!S.codiceNumPlayers) S.codiceNumPlayers=1;
 
  var nameInputs=[];
  var grid=div("codice-setup-grid");
@@ -1862,13 +1862,13 @@ function renderCodiceSetup(){
  S.codicePlayerNames=names;
  startCodice(names);
  }));
- body.appendChild(makeStepperWidget(S.codiceNumPlayers||2, 1, 20, function(n){
+ body.appendChild(makeStepperWidget(S.codiceNumPlayers||1, 1, 20, function(n){
  S.codiceNumPlayers=n;
  buildCodiceGrid(n);
  }));
  body.appendChild(grid);
  body.appendChild(startWrap);
- buildCodiceGrid(S.codiceNumPlayers||2);
+ buildCodiceGrid(S.codiceNumPlayers||1);
  wrap.appendChild(card);
  document.getElementById("root").appendChild(wrap);
 }
@@ -4684,7 +4684,7 @@ function renderAgSetup(){
  hdr.appendChild(div("dtitle",T("ui_anno_giusto")));
  var card=div("dcard");card.appendChild(hdr);
  var body=div("dbody");card.appendChild(body);
- if(!S.agNumPlayers)S.agNumPlayers=2;
+ if(!S.agNumPlayers)S.agNumPlayers=1;
  var selectedNum=S.agNumPlayers;
  var numLabel=document.createElement("div");
  numLabel.style.cssText="font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#aaa;text-align:center;margin:20px 0 14px;";
@@ -5060,7 +5060,7 @@ function renderCaSetup(){
  hdr.appendChild(div("dtitle",T("ui_confessioni_anonime")));
  var card=div("dcard");card.appendChild(hdr);
  var body=div("dbody");card.appendChild(body);
- if(!S.caNumPlayers)S.caNumPlayers=3;
+ if(!S.caNumPlayers)S.caNumPlayers=1;
  var selectedNum=S.caNumPlayers;
  var numLabel=document.createElement("div");
  numLabel.style.cssText="font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#aaa;text-align:center;margin:20px 0 14px;";
@@ -5538,7 +5538,7 @@ function renderQuizLevel(){
    row.appendChild(inp);qInputs.push(inp);qGrid.appendChild(row);
   })(i);}
  }
- pw.appendChild(makeStepperWidget(S.quizNumPlayers||(S.quizPlayers?S.quizPlayers.length:2),1,10,function(n){S.quizNumPlayers=n;buildQNames(n);}));
+ pw.appendChild(makeStepperWidget(S.quizNumPlayers||(S.quizPlayers?S.quizPlayers.length:1),1,10,function(n){S.quizNumPlayers=n;buildQNames(n);}));
  pw.appendChild(qGrid);
  window._quizReadPlayers=function(){
   var seen={};return qInputs.map(function(inp,i){var v=inp.value.trim()||(T("qvPlayer")+(i+1));while(seen[v])v=v+" "+(i+1);seen[v]=1;return v;});

@@ -209,7 +209,7 @@ function renderOcSetup(){
     row.appendChild(inp);inputs.push(inp);grid.appendChild(row);
    })(k);}
   };
-  body.appendChild(makeStepperWidget(S.ocNum||2,1,OC_MAX_PLAYERS,function(n){S.ocNum=n;build(n);}));
+  body.appendChild(makeStepperWidget(S.ocNum||1,1,OC_MAX_PLAYERS,function(n){S.ocNum=n;build(n);}));
   body.appendChild(grid);
  }
  var lt=div("rlabel",T("ocChooseLevel"));lt.style.marginTop="18px";body.appendChild(lt);
