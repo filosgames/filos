@@ -673,10 +673,22 @@ function renderTerms(){
  document.getElementById("root").appendChild(w);
 }
 
+function adultOk(){if(S.adult18)return true;try{return sessionStorage.getItem("filos_18")==="1";}catch(e){return false;}}
 function renderGames(){
  clr();
  addBackArrow(goHome);
  var cat=getCatById(S.cat);
+ // Sezione 18+: prima si conferma di essere maggiorenni (una volta per visita)
+ if(S.cat==="adulti"&&!adultOk()){
+  var ap=div("panel");var ac=div("dcard");ap.appendChild(ac);
+  var ah=div("dhdr");ah.style.background=(typeof CAT_PASTEL!=="undefined"&&CAT_PASTEL.adulti)?CAT_PASTEL.adulti:(cat&&cat.bg)||"#F2F4F7";ac.appendChild(ah);
+  ah.appendChild(div("dtitle",T("ageTitle")));
+  var ab=div("dbody age-gate");ac.appendChild(ab);
+  ab.appendChild(div("rtext",T("ageText")));
+  ab.appendChild(btn("ebtn",T("ageYes"),function(){try{sessionStorage.setItem("filos_18","1");}catch(e){}S.adult18=true;renderGames();}));
+  ab.appendChild(btn("ebtn out",T("ageNo"),goHome));
+  document.getElementById("root").appendChild(ap);return;
+ }
  var panel=div("panel");
  panel.appendChild(el("h2","sec-title",getCatName(cat.id)));
  
@@ -6888,3 +6900,43 @@ var SHELL_REMOTE={cdr:1,agr:1,pdr:1,fgr:1,lgr:1,qxr:1,ocr:1,tpr:1};
  }
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start);else start();
 })();
+
+// ══════════════════════════════════════════
+// PULIZIA AUTOMATICA DEI DATI TEMPORANEI (privacy)
+// Le stanze delle partite a distanza (nomi e risposte) e gli inviti non devono restare sul server.
+// Ogni telefono, al massimo una volta ogni 6 ore, cancella:
+//  - le stanze senza attività da più di 6 ore (si guarda l'orario più recente salvato nella stanza);
+//  - gli inviti più vecchi di 10 minuti (di solito li cancella già chi li manda dopo 30 secondi).
+// ══════════════════════════════════════════
+var CLEAN_EVERY=6*3600*1000,ROOM_TTL=6*3600*1000,INV_TTL=10*60*1000;
+function roomLastActivity(o,depth){
+ var best=0;if(!o||typeof o!=="object"||depth>7)return 0;
+ for(var k in o){if(!Object.prototype.hasOwnProperty.call(o,k))continue;var v=o[k];
+  if(typeof v==="number"&&v>1e12&&v<4e12&&/^(created|t|ts|at|qt|st|en|joined)$/.test(k)){if(v>best)best=v;}
+  else if(v&&typeof v==="object"){var b=roomLastActivity(v,depth+1);if(b>best)best=b;}}
+ return best;
+}
+function filosCleanup(){
+ try{
+  if(!window.fbDB||!fbGet||!fbRef||!fbRemove)return;
+  var last=0;try{last=+localStorage.getItem("filos_clean_at")||0;}catch(e){}
+  var now=Date.now();if(now-last<CLEAN_EVERY)return;
+  try{localStorage.setItem("filos_clean_at",String(now));}catch(e){}
+  fbGet(fbRef(fbDB,"rooms")).then(function(snap){
+   var all=(snap&&snap.val&&snap.val())||{};
+   Object.keys(all).forEach(function(code){
+    var la=roomLastActivity(all[code],0);
+    // Le stanze senza nessun orario non si toccano (non si può sapere se sono in uso)
+    if(la&&now-la>ROOM_TTL){
+     try{fbRemove(fbRef(fbDB,"rooms/"+code)).catch(function(){});}catch(e){}
+    }
+   });
+  }).catch(function(){});
+  fbGet(fbRef(fbDB,"filos_invites")).then(function(snap){
+   var all=(snap&&snap.val&&snap.val())||{};
+   Object.keys(all).forEach(function(k){var ts=+(all[k]&&all[k].ts)||0;var m=/^inv_(\d+)/.exec(k);if(!ts&&m)ts=+m[1];
+    if(ts&&now-ts>INV_TTL){try{fbRemove(fbRef(fbDB,"filos_invites/"+k)).catch(function(){});}catch(e){}}});
+  }).catch(function(){});
+ }catch(e){}
+}
+setTimeout(filosCleanup,8000);

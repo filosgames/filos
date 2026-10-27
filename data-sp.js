@@ -69,7 +69,7 @@ var STARTER_PACK={
  "Chi è più probabile che si sia innamorato di qualcuno solo perché aveva un bel profilo Instagram?",
  "Chi è più probabile che dia un nome falso a uno sconosciuto conosciuto in un locale?"
  ],
- "HOT TAKES":[
+ "OPINIONI SCOTTANTI":[
  "L'ananas sulla pizza è accettabile.",
  "È meglio essere temuti che amati.",
  "Il calcio è sopravvalutato.",
@@ -529,7 +529,7 @@ var STARTER_PACK={
  "Chi di noi è più probabile che si ingelosisca di un personaggio immaginario?",
  "Chi di noi è più probabile che faccia di tutto per non deludere chi ama?"
  ],
- "HOT TAKES ADULTI":[
+ "OPINIONI SCOTTANTI ADULTI":[
  "Le relazioni aperte non funzionano mai davvero.",
  "E normale avere ancora il numero del proprio ex nel telefono.",
  "Il tradimento puo essere perdonato in certi casi.",
@@ -710,7 +710,7 @@ var STARTER_PACK_EN={
  "Who is most likely to know the words to the most random songs?",
  "Who is most likely to become a millionaire?"
  ],
- "HOT TAKES":[
+ "SPICY OPINIONS":[
  "Pineapple on pizza is actually good.",
  "True love doesn't exist — only a good habit.",
  "Social media is ruining human relationships.",
@@ -771,7 +771,7 @@ var STARTER_PACK_EN={
  "Never have I ever bought something online at 3am and regretted it.",
  "Never have I ever staged a phone call to avoid someone."
  ],
- "HOT TAKES ADULTS":[
+ "SPICY OPINIONS ADULTS":[
  "We idealize love too much — it's mostly work.",
  "An open relationship can work better than a traditional one.",
  "Sex is overrated in a long-term relationship.",
@@ -1339,7 +1339,7 @@ var STARTER_TR={en:{
  "How much fun are you without a drink? 1 = you need one to loosen up, 10 = you're as fun sober as anyone else.",
  "How well can you enjoy a moment without taking a photo? 1 = if you don't post it, it didn't happen, 10 = your best moments live only in your memory."
  ],
- "HOT TAKES":[
+ "OPINIONI SCOTTANTI":[
  "Pineapple on pizza is acceptable.",
  "It's better to be feared than loved.",
  "Football is overrated.",
@@ -1872,7 +1872,7 @@ es:{
  "¿Cómo de divertido eres sin beber? 1 = necesitas una copa para soltarte, 10 = eres tan divertido sobrio como cualquiera.",
  "¿Qué tal disfrutas un momento sin hacerle una foto? 1 = si no lo subes, no ha pasado, 10 = tus mejores momentos solo existen en tu memoria."
  ],
- "HOT TAKES":[
+ "OPINIONI SCOTTANTI":[
  "La piña en la pizza es aceptable.",
  "Es mejor ser temido que amado.",
  "El fútbol está sobrevalorado.",

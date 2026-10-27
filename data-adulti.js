@@ -341,7 +341,7 @@ var ADULTI_GAMES=[
 "players": "1+",
 "time": "20 min",
 "it": {
-"name": "TRUTH OR DRINK",
+"name": "RISPONDI O BEVI",
 "rules": "A turno si legge una domanda a un giocatore scelto dal gruppo. Due possibilità: risponde dicendo la verità, tutta la verità, oppure beve e passa. Bere è sempre permesso, ma ha un prezzo: il gruppo si ricorderà benissimo cosa hai preferito non dire.",
 "tip": "Il silenzio dopo una domanda vale più di qualsiasi risposta. Chi beve senza esitare ha appena confessato qualcosa: prendetene nota.",
 "deck": [
@@ -398,7 +398,7 @@ var ADULTI_GAMES=[
 ]
 },
 "en": {
-"name": "TRUTH OR DRINK",
+"name": "ANSWER OR SIP",
 "rules": "In turn, read a question to a player chosen by the group. Two options: answer with the truth, the whole truth, or drink and pass. Drinking is always allowed, but it comes at a price: the group will remember exactly what you chose not to say.",
 "tip": "The silence after a question is worth more than any answer. Anyone who drinks without hesitating has just confessed something: take note.",
 "deck": [
@@ -455,7 +455,7 @@ var ADULTI_GAMES=[
 ]
 },
 "es": {
-"name": "VERDAD O BEBER",
+"name": "RESPONDE O BEBE",
 "rules": "Por turnos se lee una pregunta a un jugador elegido por el grupo. Dos opciones: responde con la verdad, toda la verdad, o bebe y pasa. Beber siempre está permitido, pero tiene un precio: el grupo recordará perfectamente lo que preferiste no decir.",
 "tip": "El silencio después de una pregunta vale más que cualquier respuesta. Quien bebe sin dudar acaba de confesar algo: tomad nota.",
 "deck": [
@@ -1244,7 +1244,7 @@ var ADULTI_GAMES=[
 "players": "1+",
 "time": "20 min",
 "it": {
-"name": "HOT TAKES 18+",
+"name": "OPINIONI SCOTTANTI 18+",
 "rules": "L'app lancia un'opinione scomoda. Al tre si vota: pollice su se sei d'accordo, pollice giù se no. La minoranza ha 30 secondi per difendere la sua posizione e provare a convertire qualcuno. Se riesce a far cambiare voto ad almeno una persona, beve la maggioranza.",
 "tip": "Non serve credere davvero a quello che difendi: serve difenderlo bene. I migliori avvocati del diavolo sono quelli che ridono per ultimi.",
 "deck": [
@@ -1296,7 +1296,7 @@ var ADULTI_GAMES=[
 ]
 },
 "en": {
-"name": "HOT TAKES 18+",
+"name": "SPICY OPINIONS 18+",
 "rules": "The app throws out an awkward opinion. On three, vote: thumbs up if you agree, thumbs down if you don't. The minority gets 30 seconds to defend their position and try to win someone over. If they manage to change at least one vote, the majority drinks.",
 "tip": "You don't have to believe what you're defending: you have to defend it well. The best devil's advocates are the ones who laugh last.",
 "deck": [
