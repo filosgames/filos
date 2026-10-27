@@ -14,7 +14,7 @@
 // Le domande sono indici dell'elenco QUANTO VALE? (stesso ordine in tutte le lingue).
 // ══════════════════════════════════════════
 var QXR_Q_MS=RL_ANS_MS; // tempo per rispondere a ogni domanda
-var QXR_MAX_PLAYERS=8,QXR_ROUNDS=10,QXR_FORCE_MS=45000;
+var QXR_MAX_PLAYERS=20,QXR_ROUNDS=10,QXR_FORCE_MS=45000;
 var QXR={code:null,me:null,data:null,unsub:null,sig:"",val:null,valKey:"",busy:false,closed:false};
 
 function qxrPath(p){return "rooms/"+QXR.code+"/qx"+(p?"/"+p:"");}
@@ -104,15 +104,13 @@ function qxrJoin(code,done){
   var left=d.left||{};
   var taken=Object.keys(d.players||{}).filter(function(k){return !left[k];}).map(function(k){return d.players[k].n||k;});
   if(!taken.length){done(false,T("ui_stanza_non_trovata_o_scaduta"));return;}
-  if(taken.length>=QXR_MAX_PLAYERS){done(false,T("qxrRoomFull"));return;}
-  var me=cdrUniqueName(cdrMyName(),taken);var k=cdrKey(me);
-  var clearLeft=left[k]?cdrNet(fbSet(fbRef(fbDB,"rooms/"+code+"/qx/left/"+k),null)):Promise.resolve();
-  clearLeft.then(function(){return cdrNet(fbSet(fbRef(fbDB,"rooms/"+code+"/qx/players/"+k),{n:me,t:Date.now()}));}).then(function(){qxrAttach(code,me);done(true);}).catch(function(){done(false,T("connErr"));});
+  if(taken.length>=QXR_MAX_PLAYERS){done(false,T("rlRoomFull"));return;}
+  rlClaim("rooms/"+code+"/qx",left,QXR_MAX_PLAYERS,T("rlRoomFull"),function(ok,me,msg){if(!ok){done(false,msg);return;}qxrAttach(code,me);done(true);}).go(taken,left);
  }).catch(function(){done(false,T("connErr"));});
 }
 function qxrAttach(code,me){
  qxrDetach();
- QXR.code=code;QXR.me=me;QXR.data=null;QXR.sig="";QXR.val=null;QXR.valKey="";QXR.closed=false;QXR.busy=false;
+ QXR.code=code;QXR.me=me;QXR.data=null;QXR.sig="";QXR.val=null;QXR.valKey="";QXR.closed=false;QXR.busy=false;QXR.abusy=false;
  QXR.unsub=fbOnValue(fbRef(fbDB,"rooms/"+code+"/qx"),function(snap){
   var v=snap.val();
   if(!v){QXR.closed=true;QXR.data=null;}else{QXR.data=v;}
@@ -143,15 +141,17 @@ function qxrStart(){
  cdrNet(fbSet(fbRef(fbDB,qxrPath("meta")),Object.assign({phase:"play",order:st.lobby.slice(0,QXR_MAX_PLAYERS),game:st.game,q:0,rv:-1,end:false,qt:fbNow()},qxrRoundData()))).then(function(){QXR.busy=false;}).catch(function(){QXR.busy=false;cdrToast(T("connErr"));});
 }
 function qxrAnswer(v){
+ // Invio della risposta: ha un suo blocco (abusy), così un tocco non si perde mentre il telefono
+ // sta scrivendo il passaggio alla domanda successiva
  var st=qxrState();
- if(st.phase!=="play"||st.ended||st.reveal||st.elig.indexOf(QXR.me)<0||st.cur[QXR.me]||QXR.busy)return;
- QXR.busy=true;
+ if(st.phase!=="play"||st.ended||st.reveal||st.elig.indexOf(QXR.me)<0||st.cur[QXR.me]||QXR.abusy)return;
+ QXR.abusy=true;
  var ref=fbRef(fbDB,qxrPath("g"+st.game+"/a"+st.q+"/"+cdrKey(QXR.me)));
  // La risposta si scrive una volta sola (doppio tocco o rete lenta non la cambiano)
  cdrNet(fbGet(ref)).then(function(snap){
-  if(snap.exists()){QXR.busy=false;QXR.sig="";qxrRender(true);return;}
-  return cdrNet(fbSet(ref,{v:v,t:fbNow()})).then(function(){QXR.busy=false;QXR.sig="";qxrRender(true);});
- }).catch(function(){QXR.busy=false;cdrToast(T("connErr"));QXR.sig="";qxrRender(true);});
+  if(snap.exists()){QXR.abusy=false;QXR.sig="";qxrRender(true);return;}
+  return cdrNet(fbSet(ref,{v:v,t:fbNow()})).then(function(){QXR.abusy=false;QXR.sig="";qxrRender(true);});
+ }).catch(function(){QXR.abusy=false;cdrToast(T("connErr"));QXR.sig="";qxrRender(true);});
 }
 // Se qualcuno non risponde (telefono spento, app chiusa) dopo un po' chi ha già risposto può mostrare le risposte.
 // Scrivere due volte lo stesso valore non cambia nulla, quindi più telefoni possono farlo insieme senza problemi.
@@ -274,7 +274,7 @@ function qxrScreenLobby(wrap,st){
  var lead=st.leader===QXR.me;
  cdrHeader(wrap,lead?T("ui_in_attesa_degli_altri"):T("ui_connesso"),T("qvTitle"),lead?null:T("cdrWaitHost").replace("{n}",st.leader||""));
  wrap.appendChild(div("codice-section",T("playersInRoom")+" "+st.lobby.length+"/"+QXR_MAX_PLAYERS));
- var list=div("cdr-list");
+ var list=div("cdr-list"+(st.lobby.length>8?" many":""));
  st.lobby.forEach(function(n){var r=div("cdr-row");r.appendChild(div("cdr-dot on"));r.appendChild(div("cdr-name",n+(n===QXR.me?" "+T("cdrYou"):"")));if(n===st.leader)r.appendChild(div("cdr-tag",T("cdrHost")));list.appendChild(r);});
  wrap.appendChild(list);
  if(lead){

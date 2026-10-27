@@ -975,7 +975,7 @@ function renderMrWhiteSetup(){
    row.appendChild(inp);inputs.push(inp);grid.appendChild(row);
   })(k);}
  }
- var sw=makeStepperWidget(S.mwNumPlayers,3,12,function(n){S.mwNumPlayers=n;build(n);});sw.style.margin="20px 0 8px";
+ var sw=makeStepperWidget(S.mwNumPlayers,1,12,function(n){S.mwNumPlayers=n;build(n);});sw.style.margin="20px 0 8px";
  wrap.appendChild(sw);
  wrap.appendChild(grid);
  function names(){var seen={};return inputs.map(function(inp,i){var v=inp.value.trim()||(T("qvPlayer")+(i+1));var b=v,c=2;while(seen[v.toLowerCase()]){v=b+" "+c;c++;}seen[v.toLowerCase()]=1;return v;});}
@@ -1018,7 +1018,7 @@ function renderMrWhite(){
  // Header
  var hdr=div("dhdr");hdr.style.background=(CAT_PASTEL&&CAT_PASTEL[S.cat])?CAT_PASTEL[S.cat]:getCatById(S.cat).bg;
  var dhdrTop=div("dhdr-top");hdr.appendChild(dhdrTop);
- dhdrTop.appendChild(btn("card-nav-btn back",T("backBtn"),goBackToGames));
+ dhdrTop.appendChild(btn("card-nav-btn back",T("backToGames"),goBackToGames));
  dhdrTop.appendChild(btn("card-nav-btn",T("exitBtn"),goHome));
  hdr.appendChild(div("dtitle","MR. WHITE"));
 
@@ -1115,7 +1115,7 @@ function renderIntesaSetup(){
  // Header card
  var hdr=div("dhdr");hdr.style.background=(CAT_PASTEL&&CAT_PASTEL[S.cat])?CAT_PASTEL[S.cat]:cat.bg;
  var dhdrTop=div("dhdr-top");hdr.appendChild(dhdrTop);
- dhdrTop.appendChild(btn("card-nav-btn back",T("backBtn"),goBackToGames));
+ dhdrTop.appendChild(btn("card-nav-btn back",T("backToGames"),goBackToGames));
  dhdrTop.appendChild(btn("card-nav-btn",T("exitBtn"),goHome));
  hdr.appendChild(div("dtitle",T("intesaTitle")));
  var card=div("dcard");card.appendChild(hdr);
@@ -1336,7 +1336,7 @@ function renderAlfaSetup(){
 
  var hdr=div("dhdr");hdr.style.background=(CAT_PASTEL&&CAT_PASTEL[S.cat])?CAT_PASTEL[S.cat]:cat.bg;
  var dhdrTop=div("dhdr-top");hdr.appendChild(dhdrTop);
- dhdrTop.appendChild(btn("card-nav-btn back",T("backBtn"),goBackToGames));
+ dhdrTop.appendChild(btn("card-nav-btn back",T("backToGames"),goBackToGames));
  dhdrTop.appendChild(btn("card-nav-btn",T("exitBtn"),goHome));
  hdr.appendChild(div("dtitle",T("ui_caccia_all_oggetto")));
  var card=div("dcard");card.appendChild(hdr);
@@ -1371,7 +1371,7 @@ function renderAlfaSetup(){
  });
  startWrap.appendChild(startB);
 
- body.appendChild(makeStepperWidget(S.alfaNumPlayers||2, 2, 20, function(n){
+ body.appendChild(makeStepperWidget(S.alfaNumPlayers||2, 1, 20, function(n){
  S.alfaNumPlayers=n;
  buildAlfaNamesGrid(n);
  }));
@@ -1492,7 +1492,7 @@ function renderNcSetup(){
  var wrap=div("intesa-wrap intesa-setup");
  var hdr=div("dhdr");hdr.style.background=(CAT_PASTEL&&CAT_PASTEL[S.cat])?CAT_PASTEL[S.cat]:cat.bg;
  var dhdrTop=div("dhdr-top");hdr.appendChild(dhdrTop);
- dhdrTop.appendChild(btn("card-nav-btn back",T("backBtn"),goBackToGames));
+ dhdrTop.appendChild(btn("card-nav-btn back",T("backToGames"),goBackToGames));
  dhdrTop.appendChild(btn("card-nav-btn",T("exitBtn"),goHome));
  var gObjNcCur=curGame()||{};hdr.appendChild(div("dtitle",gObjNcCur.name||T("ncTitle")));
  var card=div("dcard");card.appendChild(hdr);
@@ -1532,7 +1532,7 @@ function renderNcSetup(){
  });
  startWrap.appendChild(startB);
 
- body.appendChild(makeStepperWidget(S.ncNumPlayers||2, 2, 20, function(n){
+ body.appendChild(makeStepperWidget(S.ncNumPlayers||2, 1, 20, function(n){
  S.ncNumPlayers=n;
  buildNcNamesGrid(n);
  }));
@@ -1663,7 +1663,7 @@ function renderDadoSetup(){
  var wrap=div("intesa-wrap intesa-setup");
  var hdr=div("dhdr");hdr.style.background=(CAT_PASTEL&&CAT_PASTEL[S.cat])?CAT_PASTEL[S.cat]:cat.bg;
  var dhdrTop=div("dhdr-top");hdr.appendChild(dhdrTop);
- dhdrTop.appendChild(btn("card-nav-btn back",T("backBtn"),goBackToGames));
+ dhdrTop.appendChild(btn("card-nav-btn back",T("backToGames"),goBackToGames));
  dhdrTop.appendChild(btn("card-nav-btn",T("exitBtn"),goHome));
  var gObjCur=curGame()||{};hdr.appendChild(div("dtitle",gObjCur.name||T("ui_fifteen")));
  var card=div("dcard");card.appendChild(hdr);
@@ -1698,7 +1698,7 @@ function renderDadoSetup(){
  startDado(names);
  }));
 
- body.appendChild(makeStepperWidget(S.dadoNumPlayers||2, 2, 20, function(n){
+ body.appendChild(makeStepperWidget(S.dadoNumPlayers||2, 1, 20, function(n){
  S.dadoNumPlayers=n;
  buildDadoNamesGrid(n);
  }));
@@ -1822,7 +1822,7 @@ function renderCodiceSetup(){
  var wrap=div("codice-wrap");
  var hdr=div("dhdr");hdr.style.background=(CAT_PASTEL&&CAT_PASTEL[S.cat])?CAT_PASTEL[S.cat]:cat.bg;
  var dhdrTop=div("dhdr-top");hdr.appendChild(dhdrTop);
- dhdrTop.appendChild(btn("card-nav-btn back",T("backBtn"),goBackToGames));
+ dhdrTop.appendChild(btn("card-nav-btn back",T("backToGames"),goBackToGames));
  dhdrTop.appendChild(btn("card-nav-btn",T("exitBtn"),goHome));
  hdr.appendChild(div("dtitle",T("codiceTitle")));
  var card=div("dcard");card.appendChild(hdr);
@@ -1862,7 +1862,7 @@ function renderCodiceSetup(){
  S.codicePlayerNames=names;
  startCodice(names);
  }));
- body.appendChild(makeStepperWidget(S.codiceNumPlayers||2, 2, 20, function(n){
+ body.appendChild(makeStepperWidget(S.codiceNumPlayers||2, 1, 20, function(n){
  S.codiceNumPlayers=n;
  buildCodiceGrid(n);
  }));
@@ -1884,6 +1884,7 @@ function codiceScore(code,guess){
  Object.keys(gc).forEach(function(d){if(cc[d])y+=Math.min(cc[d],gc[d]);});
  return {g:g,y:y};
 }
+var CODICE_APP="__app"; // da soli il codice segreto lo sceglie l'app
 function startCodice(players){
  S.codicePlayers=players;
  S.codiceCodes={};
@@ -1891,6 +1892,13 @@ function startCodice(players){
  players.forEach(function(p){S.codiceHist[p]=[];});
  S.codiceSecretIdx=0;S.codiceSecretShown=false;S.codiceEntry=[];
  S.codiceCurrentIdx=0;S.codiceTarget=null;S.codiceLast=null;
+ S.codiceSolo=players.length<2;
+ if(S.codiceSolo){
+  // Da soli: l'app sceglie un codice segreto di 4 cifre e si prova a indovinarlo
+  var c=[];for(var k=0;k<4;k++)c.push(String(Math.floor(Math.random()*10)));
+  S.codiceCodes[CODICE_APP]=c;S.codiceHist[CODICE_APP]=[];
+  S.screen="codice";render();return;
+ }
  S.screen="codice_secret";
  render();
 }
@@ -1965,7 +1973,7 @@ function codicePicker(opps,target,histOf,onPick,labelOf,title){
  });
  return box;
 }
-function codiceOpponents(){var me=S.codicePlayers[S.codiceCurrentIdx];return S.codicePlayers.filter(function(p){return p!==me;});}
+function codiceOpponents(){if(S.codiceSolo)return [CODICE_APP];var me=S.codicePlayers[S.codiceCurrentIdx];return S.codicePlayers.filter(function(p){return p!==me;});}
 function codiceFeedback(g,y,big){
  var f=div("codice-fb"+(big?" big":""));
  for(var k=0;k<4;k++){f.appendChild(div("codice-peg"+(k<g?" g":k<g+y?" y":"")));}
@@ -1997,11 +2005,12 @@ function renderCodice(){
   }));
   document.getElementById("root").appendChild(wrap);return;
  }
- var th=div("codice-head");th.appendChild(div("codice-big",T("codiceTurnBig").replace("{n}",me)));wrap.appendChild(th);
+ var th=div("codice-head");th.appendChild(div("codice-big",S.codiceSolo?T("codiceSoloTitle"):T("codiceTurnBig").replace("{n}",me)));wrap.appendChild(th);
+ if(S.codiceSolo)wrap.appendChild(div("codice-sub",T("codiceSoloSub")));
  if(opps.length>1){
   wrap.appendChild(codicePicker(opps,target,function(p){return S.codiceHist[p]||[];},function(p){S.codiceTarget=p;S.codiceEntry=[];render();}));
  }
- wrap.appendChild(div("codice-target",T("codiceGuessShort")+target));
+ if(!S.codiceSolo)wrap.appendChild(div("codice-target",T("codiceGuessShort")+target));
  // Storico dei tentativi su questo avversario
  var hist=S.codiceHist[target]||[];
  if(hist.length){
@@ -2027,6 +2036,8 @@ function renderCodice(){
   S.codiceHist[target].push({by:me,guess:guess,g:sc.g,y:sc.y});
   S.codiceEntry=[];
   if(sc.g===4){S.codiceWinner=me;S.codiceWinnerTarget=target;S.screen="codice_win";render();return;}
+  // Da soli non si passa il turno: il tentativo compare subito nello storico
+  if(S.codiceSolo){render();return;}
   S.codiceLast={by:me,target:target,guess:guess,g:sc.g,y:sc.y};
   render();
  });
@@ -2041,7 +2052,19 @@ function renderCodiceWin(){
  clr();
  addBackArrow(goBackToGames);
  var wrap=div("codice-wrap");wrap.style.textAlign="center";
-  var wt=div("end-title");wt.textContent=winTxt(S.codiceWinner);wrap.appendChild(wt);
+  var wt=div("end-title");
+ if(S.codiceSolo){
+  var nt=(S.codiceHist[CODICE_APP]||[]).length;
+  wt.textContent=T("codiceSoloWon");wrap.appendChild(wt);
+  wrap.appendChild(div("end-sub",(nt===1?T("codiceSoloTries1"):T("codiceSoloTriesN").replace("{n}",nt))));
+  wrap.appendChild(codiceSlots(S.codiceCodes[CODICE_APP]||[],"big"));
+  var b0=div("endbtns");
+  b0.appendChild(btn("ebtn",T("qvPlayAgain"),function(){startCodice(S.codicePlayers);}));
+  b0.appendChild(btn("ebtn out",T("backToGames"),goBackToGames));
+  wrap.appendChild(b0);
+  document.getElementById("root").appendChild(wrap);return;
+ }
+ wt.textContent=winTxt(S.codiceWinner);wrap.appendChild(wt);
  wrap.appendChild(div("end-sub",T("codiceWonBy")+S.codiceWinnerTarget+"!"));
  // Reveal all codes
  var revDiv=div("dado-players");
@@ -3252,7 +3275,7 @@ function renderTradSetup(){
  var card=div("dcard");wrap.appendChild(card);
  var hdr=div("dhdr");hdr.style.background=bg;card.appendChild(hdr);
  var top=div("dhdr-top");hdr.appendChild(top);
- top.appendChild(btn("card-nav-btn back",T("ui_indietro"),goBackToGames));
+ top.appendChild(btn("card-nav-btn back",T("backToGames"),goBackToGames));
  top.appendChild(btn("card-nav-btn","Esci",goHome));
  hdr.appendChild(div("intesa-title","IL TRADITORE"));
  hdr.appendChild(div("intesa-desc","Quanti giocatori siete?\n(escluso il Narratore)"));
@@ -3779,7 +3802,7 @@ function renderQvSetup(){
  var wrap=div("intesa-wrap intesa-setup");
  var hdr=div("dhdr");hdr.style.background=(CAT_PASTEL&&CAT_PASTEL[S.cat])?CAT_PASTEL[S.cat]:cat.bg;
  var dhdrTop=div("dhdr-top");hdr.appendChild(dhdrTop);
- dhdrTop.appendChild(btn("card-nav-btn back",T("backBtn"),goBackToGames));
+ dhdrTop.appendChild(btn("card-nav-btn back",T("backToGames"),goBackToGames));
  dhdrTop.appendChild(btn("card-nav-btn",T("exitBtn"),goHome));
  hdr.appendChild(div("dtitle",T("qvTitle")));
  var card=div("dcard");card.appendChild(hdr);
@@ -5048,7 +5071,7 @@ function renderCaSetup(){
  var minusBtn=document.createElement("button");
  minusBtn.style.cssText="width:48px;height:48px;border-radius:50%;border:2px solid #e0e0e0;background:#fff;font-size:24px;font-weight:300;cursor:pointer;color:#555;display:flex;align-items:center;justify-content:center;font-family:inherit;";
  minusBtn.textContent="−";
- minusBtn.onclick=function(){if(S.caNumPlayers>3){S.caNumPlayers--;renderCaSetup();}};
+ minusBtn.onclick=function(){if(S.caNumPlayers>1){S.caNumPlayers--;renderCaSetup();}};
  var numDisp=document.createElement("div");
  numDisp.style.cssText="width:72px;text-align:center;font-size:40px;font-weight:900;color:var(--dark);font-family:'Space Grotesk',sans-serif;";
  numDisp.textContent=selectedNum;
@@ -6817,3 +6840,53 @@ var QZ = {
 };
 
 // Il resto della logica (Quizzone, render(), Chi paga, inviti) vive in index.html.
+
+// ══════════════════════════════════════════
+// STESSO STILE PER TUTTE LE SCHERMATE DI GIOCO
+// Le schermate che non hanno già la scheda dei giochi (intestazione colorata della categoria,
+// "Torna ai giochi" ed "Esci", titolo del gioco) vengono messe dentro la stessa scheda.
+// Il pulsante "Indietro" in alto, se c'è, diventa il "Torna ai giochi" della scheda.
+// ══════════════════════════════════════════
+var SHELL_SKIP={home:1,games:1,end:1,onboarding:1,splash:1,analytics:1,starter:1,quiz:1,chipaga:1,terms:1,legal:1,connect:1,game:1,riddle:1};
+var SHELL_TITLES={cdr:"codiceTitle",codice_secret:"codiceTitle",codice:"codiceTitle",codice_win:"codiceTitle",agr:"ui_anno_giusto",pdr:"pdrTitle",fgr:"fgrTitle",lgr:"lgrTitle",qxr:"qvTitle",ocr:"ocTitle",tpr:"tpTitle"};
+function shellTitle(){
+ var k=SHELL_TITLES[S.screen];
+ if(k){[typeof pdrStrings,typeof fgrStrings,typeof lgrStrings,typeof ocStrings,typeof tpStrings,typeof cdrStrings].forEach(function(){});try{if(k==="pdrTitle"&&typeof pdrStrings==="function")pdrStrings();if(k==="fgrTitle"&&typeof fgrStrings==="function")fgrStrings();if(k==="lgrTitle"&&typeof lgrStrings==="function")lgrStrings();if(k==="ocTitle"&&typeof ocStrings==="function")ocStrings();if(k==="tpTitle"&&typeof tpStrings==="function")tpStrings();if(typeof cdrStrings==="function")cdrStrings();}catch(e){}
+  var v=T(k);if(v&&v!==k)return v;}
+ var g=(typeof curGame==="function")?curGame():null;
+ return g&&g.name?g.name:"";
+}
+function shellWrap(){
+ var root=document.getElementById("root");if(!root||!root.firstChild)return;
+ // Se la scheda ha già "Torna ai giochi", il pulsante "Indietro" in alto è un doppione
+ if(root.querySelector(".card-nav-btn.back")){var lf=document.getElementById("hdrLeft");if(lf&&lf.firstChild)lf.innerHTML="";}
+ if(SHELL_SKIP[S.screen])return;
+ if(root.querySelector(".dcard,.dhdr,.shell-card"))return;
+ if(root.querySelector(".mw-reveal-screen"))return;
+ var title=shellTitle();if(!title)return;
+ var cat=getCatById(S.cat)||getCatById("relax")||{};
+ var left=document.getElementById("hdrLeft");var backBtn=left&&left.querySelector("button");
+ var backFn=backBtn&&backBtn.onclick?backBtn.onclick:goBackToGames;
+ if(left)left.innerHTML="";
+ var panel=div("panel shell-panel");var card=div("dcard shell-card");panel.appendChild(card);
+ var hdr=div("dhdr");hdr.style.background=(typeof CAT_PASTEL!=="undefined"&&CAT_PASTEL[S.cat])?CAT_PASTEL[S.cat]:(cat.bg||"#F2F4F7");card.appendChild(hdr);
+ var top=div("dhdr-top");hdr.appendChild(top);
+ top.appendChild(btn("card-nav-btn back",T("backToGames"),function(e){backFn.call(this,e);}));
+ top.appendChild(btn("card-nav-btn",T("exitBtn"),function(){if(SHELL_REMOTE[S.screen]){backFn.call(this);if(S.screen!=="home")goHome();}else goHome();}));
+ hdr.appendChild(div("dtitle",title));
+ var body=div("dbody shell-body");card.appendChild(body);
+ while(root.firstChild)body.appendChild(root.firstChild);
+ root.appendChild(panel);
+ // Il titolo del gioco non si ripete dentro la scheda
+ var low=String(title).toLowerCase().trim();
+ [].forEach.call(body.querySelectorAll(".codice-big,.mw-title,.quiz-level-title,.intesa-title,.qv-title,.nc-title,.alfa-title"),function(e){if(String(e.textContent||"").toLowerCase().trim()===low)e.remove();});
+}
+var SHELL_REMOTE={cdr:1,agr:1,pdr:1,fgr:1,lgr:1,qxr:1,ocr:1,tpr:1};
+(function(){
+ function start(){
+  var root=document.getElementById("root");if(!root||typeof MutationObserver==="undefined")return;
+  var busy=false;
+  new MutationObserver(function(){if(busy)return;busy=true;try{shellWrap();}catch(e){}busy=false;}).observe(root,{childList:true});
+ }
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start);else start();
+})();

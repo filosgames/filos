@@ -17,7 +17,7 @@
 // ══════════════════════════════════════════
 var LGR_Q_MS=RL_ANS_MS; // tempo per rispondere a ogni domanda
 var LGR_REV_MS=10000; // pausa dopo la soluzione, prima della frase successiva (gli altri giochi: 20 secondi)
-var LGR_MAX_PLAYERS=8,LGR_ROUNDS=10,LGR_FORCE_MS=45000;
+var LGR_MAX_PLAYERS=20,LGR_ROUNDS=10,LGR_FORCE_MS=45000;
 var LGR={code:null,me:null,data:null,unsub:null,sig:"",val:null,valKey:"",busy:false,closed:false};
 
 function lgrPath(p){return "rooms/"+LGR.code+"/lg"+(p?"/"+p:"");}
@@ -104,14 +104,12 @@ function lgrJoin(code,done){
   var taken=Object.keys(d.players||{}).filter(function(k){return !left[k];}).map(function(k){return d.players[k].n||k;});
   if(!taken.length){done(false,T("ui_stanza_non_trovata_o_scaduta"));return;}
   if(taken.length>=LGR_MAX_PLAYERS){done(false,T("lgrRoomFull"));return;}
-  var me=cdrUniqueName(cdrMyName(),taken);var k=cdrKey(me);
-  var clearLeft=left[k]?cdrNet(fbSet(fbRef(fbDB,"rooms/"+code+"/lg/left/"+k),null)):Promise.resolve();
-  clearLeft.then(function(){return cdrNet(fbSet(fbRef(fbDB,"rooms/"+code+"/lg/players/"+k),{n:me,t:Date.now()}));}).then(function(){lgrAttach(code,me);done(true);}).catch(function(){done(false,T("connErr"));});
+  rlClaim("rooms/"+code+"/lg",left,LGR_MAX_PLAYERS,T("lgrRoomFull"),function(ok,me,msg){if(!ok){done(false,msg);return;}lgrAttach(code,me);done(true);}).go(taken,left);
  }).catch(function(){done(false,T("connErr"));});
 }
 function lgrAttach(code,me){
  lgrDetach();
- LGR.code=code;LGR.me=me;LGR.data=null;LGR.sig="";LGR.val=null;LGR.valKey="";LGR.closed=false;LGR.busy=false;
+ LGR.code=code;LGR.me=me;LGR.data=null;LGR.sig="";LGR.val=null;LGR.valKey="";LGR.closed=false;LGR.busy=false;LGR.abusy=false;
  LGR.unsub=fbOnValue(fbRef(fbDB,"rooms/"+code+"/lg"),function(snap){
   var v=snap.val();
   if(!v){LGR.closed=true;LGR.data=null;}else{LGR.data=v;}
@@ -142,17 +140,19 @@ function lgrStart(){
  cdrNet(fbSet(fbRef(fbDB,lgrPath("meta")),Object.assign({phase:"play",order:st.lobby.slice(0,LGR_MAX_PLAYERS),game:st.game,q:0,rv:-1,end:false,lvl:rlLevel(st.meta),qt:fbNow()},lgrRoundData(rlLevel(st.meta))))).then(function(){LGR.busy=false;}).catch(function(){LGR.busy=false;cdrToast(T("connErr"));});
 }
 function lgrAnswer(v){
+ // Invio della risposta: ha un suo blocco (abusy), così un tocco non si perde mentre il telefono
+ // sta scrivendo il passaggio alla domanda successiva
  if(typeof v!=="number")return;
  var st=lgrState();
- if(st.phase!=="play"||st.ended||st.reveal||st.elig.indexOf(LGR.me)<0||st.cur[LGR.me]||LGR.busy)return;
+ if(st.phase!=="play"||st.ended||st.reveal||st.elig.indexOf(LGR.me)<0||st.cur[LGR.me]||LGR.abusy)return;
  if((st.opts[st.q]||[]).indexOf(v)<0)return;
- LGR.busy=true;
+ LGR.abusy=true;
  var ref=fbRef(fbDB,lgrPath("g"+st.game+"/a"+st.q+"/"+cdrKey(LGR.me)));
  // La risposta si scrive una volta sola (doppio tocco o rete lenta non la cambiano)
  cdrNet(fbGet(ref)).then(function(snap){
-  if(snap.exists()){LGR.busy=false;LGR.sig="";lgrRender(true);return;}
-  return cdrNet(fbSet(ref,{c:v,t:fbNow()})).then(function(){LGR.busy=false;LGR.sig="";lgrRender(true);});
- }).catch(function(){LGR.busy=false;cdrToast(T("connErr"));LGR.sig="";lgrRender(true);});
+  if(snap.exists()){LGR.abusy=false;LGR.sig="";lgrRender(true);return;}
+  return cdrNet(fbSet(ref,{c:v,t:fbNow()})).then(function(){LGR.abusy=false;LGR.sig="";lgrRender(true);});
+ }).catch(function(){LGR.abusy=false;cdrToast(T("connErr"));LGR.sig="";lgrRender(true);});
 }
 // Se qualcuno non risponde (telefono spento, app chiusa) dopo un po' chi ha già risposto può mostrare le risposte.
 // Scrivere due volte lo stesso valore non cambia nulla, quindi più telefoni possono farlo insieme senza problemi.
@@ -271,7 +271,7 @@ function lgrScreenLobby(wrap,st){
  var lead=st.leader===LGR.me;
  cdrHeader(wrap,lead?T("ui_in_attesa_degli_altri"):T("ui_connesso"),T("lgrTitle"),lead?null:T("cdrWaitHost").replace("{n}",st.leader||""));
  wrap.appendChild(div("codice-section",T("playersInRoom")+" "+st.lobby.length+"/"+LGR_MAX_PLAYERS));
- var list=div("cdr-list");
+ var list=div("cdr-list"+(st.lobby.length>8?" many":""));
  st.lobby.forEach(function(n){var r=div("cdr-row");r.appendChild(div("cdr-dot on"));r.appendChild(div("cdr-name",n+(n===LGR.me?" "+T("cdrYou"):"")));if(n===st.leader)r.appendChild(div("cdr-tag",T("cdrHost")));list.appendChild(r);});
  wrap.appendChild(list);
  rlLevelPicker(wrap,rlLevel(st.meta),lead,lgrSetLevel);
@@ -402,7 +402,7 @@ function lgrScreenEnd(wrap,st){
 // Stringhe (aggiunte quando l'interfaccia è pronta: STRINGS è definito dopo questo file)
 function lgrStrings(){
  if(typeof STRINGS==="undefined"||STRINGS.it.lgrIntro)return;
- Object.assign(STRINGS.it,{lgrTitle:"CHE LINGUA È?",lgrIntro:"Ognuno risponde dal proprio telefono, anche da tavoli diversi. Lancia la sfida: agli altri arriva una notifica e toccando Gioca entrano nella partita.",lgrRound:"Frase {n} di {t}",lgrHint:"In che lingua è scritta questa frase?",lgrConfirm:"Conferma",lgrYourAnswer:"La tua risposta: {y}",lgrWaiting:"Hanno risposto {a} su {t}",lgrForce:"Mostra le risposte",lgrForceHint:"Chi non ha ancora risposto non prende punti in questa frase.",lgrNoAnswer:"nessuna risposta",lgrPoint:"Punto a {n}",lgrPointMe:"Hai indovinato, punto per te!",lgrNobody:"Nessuno ha indovinato",lgrTie:"Pareggio tra {n}",lgrEndSub:"{p} punti su {t} frasi",lgrRoomFull:"La partita è al completo (massimo 8 giocatori)",lgMeans:"Significa: «{m}»"});
- Object.assign(STRINGS.en,{lgrTitle:"WHICH LANGUAGE IS IT?",lgrIntro:"Everyone answers on their own phone, even from different tables. Send the challenge: the others get a notification and tap Play to join.",lgrRound:"Sentence {n} of {t}",lgrHint:"Which language is this sentence written in?",lgrConfirm:"Confirm",lgrYourAnswer:"Your answer: {y}",lgrWaiting:"{a} of {t} have answered",lgrForce:"Show the answers",lgrForceHint:"Anyone who hasn't answered yet gets no point for this sentence.",lgrNoAnswer:"no answer",lgrPoint:"Point to {n}",lgrPointMe:"You got it, point for you!",lgrNobody:"Nobody got it right",lgrTie:"Tie between {n}",lgrEndSub:"{p} points out of {t} sentences",lgrRoomFull:"The game is full (maximum 8 players)",lgMeans:"It means: “{m}”"});
- Object.assign(STRINGS.es,{lgrTitle:"¿QUÉ IDIOMA ES?",lgrIntro:"Cada uno responde desde su móvil, incluso desde mesas distintas. Lanza el desafío: a los demás les llega una notificación y al tocar Jugar entran en la partida.",lgrRound:"Frase {n} de {t}",lgrHint:"¿En qué idioma está escrita esta frase?",lgrConfirm:"Confirmar",lgrYourAnswer:"Tu respuesta: {y}",lgrWaiting:"Han respondido {a} de {t}",lgrForce:"Mostrar las respuestas",lgrForceHint:"Quien aún no ha respondido no suma puntos en esta frase.",lgrNoAnswer:"sin respuesta",lgrPoint:"Punto para {n}",lgrPointMe:"¡Acertaste, punto para ti!",lgrNobody:"Nadie ha acertado",lgrTie:"Empate entre {n}",lgrEndSub:"{p} puntos de {t} frases",lgrRoomFull:"La partida está completa (máximo 8 jugadores)",lgMeans:"Significa: «{m}»"});
+ Object.assign(STRINGS.it,{lgrTitle:"CHE LINGUA È?",lgrIntro:"Ognuno risponde dal proprio telefono, anche da tavoli diversi. Lancia la sfida: agli altri arriva una notifica e toccando Gioca entrano nella partita.",lgrRound:"Frase {n} di {t}",lgrHint:"In che lingua è scritta questa frase?",lgrConfirm:"Conferma",lgrYourAnswer:"La tua risposta: {y}",lgrWaiting:"Hanno risposto {a} su {t}",lgrForce:"Mostra le risposte",lgrForceHint:"Chi non ha ancora risposto non prende punti in questa frase.",lgrNoAnswer:"nessuna risposta",lgrPoint:"Punto a {n}",lgrPointMe:"Hai indovinato, punto per te!",lgrNobody:"Nessuno ha indovinato",lgrTie:"Pareggio tra {n}",lgrEndSub:"{p} punti su {t} frasi",lgrRoomFull:"La partita è al completo (massimo 20 giocatori)",lgMeans:"Significa: «{m}»"});
+ Object.assign(STRINGS.en,{lgrTitle:"WHICH LANGUAGE IS IT?",lgrIntro:"Everyone answers on their own phone, even from different tables. Send the challenge: the others get a notification and tap Play to join.",lgrRound:"Sentence {n} of {t}",lgrHint:"Which language is this sentence written in?",lgrConfirm:"Confirm",lgrYourAnswer:"Your answer: {y}",lgrWaiting:"{a} of {t} have answered",lgrForce:"Show the answers",lgrForceHint:"Anyone who hasn't answered yet gets no point for this sentence.",lgrNoAnswer:"no answer",lgrPoint:"Point to {n}",lgrPointMe:"You got it, point for you!",lgrNobody:"Nobody got it right",lgrTie:"Tie between {n}",lgrEndSub:"{p} points out of {t} sentences",lgrRoomFull:"The game is full (maximum 20 players)",lgMeans:"It means: “{m}”"});
+ Object.assign(STRINGS.es,{lgrTitle:"¿QUÉ IDIOMA ES?",lgrIntro:"Cada uno responde desde su móvil, incluso desde mesas distintas. Lanza el desafío: a los demás les llega una notificación y al tocar Jugar entran en la partida.",lgrRound:"Frase {n} de {t}",lgrHint:"¿En qué idioma está escrita esta frase?",lgrConfirm:"Confirmar",lgrYourAnswer:"Tu respuesta: {y}",lgrWaiting:"Han respondido {a} de {t}",lgrForce:"Mostrar las respuestas",lgrForceHint:"Quien aún no ha respondido no suma puntos en esta frase.",lgrNoAnswer:"sin respuesta",lgrPoint:"Punto para {n}",lgrPointMe:"¡Acertaste, punto para ti!",lgrNobody:"Nadie ha acertado",lgrTie:"Empate entre {n}",lgrEndSub:"{p} puntos de {t} frases",lgrRoomFull:"La partida está completa (máximo 20 jugadores)",lgMeans:"Significa: «{m}»"});
 }

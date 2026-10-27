@@ -589,3 +589,15 @@ body[data-cat="cultura"]{--f-cat:#DCE3F7;}body[data-cat="adulti"]{--f-cat:#EEDCE
 .offer-adm-row .as-toggle{position:relative;flex-shrink:0;}
 .offer-adm-sel,.offer-adm-note{width:100%;padding:10px 12px;border:1.5px solid #d1d1d6;border-radius:10px;font-size:15px;font-family:inherit;background:#fff;color:#111;box-sizing:border-box;}
 .offer-adm-sync{font-size:12px;color:#8e8e93;font-weight:600;}
+
+/* 26 — Sala d'attesa con tanti giocatori: due colonne, più compatta */
+.cdr-list.many{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.cdr-list.many .cdr-row{padding:8px 10px;min-height:0;margin:0;}
+.cdr-list.many .cdr-name{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.cdr-list.many .cdr-tag{font-size:10px;padding:2px 6px;}
+
+/* 27 — Quanto vale al tavolo: la risposta lunga (es. "700 specie (Pleuronectiformes)") va a capo e non esce dalla scheda */
+.qv-reveal-answer{overflow-wrap:anywhere;word-break:break-word;font-size:clamp(24px,8vw,40px)!important;line-height:1.15;}
+/* Schede generate per le schermate senza intestazione: stesso aspetto delle altre */
+.shell-body{padding-top:18px;}
+.shell-body .codice-wrap,.shell-body .nc-wrap,.shell-body .alfa-wrap,.shell-body .mw-wrap,.shell-body .qv-wrap,.shell-body .quiz-level-wrap{padding-top:0;margin-top:0;}

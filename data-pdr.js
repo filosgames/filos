@@ -18,7 +18,7 @@
 // ══════════════════════════════════════════
 var PDR_KEY="BBBABBBBBBBBBBAABBBABBBBBBBBBSBASBSBBBBSSABBAAABBSSSAASABSBBBAABBSBBBBBBBBASBBBAAA";
 var PDR_Q_MS=RL_ANS_MS; // tempo per rispondere a ogni domanda
-var PDR_MAX_PLAYERS=8,PDR_ROUNDS=10,PDR_FORCE_MS=45000;
+var PDR_MAX_PLAYERS=20,PDR_ROUNDS=10,PDR_FORCE_MS=45000;
 var PDR={code:null,me:null,data:null,unsub:null,sig:"",val:null,valKey:"",busy:false,closed:false};
 
 function pdrPath(p){return "rooms/"+PDR.code+"/pd"+(p?"/"+p:"");}
@@ -125,14 +125,12 @@ function pdrJoin(code,done){
   var taken=Object.keys(d.players||{}).filter(function(k){return !left[k];}).map(function(k){return d.players[k].n||k;});
   if(!taken.length){done(false,T("ui_stanza_non_trovata_o_scaduta"));return;}
   if(taken.length>=PDR_MAX_PLAYERS){done(false,T("pdrRoomFull"));return;}
-  var me=cdrUniqueName(cdrMyName(),taken);var k=cdrKey(me);
-  var clearLeft=left[k]?cdrNet(fbSet(fbRef(fbDB,"rooms/"+code+"/pd/left/"+k),null)):Promise.resolve();
-  clearLeft.then(function(){return cdrNet(fbSet(fbRef(fbDB,"rooms/"+code+"/pd/players/"+k),{n:me,t:Date.now()}));}).then(function(){pdrAttach(code,me);done(true);}).catch(function(){done(false,T("connErr"));});
+  rlClaim("rooms/"+code+"/pd",left,PDR_MAX_PLAYERS,T("pdrRoomFull"),function(ok,me,msg){if(!ok){done(false,msg);return;}pdrAttach(code,me);done(true);}).go(taken,left);
  }).catch(function(){done(false,T("connErr"));});
 }
 function pdrAttach(code,me){
  pdrDetach();
- PDR.code=code;PDR.me=me;PDR.data=null;PDR.sig="";PDR.val=null;PDR.valKey="";PDR.closed=false;PDR.busy=false;
+ PDR.code=code;PDR.me=me;PDR.data=null;PDR.sig="";PDR.val=null;PDR.valKey="";PDR.closed=false;PDR.busy=false;PDR.abusy=false;
  PDR.unsub=fbOnValue(fbRef(fbDB,"rooms/"+code+"/pd"),function(snap){
   var v=snap.val();
   if(!v){PDR.closed=true;PDR.data=null;}else{PDR.data=v;}
@@ -163,16 +161,18 @@ function pdrStart(){
  cdrNet(fbSet(fbRef(fbDB,pdrPath("meta")),Object.assign({phase:"play",order:st.lobby.slice(0,PDR_MAX_PLAYERS),game:st.game,q:0,rv:-1,end:false,lvl:rlLevel(st.meta),qt:fbNow()},pdrRoundData(rlLevel(st.meta))))).then(function(){PDR.busy=false;}).catch(function(){PDR.busy=false;cdrToast(T("connErr"));});
 }
 function pdrAnswer(v){
+ // Invio della risposta: ha un suo blocco (abusy), così un tocco non si perde mentre il telefono
+ // sta scrivendo il passaggio alla domanda successiva
  if(!/^[BAS]$/.test(v||""))return;
  var st=pdrState();
- if(st.phase!=="play"||st.ended||st.reveal||st.elig.indexOf(PDR.me)<0||st.cur[PDR.me]||PDR.busy)return;
- PDR.busy=true;
+ if(st.phase!=="play"||st.ended||st.reveal||st.elig.indexOf(PDR.me)<0||st.cur[PDR.me]||PDR.abusy)return;
+ PDR.abusy=true;
  var ref=fbRef(fbDB,pdrPath("g"+st.game+"/a"+st.q+"/"+cdrKey(PDR.me)));
  // La risposta si scrive una volta sola (doppio tocco o rete lenta non la cambiano)
  cdrNet(fbGet(ref)).then(function(snap){
-  if(snap.exists()){PDR.busy=false;PDR.sig="";pdrRender(true);return;}
-  return cdrNet(fbSet(ref,{c:v,t:fbNow()})).then(function(){PDR.busy=false;PDR.sig="";pdrRender(true);});
- }).catch(function(){PDR.busy=false;cdrToast(T("connErr"));PDR.sig="";pdrRender(true);});
+  if(snap.exists()){PDR.abusy=false;PDR.sig="";pdrRender(true);return;}
+  return cdrNet(fbSet(ref,{c:v,t:fbNow()})).then(function(){PDR.abusy=false;PDR.sig="";pdrRender(true);});
+ }).catch(function(){PDR.abusy=false;cdrToast(T("connErr"));PDR.sig="";pdrRender(true);});
 }
 // Se qualcuno non risponde (telefono spento, app chiusa) dopo un po' chi ha già risposto può mostrare le risposte.
 // Scrivere due volte lo stesso valore non cambia nulla, quindi più telefoni possono farlo insieme senza problemi.
@@ -291,7 +291,7 @@ function pdrScreenLobby(wrap,st){
  var lead=st.leader===PDR.me;
  cdrHeader(wrap,lead?T("ui_in_attesa_degli_altri"):T("ui_connesso"),T("pdrTitle"),lead?null:T("cdrWaitHost").replace("{n}",st.leader||""));
  wrap.appendChild(div("codice-section",T("playersInRoom")+" "+st.lobby.length+"/"+PDR_MAX_PLAYERS));
- var list=div("cdr-list");
+ var list=div("cdr-list"+(st.lobby.length>8?" many":""));
  st.lobby.forEach(function(n){var r=div("cdr-row");r.appendChild(div("cdr-dot on"));r.appendChild(div("cdr-name",n+(n===PDR.me?" "+T("cdrYou"):"")));if(n===st.leader)r.appendChild(div("cdr-tag",T("cdrHost")));list.appendChild(r);});
  wrap.appendChild(list);
  rlLevelPicker(wrap,rlLevel(st.meta),lead,pdrSetLevel);
@@ -425,7 +425,7 @@ function pdrScreenEnd(wrap,st){
 // Stringhe (aggiunte quando l'interfaccia è pronta: STRINGS è definito dopo questo file)
 function pdrStrings(){
  if(typeof STRINGS==="undefined"||STRINGS.it.pdrIntro)return;
- Object.assign(STRINGS.it,{pdrTitle:"PRIMA O DOPO?",pdrIntro:"Ognuno risponde dal proprio telefono, anche da tavoli diversi. Lancia la sfida: agli altri arriva una notifica e toccando Gioca entrano nella partita.",pdrRound:"Domanda {n} di {t}",pdrHint:"Il primo è venuto prima o dopo il secondo?",pdrBefore:"Prima",pdrAfter:"Dopo",pdrSame:"Stesso periodo",pdrConfirm:"Conferma",pdrYourAnswer:"La tua risposta: {y}",pdrWaiting:"Hanno risposto {a} su {t}",pdrForce:"Mostra le risposte",pdrForceHint:"Chi non ha ancora risposto non prende punti in questa domanda.",pdrNoAnswer:"nessuna risposta",pdrPoint:"Punto a {n}",pdrPointMe:"Hai indovinato, punto per te!",pdrNobody:"Nessuno ha indovinato",pdrNext:"Prossima domanda",pdrFinal:"Risultati finali",pdrWaitNext:"Aspetta che {n} vada avanti",pdrTie:"Pareggio tra {n}",pdrEndSub:"{p} punti su {t} domande",pdrRoomFull:"La partita è al completo (massimo 8 giocatori)"});
- Object.assign(STRINGS.en,{pdrTitle:"BEFORE OR AFTER?",pdrIntro:"Everyone answers on their own phone, even from different tables. Send the challenge: the others get a notification and tap Play to join.",pdrRound:"Question {n} of {t}",pdrHint:"Did the first one come before or after the second?",pdrBefore:"Before",pdrAfter:"After",pdrSame:"Same time",pdrConfirm:"Confirm",pdrYourAnswer:"Your answer: {y}",pdrWaiting:"{a} of {t} have answered",pdrForce:"Show the answers",pdrForceHint:"Anyone who hasn't answered yet gets no point for this question.",pdrNoAnswer:"no answer",pdrPoint:"Point to {n}",pdrPointMe:"You got it, point for you!",pdrNobody:"Nobody got it right",pdrNext:"Next question",pdrFinal:"Final results",pdrWaitNext:"Waiting for {n} to move on",pdrTie:"Tie between {n}",pdrEndSub:"{p} points out of {t} questions",pdrRoomFull:"The game is full (maximum 8 players)"});
- Object.assign(STRINGS.es,{pdrTitle:"¿ANTES O DESPUÉS?",pdrIntro:"Cada uno responde desde su móvil, incluso desde mesas distintas. Lanza el desafío: a los demás les llega una notificación y al tocar Jugar entran en la partida.",pdrRound:"Pregunta {n} de {t}",pdrHint:"¿El primero fue antes o después que el segundo?",pdrBefore:"Antes",pdrAfter:"Después",pdrSame:"Misma época",pdrConfirm:"Confirmar",pdrYourAnswer:"Tu respuesta: {y}",pdrWaiting:"Han respondido {a} de {t}",pdrForce:"Mostrar las respuestas",pdrForceHint:"Quien aún no ha respondido no suma puntos en esta pregunta.",pdrNoAnswer:"sin respuesta",pdrPoint:"Punto para {n}",pdrPointMe:"¡Acertaste, punto para ti!",pdrNobody:"Nadie ha acertado",pdrNext:"Siguiente pregunta",pdrFinal:"Resultados finales",pdrWaitNext:"Esperando a que {n} siga",pdrTie:"Empate entre {n}",pdrEndSub:"{p} puntos de {t} preguntas",pdrRoomFull:"La partida está completa (máximo 8 jugadores)"});
+ Object.assign(STRINGS.it,{pdrTitle:"PRIMA O DOPO?",pdrIntro:"Ognuno risponde dal proprio telefono, anche da tavoli diversi. Lancia la sfida: agli altri arriva una notifica e toccando Gioca entrano nella partita.",pdrRound:"Domanda {n} di {t}",pdrHint:"Il primo è venuto prima o dopo il secondo?",pdrBefore:"Prima",pdrAfter:"Dopo",pdrSame:"Stesso periodo",pdrConfirm:"Conferma",pdrYourAnswer:"La tua risposta: {y}",pdrWaiting:"Hanno risposto {a} su {t}",pdrForce:"Mostra le risposte",pdrForceHint:"Chi non ha ancora risposto non prende punti in questa domanda.",pdrNoAnswer:"nessuna risposta",pdrPoint:"Punto a {n}",pdrPointMe:"Hai indovinato, punto per te!",pdrNobody:"Nessuno ha indovinato",pdrNext:"Prossima domanda",pdrFinal:"Risultati finali",pdrWaitNext:"Aspetta che {n} vada avanti",pdrTie:"Pareggio tra {n}",pdrEndSub:"{p} punti su {t} domande",pdrRoomFull:"La partita è al completo (massimo 20 giocatori)"});
+ Object.assign(STRINGS.en,{pdrTitle:"BEFORE OR AFTER?",pdrIntro:"Everyone answers on their own phone, even from different tables. Send the challenge: the others get a notification and tap Play to join.",pdrRound:"Question {n} of {t}",pdrHint:"Did the first one come before or after the second?",pdrBefore:"Before",pdrAfter:"After",pdrSame:"Same time",pdrConfirm:"Confirm",pdrYourAnswer:"Your answer: {y}",pdrWaiting:"{a} of {t} have answered",pdrForce:"Show the answers",pdrForceHint:"Anyone who hasn't answered yet gets no point for this question.",pdrNoAnswer:"no answer",pdrPoint:"Point to {n}",pdrPointMe:"You got it, point for you!",pdrNobody:"Nobody got it right",pdrNext:"Next question",pdrFinal:"Final results",pdrWaitNext:"Waiting for {n} to move on",pdrTie:"Tie between {n}",pdrEndSub:"{p} points out of {t} questions",pdrRoomFull:"The game is full (maximum 20 players)"});
+ Object.assign(STRINGS.es,{pdrTitle:"¿ANTES O DESPUÉS?",pdrIntro:"Cada uno responde desde su móvil, incluso desde mesas distintas. Lanza el desafío: a los demás les llega una notificación y al tocar Jugar entran en la partida.",pdrRound:"Pregunta {n} de {t}",pdrHint:"¿El primero fue antes o después que el segundo?",pdrBefore:"Antes",pdrAfter:"Después",pdrSame:"Misma época",pdrConfirm:"Confirmar",pdrYourAnswer:"Tu respuesta: {y}",pdrWaiting:"Han respondido {a} de {t}",pdrForce:"Mostrar las respuestas",pdrForceHint:"Quien aún no ha respondido no suma puntos en esta pregunta.",pdrNoAnswer:"sin respuesta",pdrPoint:"Punto para {n}",pdrPointMe:"¡Acertaste, punto para ti!",pdrNobody:"Nadie ha acertado",pdrNext:"Siguiente pregunta",pdrFinal:"Resultados finales",pdrWaitNext:"Esperando a que {n} siga",pdrTie:"Empate entre {n}",pdrEndSub:"{p} puntos de {t} preguntas",pdrRoomFull:"La partida está completa (máximo 20 jugadores)"});
 }

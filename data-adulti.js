@@ -12,7 +12,7 @@ var ADULTI_GAMES=[
 "key": "probabile",
 "mode": "starter",
 "flag": null,
-"players": "4+",
+"players": "1+",
 "time": "20 min",
 "it": {
 "name": "CHI È PIÙ PROBABILE?",
@@ -190,7 +190,7 @@ var ADULTI_GAMES=[
 "key": "sussurro",
 "mode": "starter",
 "flag": null,
-"players": "4+",
+"players": "1+",
 "time": "25 min",
 "it": {
 "name": "IL SUSSURRO 18+",
@@ -338,7 +338,7 @@ var ADULTI_GAMES=[
 "key": "truth",
 "mode": "starter",
 "flag": null,
-"players": "3+",
+"players": "1+",
 "time": "20 min",
 "it": {
 "name": "TRUTH OR DRINK",
@@ -516,7 +516,7 @@ var ADULTI_GAMES=[
 "key": "confessioni",
 "mode": "ca",
 "flag": "confessionianonime",
-"players": "4+",
+"players": "1+",
 "time": "20 min",
 "it": {
 "name": "CONFESSIONI ANONIME",
@@ -634,7 +634,7 @@ var ADULTI_GAMES=[
 "key": "processo",
 "mode": "starter",
 "flag": null,
-"players": "5+",
+"players": "1+",
 "time": "25 min",
 "it": {
 "name": "IL PROCESSO",
@@ -782,7 +782,7 @@ var ADULTI_GAMES=[
 "key": "ex",
 "mode": "lex",
 "flag": "lex",
-"players": "3+",
+"players": "1+",
 "time": "20 min",
 "it": {
 "name": "L'EX",
@@ -900,7 +900,7 @@ var ADULTI_GAMES=[
 "key": "scala",
 "mode": "starter",
 "flag": null,
-"players": "3+",
+"players": "1+",
 "time": "15 min",
 "it": {
 "name": "SCALA PICCANTE",
@@ -1063,7 +1063,7 @@ var ADULTI_GAMES=[
 "key": "chisei",
 "mode": "csd",
 "flag": "chiseidavvero",
-"players": "3+",
+"players": "1+",
 "time": "20 min",
 "it": {
 "name": "CHI SEI DAVVERO? (18+)",
@@ -1241,7 +1241,7 @@ var ADULTI_GAMES=[
 "key": "hottakes",
 "mode": "starter",
 "flag": null,
-"players": "3+",
+"players": "1+",
 "time": "20 min",
 "it": {
 "name": "HOT TAKES 18+",
@@ -1404,7 +1404,7 @@ var ADULTI_GAMES=[
 "key": "imbarazzo",
 "mode": "starter",
 "flag": null,
-"players": "3+",
+"players": "1+",
 "time": "20 min",
 "it": {
 "name": "IMBARAZZOMETRO",
@@ -1552,7 +1552,7 @@ var ADULTI_GAMES=[
 "key": "primi",
 "mode": "starter",
 "flag": null,
-"players": "3+",
+"players": "1+",
 "time": "20 min",
 "it": {
 "name": "PRIMI E ULTIMI",
@@ -1700,7 +1700,7 @@ var ADULTI_GAMES=[
 "key": "nonhomai",
 "mode": "starter",
 "flag": null,
-"players": "3+",
+"players": "1+",
 "time": "20 min",
 "it": {
 "name": "NON HO MAI (18+)",

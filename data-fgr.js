@@ -16,7 +16,7 @@
 // ognuno li legge nella propria lingua.
 // ══════════════════════════════════════════
 var FGR_Q_MS=RL_ANS_MS; // tempo per rispondere a ogni domanda
-var FGR_MAX_PLAYERS=8,FGR_ROUNDS=10,FGR_FORCE_MS=45000;
+var FGR_MAX_PLAYERS=20,FGR_ROUNDS=10,FGR_FORCE_MS=45000;
 var FGR={code:null,me:null,data:null,unsub:null,sig:"",val:null,valKey:"",busy:false,closed:false};
 
 function fgrPath(p){return "rooms/"+FGR.code+"/fl"+(p?"/"+p:"");}
@@ -126,14 +126,12 @@ function fgrJoin(code,done){
   var taken=Object.keys(d.players||{}).filter(function(k){return !left[k];}).map(function(k){return d.players[k].n||k;});
   if(!taken.length){done(false,T("ui_stanza_non_trovata_o_scaduta"));return;}
   if(taken.length>=FGR_MAX_PLAYERS){done(false,T("fgrRoomFull"));return;}
-  var me=cdrUniqueName(cdrMyName(),taken);var k=cdrKey(me);
-  var clearLeft=left[k]?cdrNet(fbSet(fbRef(fbDB,"rooms/"+code+"/fl/left/"+k),null)):Promise.resolve();
-  clearLeft.then(function(){return cdrNet(fbSet(fbRef(fbDB,"rooms/"+code+"/fl/players/"+k),{n:me,t:Date.now()}));}).then(function(){fgrAttach(code,me);done(true);}).catch(function(){done(false,T("connErr"));});
+  rlClaim("rooms/"+code+"/fl",left,FGR_MAX_PLAYERS,T("fgrRoomFull"),function(ok,me,msg){if(!ok){done(false,msg);return;}fgrAttach(code,me);done(true);}).go(taken,left);
  }).catch(function(){done(false,T("connErr"));});
 }
 function fgrAttach(code,me){
  fgrDetach();
- FGR.code=code;FGR.me=me;FGR.data=null;FGR.sig="";FGR.val=null;FGR.valKey="";FGR.closed=false;FGR.busy=false;
+ FGR.code=code;FGR.me=me;FGR.data=null;FGR.sig="";FGR.val=null;FGR.valKey="";FGR.closed=false;FGR.busy=false;FGR.abusy=false;
  FGR.unsub=fbOnValue(fbRef(fbDB,"rooms/"+code+"/fl"),function(snap){
   var v=snap.val();
   if(!v){FGR.closed=true;FGR.data=null;}else{FGR.data=v;}
@@ -164,17 +162,19 @@ function fgrStart(){
  cdrNet(fbSet(fbRef(fbDB,fgrPath("meta")),Object.assign({phase:"play",order:st.lobby.slice(0,FGR_MAX_PLAYERS),game:st.game,q:0,rv:-1,end:false,lvl:rlLevel(st.meta),qt:fbNow()},fgrRoundData(rlLevel(st.meta))))).then(function(){FGR.busy=false;}).catch(function(){FGR.busy=false;cdrToast(T("connErr"));});
 }
 function fgrAnswer(v){
+ // Invio della risposta: ha un suo blocco (abusy), così un tocco non si perde mentre il telefono
+ // sta scrivendo il passaggio alla domanda successiva
  if(typeof v!=="number")return;
  var st=fgrState();
- if(st.phase!=="play"||st.ended||st.reveal||st.elig.indexOf(FGR.me)<0||st.cur[FGR.me]||FGR.busy)return;
+ if(st.phase!=="play"||st.ended||st.reveal||st.elig.indexOf(FGR.me)<0||st.cur[FGR.me]||FGR.abusy)return;
  if((st.opts[st.q]||[]).indexOf(v)<0)return;
- FGR.busy=true;
+ FGR.abusy=true;
  var ref=fbRef(fbDB,fgrPath("g"+st.game+"/a"+st.q+"/"+cdrKey(FGR.me)));
  // La risposta si scrive una volta sola (doppio tocco o rete lenta non la cambiano)
  cdrNet(fbGet(ref)).then(function(snap){
-  if(snap.exists()){FGR.busy=false;FGR.sig="";fgrRender(true);return;}
-  return cdrNet(fbSet(ref,{c:v,t:fbNow()})).then(function(){FGR.busy=false;FGR.sig="";fgrRender(true);});
- }).catch(function(){FGR.busy=false;cdrToast(T("connErr"));FGR.sig="";fgrRender(true);});
+  if(snap.exists()){FGR.abusy=false;FGR.sig="";fgrRender(true);return;}
+  return cdrNet(fbSet(ref,{c:v,t:fbNow()})).then(function(){FGR.abusy=false;FGR.sig="";fgrRender(true);});
+ }).catch(function(){FGR.abusy=false;cdrToast(T("connErr"));FGR.sig="";fgrRender(true);});
 }
 // Se qualcuno non risponde (telefono spento, app chiusa) dopo un po' chi ha già risposto può mostrare le risposte.
 // Scrivere due volte lo stesso valore non cambia nulla, quindi più telefoni possono farlo insieme senza problemi.
@@ -293,7 +293,7 @@ function fgrScreenLobby(wrap,st){
  var lead=st.leader===FGR.me;
  cdrHeader(wrap,lead?T("ui_in_attesa_degli_altri"):T("ui_connesso"),T("fgrTitle"),lead?null:T("cdrWaitHost").replace("{n}",st.leader||""));
  wrap.appendChild(div("codice-section",T("playersInRoom")+" "+st.lobby.length+"/"+FGR_MAX_PLAYERS));
- var list=div("cdr-list");
+ var list=div("cdr-list"+(st.lobby.length>8?" many":""));
  st.lobby.forEach(function(n){var r=div("cdr-row");r.appendChild(div("cdr-dot on"));r.appendChild(div("cdr-name",n+(n===FGR.me?" "+T("cdrYou"):"")));if(n===st.leader)r.appendChild(div("cdr-tag",T("cdrHost")));list.appendChild(r);});
  wrap.appendChild(list);
  rlLevelPicker(wrap,rlLevel(st.meta),lead,fgrSetLevel);
@@ -427,7 +427,7 @@ function fgrScreenEnd(wrap,st){
 // Stringhe (aggiunte quando l'interfaccia è pronta: STRINGS è definito dopo questo file)
 function fgrStrings(){
  if(typeof STRINGS==="undefined"||STRINGS.it.fgrIntro)return;
- Object.assign(STRINGS.it,{fgrTitle:"CHE BANDIERA È?",fgrIntro:"Ognuno risponde dal proprio telefono, anche da tavoli diversi. Lancia la sfida: agli altri arriva una notifica e toccando Gioca entrano nella partita.",fgrRound:"Bandiera {n} di {t}",fgrHint:"Di quale paese è questa bandiera?",fgrConfirm:"Conferma",fgrYourAnswer:"La tua risposta: {y}",fgrWaiting:"Hanno risposto {a} su {t}",fgrForce:"Mostra le risposte",fgrForceHint:"Chi non ha ancora risposto non prende punti in questa bandiera.",fgrNoAnswer:"nessuna risposta",fgrPoint:"Punto a {n}",fgrPointMe:"Hai indovinato, punto per te!",fgrNobody:"Nessuno ha indovinato",fgrNext:"Prossima bandiera",fgrFinal:"Risultati finali",fgrWaitNext:"Aspetta che {n} vada avanti",fgrTie:"Pareggio tra {n}",fgrEndSub:"{p} punti su {t} bandiere",fgrRoomFull:"La partita è al completo (massimo 8 giocatori)"});
- Object.assign(STRINGS.en,{fgrTitle:"WHAT FLAG IS IT?",fgrIntro:"Everyone answers on their own phone, even from different tables. Send the challenge: the others get a notification and tap Play to join.",fgrRound:"Flag {n} of {t}",fgrHint:"Which country does this flag belong to?",fgrConfirm:"Confirm",fgrYourAnswer:"Your answer: {y}",fgrWaiting:"{a} of {t} have answered",fgrForce:"Show the answers",fgrForceHint:"Anyone who hasn't answered yet gets no point for this flag.",fgrNoAnswer:"no answer",fgrPoint:"Point to {n}",fgrPointMe:"You got it, point for you!",fgrNobody:"Nobody got it right",fgrNext:"Next flag",fgrFinal:"Final results",fgrWaitNext:"Waiting for {n} to move on",fgrTie:"Tie between {n}",fgrEndSub:"{p} points out of {t} flags",fgrRoomFull:"The game is full (maximum 8 players)"});
- Object.assign(STRINGS.es,{fgrTitle:"¿QUÉ BANDERA ES?",fgrIntro:"Cada uno responde desde su móvil, incluso desde mesas distintas. Lanza el desafío: a los demás les llega una notificación y al tocar Jugar entran en la partida.",fgrRound:"Bandera {n} de {t}",fgrHint:"¿De qué país es esta bandera?",fgrConfirm:"Confirmar",fgrYourAnswer:"Tu respuesta: {y}",fgrWaiting:"Han respondido {a} de {t}",fgrForce:"Mostrar las respuestas",fgrForceHint:"Quien aún no ha respondido no suma puntos en esta bandera.",fgrNoAnswer:"sin respuesta",fgrPoint:"Punto para {n}",fgrPointMe:"¡Acertaste, punto para ti!",fgrNobody:"Nadie ha acertado",fgrNext:"Siguiente bandera",fgrFinal:"Resultados finales",fgrWaitNext:"Esperando a que {n} siga",fgrTie:"Empate entre {n}",fgrEndSub:"{p} puntos de {t} banderas",fgrRoomFull:"La partida está completa (máximo 8 jugadores)"});
+ Object.assign(STRINGS.it,{fgrTitle:"CHE BANDIERA È?",fgrIntro:"Ognuno risponde dal proprio telefono, anche da tavoli diversi. Lancia la sfida: agli altri arriva una notifica e toccando Gioca entrano nella partita.",fgrRound:"Bandiera {n} di {t}",fgrHint:"Di quale paese è questa bandiera?",fgrConfirm:"Conferma",fgrYourAnswer:"La tua risposta: {y}",fgrWaiting:"Hanno risposto {a} su {t}",fgrForce:"Mostra le risposte",fgrForceHint:"Chi non ha ancora risposto non prende punti in questa bandiera.",fgrNoAnswer:"nessuna risposta",fgrPoint:"Punto a {n}",fgrPointMe:"Hai indovinato, punto per te!",fgrNobody:"Nessuno ha indovinato",fgrNext:"Prossima bandiera",fgrFinal:"Risultati finali",fgrWaitNext:"Aspetta che {n} vada avanti",fgrTie:"Pareggio tra {n}",fgrEndSub:"{p} punti su {t} bandiere",fgrRoomFull:"La partita è al completo (massimo 20 giocatori)"});
+ Object.assign(STRINGS.en,{fgrTitle:"WHAT FLAG IS IT?",fgrIntro:"Everyone answers on their own phone, even from different tables. Send the challenge: the others get a notification and tap Play to join.",fgrRound:"Flag {n} of {t}",fgrHint:"Which country does this flag belong to?",fgrConfirm:"Confirm",fgrYourAnswer:"Your answer: {y}",fgrWaiting:"{a} of {t} have answered",fgrForce:"Show the answers",fgrForceHint:"Anyone who hasn't answered yet gets no point for this flag.",fgrNoAnswer:"no answer",fgrPoint:"Point to {n}",fgrPointMe:"You got it, point for you!",fgrNobody:"Nobody got it right",fgrNext:"Next flag",fgrFinal:"Final results",fgrWaitNext:"Waiting for {n} to move on",fgrTie:"Tie between {n}",fgrEndSub:"{p} points out of {t} flags",fgrRoomFull:"The game is full (maximum 20 players)"});
+ Object.assign(STRINGS.es,{fgrTitle:"¿QUÉ BANDERA ES?",fgrIntro:"Cada uno responde desde su móvil, incluso desde mesas distintas. Lanza el desafío: a los demás les llega una notificación y al tocar Jugar entran en la partida.",fgrRound:"Bandera {n} de {t}",fgrHint:"¿De qué país es esta bandera?",fgrConfirm:"Confirmar",fgrYourAnswer:"Tu respuesta: {y}",fgrWaiting:"Han respondido {a} de {t}",fgrForce:"Mostrar las respuestas",fgrForceHint:"Quien aún no ha respondido no suma puntos en esta bandera.",fgrNoAnswer:"sin respuesta",fgrPoint:"Punto para {n}",fgrPointMe:"¡Acertaste, punto para ti!",fgrNobody:"Nadie ha acertado",fgrNext:"Siguiente bandera",fgrFinal:"Resultados finales",fgrWaitNext:"Esperando a que {n} siga",fgrTie:"Empate entre {n}",fgrEndSub:"{p} puntos de {t} banderas",fgrRoomFull:"La partida está completa (máximo 20 jugadores)"});
 }

@@ -23,7 +23,7 @@ var OC_LEVELS={
  difficile:{n:8,C:33,L:70,step:6},
  esperto:{n:9,C:30,L:70,step:4.5}
 };
-var OC_ROWS=4,OC_MS=180000,OC_REV_MS=20000,OC_MAX_PLAYERS=8;
+var OC_ROWS=4,OC_MS=180000,OC_REV_MS=20000,OC_MAX_PLAYERS=20;
 function ocNextLevel(l){return l==="facile"?"media":l==="media"?"difficile":"esperto";}
 // Colore con luminosità e saturazione costanti (spazio Lab), così cambia solo la tinta
 function ocLch(L,C,h){
@@ -209,7 +209,7 @@ function renderOcSetup(){
     row.appendChild(inp);inputs.push(inp);grid.appendChild(row);
    })(k);}
   };
-  body.appendChild(makeStepperWidget(S.ocNum||2,2,OC_MAX_PLAYERS,function(n){S.ocNum=n;build(n);}));
+  body.appendChild(makeStepperWidget(S.ocNum||2,1,OC_MAX_PLAYERS,function(n){S.ocNum=n;build(n);}));
   body.appendChild(grid);
  }
  var lt=div("rlabel",T("ocChooseLevel"));lt.style.marginTop="18px";body.appendChild(lt);
@@ -388,15 +388,13 @@ function ocrJoin(code,done){
   var left=d.left||{};
   var taken=Object.keys(d.players||{}).filter(function(k){return !left[k];}).map(function(k){return d.players[k].n||k;});
   if(!taken.length){done(false,T("ui_stanza_non_trovata_o_scaduta"));return;}
-  if(taken.length>=OC_MAX_PLAYERS){done(false,T("agrRoomFull"));return;}
-  var me=cdrUniqueName(cdrMyName(),taken);var k=cdrKey(me);
-  var clearLeft=left[k]?cdrNet(fbSet(fbRef(fbDB,"rooms/"+code+"/oc/left/"+k),null)):Promise.resolve();
-  clearLeft.then(function(){return cdrNet(fbSet(fbRef(fbDB,"rooms/"+code+"/oc/players/"+k),{n:me,t:Date.now()}));}).then(function(){ocrAttach(code,me);done(true);}).catch(function(){done(false,T("connErr"));});
+  if(taken.length>=OC_MAX_PLAYERS){done(false,T("rlRoomFull"));return;}
+  rlClaim("rooms/"+code+"/oc",left,OC_MAX_PLAYERS,T("rlRoomFull"),function(ok,me,msg){if(!ok){done(false,msg);return;}ocrAttach(code,me);done(true);}).go(taken,left);
  }).catch(function(){done(false,T("connErr"));});
 }
 function ocrAttach(code,me){
  ocrDetach();
- OCR.code=code;OCR.me=me;OCR.data=null;OCR.sig="";OCR.closed=false;OCR.busy=false;OCR.cur=null;OCR.curKey="";
+ OCR.code=code;OCR.me=me;OCR.data=null;OCR.sig="";OCR.closed=false;OCR.busy=false;OCR.abusy=false;OCR.cur=null;OCR.curKey="";
  OCR.unsub=fbOnValue(fbRef(fbDB,"rooms/"+code+"/oc"),function(snap){
   var v=snap.val();if(!v){OCR.closed=true;OCR.data=null;}else OCR.data=v;
   if(S.screen==="ocr")ocrRender(false);
@@ -427,15 +425,17 @@ function ocrSetLevel(l){
  cdrNet(fbSet(fbRef(fbDB,ocrPath("meta")),Object.assign({},st.meta,{lvl:l}))).then(function(){OCR.busy=false;}).catch(function(){OCR.busy=false;cdrToast(T("connErr"));});
 }
 function ocrSend(rows){
+ // Invio della risposta: ha un suo blocco (abusy), così un tocco non si perde mentre il telefono
+ // sta scrivendo il passaggio alla domanda successiva
  var st=ocrState();
- if(st.phase!=="play"||st.ended||st.reveal||st.elig.indexOf(OCR.me)<0||st.cur[OCR.me]||OCR.busy)return;
+ if(st.phase!=="play"||st.ended||st.reveal||st.elig.indexOf(OCR.me)<0||st.cur[OCR.me]||OCR.abusy)return;
  if(!ocValid(ocPlain(rows),st.rd.lvl)){OCR.sig="";ocrRender(true);return;}
- OCR.busy=true;
+ OCR.abusy=true;
  var ref=fbRef(fbDB,ocrPath("g"+st.game+"/r"+st.k+"/"+cdrKey(OCR.me)));
  cdrNet(fbGet(ref)).then(function(snap){
-  if(snap.exists()){OCR.busy=false;OCR.sig="";ocrRender(true);return;}
-  return cdrNet(fbSet(ref,{o:ocPlain(rows),t:fbNow()})).then(function(){OCR.busy=false;OCR.sig="";ocrRender(true);});
- }).catch(function(){OCR.busy=false;cdrToast(T("connErr"));OCR.sig="";ocrRender(true);});
+  if(snap.exists()){OCR.abusy=false;OCR.sig="";ocrRender(true);return;}
+  return cdrNet(fbSet(ref,{o:ocPlain(rows),t:fbNow()})).then(function(){OCR.abusy=false;OCR.sig="";ocrRender(true);});
+ }).catch(function(){OCR.abusy=false;cdrToast(T("connErr"));OCR.sig="";ocrRender(true);});
 }
 // Allo scadere dei 3 minuti l'ordine fatto fin lì parte da solo, poi si mostrano i risultati
 function ocrTimeUp(game,k){
@@ -510,7 +510,7 @@ function ocrScreenLobby(wrap,st){
  var lead=st.leader===OCR.me;
  cdrHeader(wrap,lead?T("ui_in_attesa_degli_altri"):T("ui_connesso"),ocTitle(),lead?null:T("cdrWaitHost").replace("{n}",st.leader||""));
  wrap.appendChild(div("codice-section",T("playersInRoom")+" "+st.lobby.length+"/"+OC_MAX_PLAYERS));
- var list=div("cdr-list");
+ var list=div("cdr-list"+(st.lobby.length>8?" many":""));
  st.lobby.forEach(function(n){var r=div("cdr-row");r.appendChild(div("cdr-dot on"));r.appendChild(div("cdr-name",n+(n===OCR.me?" "+T("cdrYou"):"")));if(n===st.leader)r.appendChild(div("cdr-tag",T("cdrHost")));list.appendChild(r);});
  wrap.appendChild(list);
  rlLevelPicker(wrap,rlLevel(st.meta),lead,ocrSetLevel);

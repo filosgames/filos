@@ -16,7 +16,7 @@
 // ognuno legge la domanda nella propria lingua.
 // ══════════════════════════════════════════
 var AGR_Q_MS=RL_ANS_MS; // tempo per rispondere a ogni domanda
-var AGR_MAX_PLAYERS=8,AGR_ROUNDS=10,AGR_FORCE_MS=45000;
+var AGR_MAX_PLAYERS=20,AGR_ROUNDS=10,AGR_FORCE_MS=45000;
 var AGR={code:null,me:null,data:null,unsub:null,sig:"",val:null,valKey:"",busy:false,closed:false};
 
 function agrPath(p){return "rooms/"+AGR.code+"/ag"+(p?"/"+p:"");}
@@ -118,14 +118,12 @@ function agrJoin(code,done){
   var taken=Object.keys(d.players||{}).filter(function(k){return !left[k];}).map(function(k){return d.players[k].n||k;});
   if(!taken.length){done(false,T("ui_stanza_non_trovata_o_scaduta"));return;}
   if(taken.length>=AGR_MAX_PLAYERS){done(false,T("agrRoomFull"));return;}
-  var me=cdrUniqueName(cdrMyName(),taken);var k=cdrKey(me);
-  var clearLeft=left[k]?cdrNet(fbSet(fbRef(fbDB,"rooms/"+code+"/ag/left/"+k),null)):Promise.resolve();
-  clearLeft.then(function(){return cdrNet(fbSet(fbRef(fbDB,"rooms/"+code+"/ag/players/"+k),{n:me,t:Date.now()}));}).then(function(){agrAttach(code,me);done(true);}).catch(function(){done(false,T("connErr"));});
+  rlClaim("rooms/"+code+"/ag",left,AGR_MAX_PLAYERS,T("agrRoomFull"),function(ok,me,msg){if(!ok){done(false,msg);return;}agrAttach(code,me);done(true);}).go(taken,left);
  }).catch(function(){done(false,T("connErr"));});
 }
 function agrAttach(code,me){
  agrDetach();
- AGR.code=code;AGR.me=me;AGR.data=null;AGR.sig="";AGR.val=null;AGR.valKey="";AGR.closed=false;AGR.busy=false;
+ AGR.code=code;AGR.me=me;AGR.data=null;AGR.sig="";AGR.val=null;AGR.valKey="";AGR.closed=false;AGR.busy=false;AGR.abusy=false;
  AGR.unsub=fbOnValue(fbRef(fbDB,"rooms/"+code+"/ag"),function(snap){
   var v=snap.val();
   if(!v){AGR.closed=true;AGR.data=null;}else{AGR.data=v;}
@@ -156,15 +154,17 @@ function agrStart(){
  cdrNet(fbSet(fbRef(fbDB,agrPath("meta")),Object.assign({phase:"play",order:st.lobby.slice(0,AGR_MAX_PLAYERS),game:st.game,q:0,rv:-1,end:false,lvl:rlLevel(st.meta),qt:fbNow()},agrRoundData(rlLevel(st.meta))))).then(function(){AGR.busy=false;}).catch(function(){AGR.busy=false;cdrToast(T("connErr"));});
 }
 function agrAnswer(v){
+ // Invio della risposta: ha un suo blocco (abusy), così un tocco non si perde mentre il telefono
+ // sta scrivendo il passaggio alla domanda successiva
  var st=agrState();
- if(st.phase!=="play"||st.ended||st.reveal||st.elig.indexOf(AGR.me)<0||st.cur[AGR.me]||AGR.busy)return;
- AGR.busy=true;
+ if(st.phase!=="play"||st.ended||st.reveal||st.elig.indexOf(AGR.me)<0||st.cur[AGR.me]||AGR.abusy)return;
+ AGR.abusy=true;
  var ref=fbRef(fbDB,agrPath("g"+st.game+"/a"+st.q+"/"+cdrKey(AGR.me)));
  // La risposta si scrive una volta sola (doppio tocco o rete lenta non la cambiano)
  cdrNet(fbGet(ref)).then(function(snap){
-  if(snap.exists()){AGR.busy=false;AGR.sig="";agrRender(true);return;}
-  return cdrNet(fbSet(ref,{v:v,t:fbNow()})).then(function(){AGR.busy=false;AGR.sig="";agrRender(true);});
- }).catch(function(){AGR.busy=false;cdrToast(T("connErr"));AGR.sig="";agrRender(true);});
+  if(snap.exists()){AGR.abusy=false;AGR.sig="";agrRender(true);return;}
+  return cdrNet(fbSet(ref,{v:v,t:fbNow()})).then(function(){AGR.abusy=false;AGR.sig="";agrRender(true);});
+ }).catch(function(){AGR.abusy=false;cdrToast(T("connErr"));AGR.sig="";agrRender(true);});
 }
 // Se qualcuno non risponde (telefono spento, app chiusa) dopo un po' chi ha già risposto può mostrare le risposte.
 // Scrivere due volte lo stesso valore non cambia nulla, quindi più telefoni possono farlo insieme senza problemi.
@@ -283,7 +283,7 @@ function agrScreenLobby(wrap,st){
  var lead=st.leader===AGR.me;
  cdrHeader(wrap,lead?T("ui_in_attesa_degli_altri"):T("ui_connesso"),T("ui_anno_giusto"),lead?null:T("cdrWaitHost").replace("{n}",st.leader||""));
  wrap.appendChild(div("codice-section",T("playersInRoom")+" "+st.lobby.length+"/"+AGR_MAX_PLAYERS));
- var list=div("cdr-list");
+ var list=div("cdr-list"+(st.lobby.length>8?" many":""));
  st.lobby.forEach(function(n){var r=div("cdr-row");r.appendChild(div("cdr-dot on"));r.appendChild(div("cdr-name",n+(n===AGR.me?" "+T("cdrYou"):"")));if(n===st.leader)r.appendChild(div("cdr-tag",T("cdrHost")));list.appendChild(r);});
  wrap.appendChild(list);
  rlLevelPicker(wrap,rlLevel(st.meta),lead,agrSetLevel);
@@ -419,7 +419,7 @@ function agrScreenEnd(wrap,st){
 // Stringhe (aggiunte quando l'interfaccia è pronta: STRINGS è definito dopo questo file)
 function agrStrings(){
  if(typeof STRINGS==="undefined"||STRINGS.it.agrIntro)return;
- Object.assign(STRINGS.it,{agrIntro:"Ognuno risponde dal proprio telefono, anche da tavoli diversi. Lancia la sfida: agli altri arriva una notifica e toccando Gioca entrano nella partita.",agrRound:"Domanda {n} di {t}",agrConfirm:"Conferma",agrYourAnswer:"La tua risposta: {y}",agrWaiting:"Hanno risposto {a} su {t}",agrForce:"Mostra le risposte",agrForceHint:"Chi non ha ancora risposto non prende punti in questa domanda.",agrNoAnswer:"nessuna risposta",agrPoint:"Punto a {n}",agrPointMe:"Punto per te!",agrNext:"Prossima domanda",agrFinal:"Risultati finali",agrWaitNext:"Aspetta che {n} vada avanti",agrTie:"Pareggio tra {n}",agrEndSub:"{p} punti su {t} domande",agrRoomFull:"La partita è al completo (massimo 8 giocatori)"});
- Object.assign(STRINGS.en,{agrIntro:"Everyone answers on their own phone, even from different tables. Send the challenge: the others get a notification and tap Play to join.",agrRound:"Question {n} of {t}",agrConfirm:"Confirm",agrYourAnswer:"Your answer: {y}",agrWaiting:"{a} of {t} have answered",agrForce:"Show the answers",agrForceHint:"Anyone who hasn't answered yet gets no point for this question.",agrNoAnswer:"no answer",agrPoint:"Point to {n}",agrPointMe:"Point for you!",agrNext:"Next question",agrFinal:"Final results",agrWaitNext:"Waiting for {n} to move on",agrTie:"Tie between {n}",agrEndSub:"{p} points out of {t} questions",agrRoomFull:"The game is full (maximum 8 players)"});
- Object.assign(STRINGS.es,{agrIntro:"Cada uno responde desde su móvil, incluso desde mesas distintas. Lanza el desafío: a los demás les llega una notificación y al tocar Jugar entran en la partida.",agrRound:"Pregunta {n} de {t}",agrConfirm:"Confirmar",agrYourAnswer:"Tu respuesta: {y}",agrWaiting:"Han respondido {a} de {t}",agrForce:"Mostrar las respuestas",agrForceHint:"Quien aún no ha respondido no suma puntos en esta pregunta.",agrNoAnswer:"sin respuesta",agrPoint:"Punto para {n}",agrPointMe:"¡Punto para ti!",agrNext:"Siguiente pregunta",agrFinal:"Resultados finales",agrWaitNext:"Esperando a que {n} siga",agrTie:"Empate entre {n}",agrEndSub:"{p} puntos de {t} preguntas",agrRoomFull:"La partida está completa (máximo 8 jugadores)"});
+ Object.assign(STRINGS.it,{agrIntro:"Ognuno risponde dal proprio telefono, anche da tavoli diversi. Lancia la sfida: agli altri arriva una notifica e toccando Gioca entrano nella partita.",agrRound:"Domanda {n} di {t}",agrConfirm:"Conferma",agrYourAnswer:"La tua risposta: {y}",agrWaiting:"Hanno risposto {a} su {t}",agrForce:"Mostra le risposte",agrForceHint:"Chi non ha ancora risposto non prende punti in questa domanda.",agrNoAnswer:"nessuna risposta",agrPoint:"Punto a {n}",agrPointMe:"Punto per te!",agrNext:"Prossima domanda",agrFinal:"Risultati finali",agrWaitNext:"Aspetta che {n} vada avanti",agrTie:"Pareggio tra {n}",agrEndSub:"{p} punti su {t} domande",agrRoomFull:"La partita è al completo (massimo 20 giocatori)"});
+ Object.assign(STRINGS.en,{agrIntro:"Everyone answers on their own phone, even from different tables. Send the challenge: the others get a notification and tap Play to join.",agrRound:"Question {n} of {t}",agrConfirm:"Confirm",agrYourAnswer:"Your answer: {y}",agrWaiting:"{a} of {t} have answered",agrForce:"Show the answers",agrForceHint:"Anyone who hasn't answered yet gets no point for this question.",agrNoAnswer:"no answer",agrPoint:"Point to {n}",agrPointMe:"Point for you!",agrNext:"Next question",agrFinal:"Final results",agrWaitNext:"Waiting for {n} to move on",agrTie:"Tie between {n}",agrEndSub:"{p} points out of {t} questions",agrRoomFull:"The game is full (maximum 20 players)"});
+ Object.assign(STRINGS.es,{agrIntro:"Cada uno responde desde su móvil, incluso desde mesas distintas. Lanza el desafío: a los demás les llega una notificación y al tocar Jugar entran en la partida.",agrRound:"Pregunta {n} de {t}",agrConfirm:"Confirmar",agrYourAnswer:"Tu respuesta: {y}",agrWaiting:"Han respondido {a} de {t}",agrForce:"Mostrar las respuestas",agrForceHint:"Quien aún no ha respondido no suma puntos en esta pregunta.",agrNoAnswer:"sin respuesta",agrPoint:"Punto para {n}",agrPointMe:"¡Punto para ti!",agrNext:"Siguiente pregunta",agrFinal:"Resultados finales",agrWaitNext:"Esperando a que {n} siga",agrTie:"Empate entre {n}",agrEndSub:"{p} puntos de {t} preguntas",agrRoomFull:"La partida está completa (máximo 20 jugadores)"});
 }
