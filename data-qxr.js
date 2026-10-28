@@ -109,6 +109,7 @@ function qxrJoin(code,done){
  }).catch(function(){done(false,T("connErr"));});
 }
 function qxrAttach(code,me){
+ if(typeof rlRejoinSave==="function")rlRejoinSave("qxr",code,me);
  qxrDetach();
  QXR.code=code;QXR.me=me;QXR.data=null;QXR.sig="";QXR.val=null;QXR.valKey="";QXR.closed=false;QXR.busy=false;QXR.abusy=false;
  QXR.unsub=fbOnValue(fbRef(fbDB,"rooms/"+code+"/qx"),function(snap){
@@ -118,12 +119,15 @@ function qxrAttach(code,me){
  });
 }
 function qxrDetach(){if(QXR.unsub){try{QXR.unsub();}catch(e){}}QXR.unsub=null;clearTimeout(QXR.forceTimer);}
-function qxrLeave(){
+function qxrLeave(soft){
+ // soft: la pagina si sta chiudendo o ricaricando: si segna l'uscita ma la stanza non si chiude,
+ // così si può rientrare (vedi rlTryRejoin)
+ if(!soft&&typeof rlRejoinClear==="function")rlRejoinClear();
  if(QXR.code&&QXR.me&&fbDB&&!QXR.closed){
   // Lo stato si legge prima di segnare l'uscita: scrivere su Firebase aggiorna subito i dati locali
   // Se chi guida annulla la sfida mentre si aspetta, o se non resta nessuno, la stanza viene chiusa per tutti
   var close=false;
-  try{var st=qxrState();close=(st.phase==="lobby"&&st.leader===QXR.me)||st.lobby.filter(function(n){return n!==QXR.me;}).length===0;}catch(e){}
+  try{var st=qxrState();close=(!soft&&st.phase==="lobby"&&st.leader===QXR.me)||st.lobby.filter(function(n){return n!==QXR.me;}).length===0;}catch(e){}
   var code=QXR.code;
   if(close){try{fbRemove(fbRef(fbDB,"rooms/"+code));}catch(e){}}
   else{try{fbSet(fbRef(fbDB,qxrPath("left/"+cdrKey(QXR.me))),true);}catch(e){}}
@@ -131,7 +135,7 @@ function qxrLeave(){
  qxrDetach();
  QXR.code=null;QXR.me=null;QXR.data=null;QXR.sig="";QXR.val=null;QXR.closed=false;
 }
-window.addEventListener("pagehide",function(e){if(QXR.code&&!(e&&e.persisted))qxrLeave();});
+window.addEventListener("pagehide",function(e){if(QXR.code&&!(e&&e.persisted))qxrLeave(true);});
 function qxrExit(){qxrLeave();goBackToGames();}
 
 // ── Azioni ──
@@ -198,7 +202,7 @@ function qxrSetLevel(l){
 }
 function qxrInvite(silent){
  if(!fbDB||!QXR.code)return;
- var inv={from:QXR.me,game:"QUANTO VALE?",kind:"qvx",cat:"relax",roomCode:QXR.code,dev:(typeof filosDevId==="function"?filosDevId():null),pubCode:(typeof FILOS_PUB_CODE!=="undefined"?FILOS_PUB_CODE:null)||null,ts:Date.now()};
+ var inv={from:QXR.me,game:"QUANTO VALE?",kind:"qvx",cat:"relax",roomCode:QXR.code,dev:(typeof filosDevId==="function"?filosDevId():null),pubCode:(typeof filosVenue==="function"?filosVenue():"")||null,ts:Date.now()};
  var key="inv_"+Date.now();
  try{fbSet(fbRef(fbDB,"filos_invites/"+key),inv);setTimeout(function(){try{fbRemove(fbRef(fbDB,"filos_invites/"+key));}catch(e){}},30000);if(!silent)cdrToast(T("cdrInviteSent"));}catch(e){}
 }
@@ -214,7 +218,7 @@ function qxrSignature(st){
 function qxrRender(force){
  if(S.screen!=="qxr")return;
  cdrStrings();qxrStrings();
- var st=QXR.code?qxrState():null;
+ var st=QXR.code?qxrState():null;if(st&&rlGuard(st,QXR.me,QXR_MAX_PLAYERS,function(){qxrLeave();}))return;
  var sig=QXR.code?qxrSignature(st):"none";
  if(!force&&sig===QXR.sig)return;
  QXR.sig=sig;

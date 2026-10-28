@@ -108,6 +108,7 @@ function lgrJoin(code,done){
  }).catch(function(){done(false,T("connErr"));});
 }
 function lgrAttach(code,me){
+ if(typeof rlRejoinSave==="function")rlRejoinSave("lgr",code,me);
  lgrDetach();
  LGR.code=code;LGR.me=me;LGR.data=null;LGR.sig="";LGR.val=null;LGR.valKey="";LGR.closed=false;LGR.busy=false;LGR.abusy=false;
  LGR.unsub=fbOnValue(fbRef(fbDB,"rooms/"+code+"/lg"),function(snap){
@@ -117,12 +118,15 @@ function lgrAttach(code,me){
  });
 }
 function lgrDetach(){if(LGR.unsub){try{LGR.unsub();}catch(e){}}LGR.unsub=null;clearTimeout(LGR.forceTimer);}
-function lgrLeave(){
+function lgrLeave(soft){
+ // soft: la pagina si sta chiudendo o ricaricando: si segna l'uscita ma la stanza non si chiude,
+ // così si può rientrare (vedi rlTryRejoin)
+ if(!soft&&typeof rlRejoinClear==="function")rlRejoinClear();
  if(LGR.code&&LGR.me&&fbDB&&!LGR.closed){
   // Lo stato si legge prima di segnare l'uscita: scrivere su Firebase aggiorna subito i dati locali
   // Se chi guida annulla la sfida mentre si aspetta, o se non resta nessuno, la stanza viene chiusa per tutti
   var close=false;
-  try{var st=lgrState();close=(st.phase==="lobby"&&st.leader===LGR.me)||st.lobby.filter(function(n){return n!==LGR.me;}).length===0;}catch(e){}
+  try{var st=lgrState();close=(!soft&&st.phase==="lobby"&&st.leader===LGR.me)||st.lobby.filter(function(n){return n!==LGR.me;}).length===0;}catch(e){}
   var code=LGR.code;
   if(close){try{fbRemove(fbRef(fbDB,"rooms/"+code));}catch(e){}}
   else{try{fbSet(fbRef(fbDB,lgrPath("left/"+cdrKey(LGR.me))),true);}catch(e){}}
@@ -130,7 +134,7 @@ function lgrLeave(){
  lgrDetach();
  LGR.code=null;LGR.me=null;LGR.data=null;LGR.sig="";LGR.val=null;LGR.closed=false;
 }
-window.addEventListener("pagehide",function(e){if(LGR.code&&!(e&&e.persisted))lgrLeave();});
+window.addEventListener("pagehide",function(e){if(LGR.code&&!(e&&e.persisted))lgrLeave(true);});
 function lgrExit(){lgrLeave();goBackToGames();}
 
 // ── Azioni ──
@@ -200,7 +204,7 @@ function lgrSetLevel(l){
 }
 function lgrInvite(silent){
  if(!fbDB||!LGR.code)return;
- var inv={from:LGR.me,game:"CHE LINGUA È?",kind:"lingua",cat:"relax",roomCode:LGR.code,dev:(typeof filosDevId==="function"?filosDevId():null),pubCode:(typeof FILOS_PUB_CODE!=="undefined"?FILOS_PUB_CODE:null)||null,ts:Date.now()};
+ var inv={from:LGR.me,game:"CHE LINGUA È?",kind:"lingua",cat:"relax",roomCode:LGR.code,dev:(typeof filosDevId==="function"?filosDevId():null),pubCode:(typeof filosVenue==="function"?filosVenue():"")||null,ts:Date.now()};
  var key="inv_"+Date.now();
  try{fbSet(fbRef(fbDB,"filos_invites/"+key),inv);setTimeout(function(){try{fbRemove(fbRef(fbDB,"filos_invites/"+key));}catch(e){}},30000);if(!silent)cdrToast(T("cdrInviteSent"));}catch(e){}
 }
@@ -216,7 +220,7 @@ function lgrSignature(st){
 function lgrRender(force){
  if(S.screen!=="lgr")return;
  cdrStrings();lgrStrings();
- var st=LGR.code?lgrState():null;
+ var st=LGR.code?lgrState():null;if(st&&rlGuard(st,LGR.me,LGR_MAX_PLAYERS,function(){lgrLeave();}))return;
  var sig=LGR.code?lgrSignature(st):"none";
  if(!force&&sig===LGR.sig)return;
  LGR.sig=sig;

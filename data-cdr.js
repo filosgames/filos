@@ -14,7 +14,7 @@
 //  rooms/{code}/cd/r{round}/secrets/{nome}       codice segreto (offuscato)
 //  rooms/{code}/cd/r{round}/moves/{n}            tentativi, in ordine
 // ══════════════════════════════════════════
-var CDR_MAX_PLAYERS=10;
+var CDR_MAX_PLAYERS=10,QV_MAX_PLAYERS=20;
 var CDR={code:null,me:null,data:null,unsub:null,sig:"",typing:false,entry:[],target:null,view:null,busy:false,closed:false};
 
 function cdrT(k){return T(k);}
@@ -112,7 +112,47 @@ function rlClaim(base,left,max,fullMsg,cb){
  }
  return {go:function(taken,lf){attempt(taken,lf);}};
 }
-function cdrMyName(){var n=(typeof FILOS_NAME!=="undefined"&&FILOS_NAME)?String(FILOS_NAME).trim():"";return (n||T("qvPlayer")+"1").slice(0,16);}
+// ── Rientro nella partita a distanza ──
+// Se la pagina si ricarica o il telefono chiude il browser, al riavvio si rientra da soli nella stessa
+// partita (entro 3 ore), con lo stesso nome, se la stanza esiste ancora e il posto è di questo telefono.
+// Se più telefoni entrano nello stesso istante, chi è oltre il limite se ne accorge qui ed esce con un avviso
+function rlGuard(st,me,max,leave){
+ if(!st||!me)return false;
+ if(st.host===me||st.leader===me)return false;
+ var lob=st.lobby||[];var ord=st.order||[];
+ var over=st.phase==="lobby"?lob.indexOf(me)>=max:(ord.length>0&&ord.indexOf(me)<0&&lob.indexOf(me)>=0);
+ if(!over)return false;
+ try{leave();}catch(e){}
+ S.screen="games";render();
+ if(typeof cdrToast==="function")cdrToast(T("rlRoomFull"));
+ return true;
+}
+function rlRejoinSave(scr,code,me){try{localStorage.setItem("filos_rejoin",JSON.stringify({s:scr,c:code,m:me,at:Date.now()}));}catch(e){}}
+function rlRejoinClear(){try{localStorage.removeItem("filos_rejoin");}catch(e){}}
+var RL_REJOIN_MAP={agr:["ag","agrAttach"],cdr:["cd","cdrAttach"],fgr:["fl","fgrAttach"],lgr:["lg","lgrAttach"],ocr:["oc","ocrAttach"],pdr:["pd","pdrAttach"],qxr:["qx","qxrAttach"],tpr:["tp","tpAttach"]};
+function rlTryRejoin(){
+ var r=null;try{r=JSON.parse(localStorage.getItem("filos_rejoin")||"null");}catch(e){}
+ if(!r||!r.c||!r.m||!r.s||Date.now()-(+r.at||0)>3*3600*1000){rlRejoinClear();return;}
+ var mp=RL_REJOIN_MAP[r.s];if(!mp||!fbDB||!fbGet||typeof window[mp[1]]!=="function")return;
+ var base="rooms/"+String(r.c).replace(/\D/g,"")+"/"+mp[0];var k=cdrKey(r.m);
+ cdrNet(fbGet(fbRef(fbDB,base))).then(function(snap){
+  var d=snap&&snap.val?snap.val():null;var p=d&&d.players&&d.players[k];
+  var dev=(typeof filosDevId==="function")?filosDevId():"";
+  if(!d||!p||(p.d&&dev&&p.d!==dev)){rlRejoinClear();return;}
+  var meta=d.meta||{};
+  var inGame=!meta.phase||meta.phase==="lobby"||(meta.order||[]).indexOf(r.m)>=0||meta.host===r.m;
+  if(!inGame){rlRejoinClear();return;}
+  var clr=(d.left&&d.left[k])?cdrNet(fbSet(fbRef(fbDB,base+"/left/"+k),null)):Promise.resolve();
+  return clr.then(function(){
+   if(!FILOS_NAME){try{FILOS_NAME=localStorage.getItem("filos_player_name")||r.m;}catch(e){FILOS_NAME=r.m;}}
+   window[mp[1]](String(r.c),r.m);
+   S.cat="relax";S.game=null;S.screen=r.s;render();
+   if(typeof startInviteListener==="function")startInviteListener();
+   if(typeof cdrToast==="function"){cdrStrings();cdrToast(T("rlRejoined"));}
+  });
+ }).catch(function(){});
+}
+function cdrMyName(){var n=(typeof FILOS_NAME!=="undefined"&&FILOS_NAME)?String(FILOS_NAME):"";n=n.replace(/[.#$\[\]\/\u0000-\u001f\u007f]/g,"").replace(/\s+/g," ").trim();n=Array.from(n).slice(0,16).join("").trim();return n||T("qvPlayer")+"1";}
 function cdrCreate(done){
  cdrStrings();
  if(!fbDB){done(false,T("firebaseErr"));return;}
@@ -144,6 +184,7 @@ function cdrJoin(code,done){
  }).catch(function(){done(false,T("connErr"));});
 }
 function cdrAttach(code,me){
+ if(typeof rlRejoinSave==="function")rlRejoinSave("cdr",code,me);
  cdrDetach();
  CDR.code=code;CDR.me=me;CDR.data=null;CDR.sig="";CDR.entry=[];CDR.target=null;CDR.view=null;CDR.closed=false;CDR.busy=false;
  CDR.unsub=fbOnValue(fbRef(fbDB,"rooms/"+code+"/cd"),function(snap){
@@ -154,12 +195,15 @@ function cdrAttach(code,me){
 }
 function cdrDetach(){if(CDR.unsub){try{CDR.unsub();}catch(e){}}CDR.unsub=null;}
 // Esce dalla stanza (segnala agli altri e smette di ascoltare)
-function cdrLeave(){
+function cdrLeave(soft){
+ // soft: la pagina si sta chiudendo o ricaricando: si segna l'uscita ma la stanza non si chiude,
+ // così si può rientrare (vedi rlTryRejoin)
+ if(!soft&&typeof rlRejoinClear==="function")rlRejoinClear();
  if(CDR.code&&CDR.me&&fbDB&&!CDR.closed){
   // Lo stato si legge prima di segnare l'uscita: scrivere su Firebase aggiorna subito i dati locali
   // Se chi guida annulla la sfida mentre si aspetta, o se non resta nessuno, la stanza viene chiusa per tutti
   var close=false;
-  try{var st=cdrState();close=(st.phase==="lobby"&&st.leader===CDR.me)||st.lobby.filter(function(n){return n!==CDR.me;}).length===0;}catch(e){}
+  try{var st=cdrState();close=(!soft&&st.phase==="lobby"&&st.leader===CDR.me)||st.lobby.filter(function(n){return n!==CDR.me;}).length===0;}catch(e){}
   var code=CDR.code;
   if(close){try{fbRemove(fbRef(fbDB,"rooms/"+code));}catch(e){}}
   else{try{fbSet(fbRef(fbDB,cdrPath("left/"+cdrKey(CDR.me))),true);}catch(e){}}
@@ -167,7 +211,7 @@ function cdrLeave(){
  cdrDetach();
  CDR.code=null;CDR.me=null;CDR.data=null;CDR.sig="";CDR.entry=[];CDR.closed=false;
 }
-window.addEventListener("pagehide",function(e){if(CDR.code&&!(e&&e.persisted))cdrLeave();});
+window.addEventListener("pagehide",function(e){if(CDR.code&&!(e&&e.persisted))cdrLeave(true);});
 
 // ── Azioni ──
 function cdrStart(){
@@ -208,7 +252,7 @@ function cdrRematch(){
 }
 function cdrInvite(silent){
  if(!fbDB||!CDR.code)return;
- var inv={from:CDR.me,game:"CODICE",kind:"codice",cat:"relax",roomCode:CDR.code,dev:(typeof filosDevId==="function"?filosDevId():null),pubCode:(typeof FILOS_PUB_CODE!=="undefined"?FILOS_PUB_CODE:null)||null,ts:Date.now()};
+ var inv={from:CDR.me,game:"CODICE",kind:"codice",cat:"relax",roomCode:CDR.code,dev:(typeof filosDevId==="function"?filosDevId():null),pubCode:(typeof filosVenue==="function"?filosVenue():"")||null,ts:Date.now()};
  var key="inv_"+Date.now();
  try{fbSet(fbRef(fbDB,"filos_invites/"+key),inv);setTimeout(function(){try{fbRemove(fbRef(fbDB,"filos_invites/"+key));}catch(e){}},30000);if(!silent)cdrToast(T("cdrInviteSent"));}catch(e){}
 }
@@ -228,7 +272,7 @@ function cdrSignature(st){
 function cdrRender(force){
  if(String(S.screen||"").indexOf("cdr")!==0)return;
  cdrStrings();
- var st=CDR.code?cdrState():null;
+ var st=CDR.code?cdrState():null;if(st&&rlGuard(st,CDR.me,CDR_MAX_PLAYERS,function(){cdrLeave();}))return;
  if(st)cdrTrackTurn(st);
  var sig=CDR.code?cdrSignature(st):"none";
  // Non ridisegnare mentre si scrive il codice, a meno che cambi qualcosa di importante
@@ -540,7 +584,7 @@ function qvrLeave(){
 function qvrExit(){qvrLeave();goBackToGames();}
 function qvrResend(){
  if(!fbDB||!fbRoomCode)return;
- var inv={from:S.qvMyName||FILOS_NAME||"Anonimo",game:"Quanto Vale?",cat:"quantovale",roomCode:fbRoomCode,dev:(typeof filosDevId==="function"?filosDevId():null),pubCode:(typeof FILOS_PUB_CODE!=="undefined"?FILOS_PUB_CODE:null)||null,ts:Date.now()};
+ var inv={from:S.qvMyName||FILOS_NAME||"Anonimo",game:"Quanto Vale?",cat:"quantovale",roomCode:fbRoomCode,dev:(typeof filosDevId==="function"?filosDevId():null),pubCode:(typeof filosVenue==="function"?filosVenue():"")||null,ts:Date.now()};
  var key="inv_"+Date.now();
  try{fbSet(fbRef(fbDB,"filos_invites/"+key),inv);setTimeout(function(){try{fbRemove(fbRef(fbDB,"filos_invites/"+key));}catch(e){}},30000);cdrToast(T("cdrInviteSent"));}catch(e){}
 }
@@ -553,11 +597,21 @@ function qvrJoin(code,done){
   var pl=r[0].val()||{},scr=r[1].val()||{};
   if(!Object.keys(pl).length){done(false,T("ui_stanza_non_trovata_o_scaduta"));return;}
   if(/^qv_/.test(scr.type||"")){done(false,T("cdrAlreadyStarted"));return;}
+  if(Object.keys(pl).length>=QV_MAX_PLAYERS){done(false,T("rlRoomFull"));return;}
   var nick=cdrKey(cdrUniqueName(cdrMyName(),Object.keys(pl)));
   fbJoinRoom(code,function(ok){
    if(!ok){done(false,T("ui_stanza_non_trovata_o_scaduta"));return;}
-   S.qvMyName=nick;
-   cdrNet(fbSet(fbRef(fbDB,"rooms/"+code+"/qv_players/"+nick),{joined:Date.now()})).then(function(){done(true);}).catch(function(){fbLeaveRoom();done(false,T("connErr"));});
+   S.qvMyName=nick;var mine={joined:Date.now(),d:(typeof filosDevId==="function"?filosDevId():"")};
+   cdrNet(fbSet(fbRef(fbDB,"rooms/"+code+"/qv_players/"+nick),mine)).then(function(){return new Promise(function(r){setTimeout(r,350);});})
+   .then(function(){return cdrNet(fbGet(fbRef(fbDB,"rooms/"+code+"/qv_players")));})
+   .then(function(sn){
+    var all=sn.val()||{};
+    // Più telefoni nello stesso istante: contano i primi arrivati, fino a 20
+    var ord=Object.keys(all).sort(function(a,b){return ((all[a].isHost?0:1)-(all[b].isHost?0:1))||((all[a].joined||0)-(all[b].joined||0))||(a<b?-1:a>b?1:0);});
+    if(!all[nick]||(all[nick].d||"")!==mine.d){fbLeaveRoom();done(false,T("connErr"));return;}
+    if(ord.indexOf(nick)>=QV_MAX_PLAYERS){cdrNet(fbSet(fbRef(fbDB,"rooms/"+code+"/qv_players/"+nick),null)).catch(function(){});fbLeaveRoom();done(false,T("rlRoomFull"));return;}
+    done(true);
+   }).catch(function(){fbLeaveRoom();done(false,T("connErr"));});
   });
  }).catch(function(){done(false,T("connErr"));});
 }

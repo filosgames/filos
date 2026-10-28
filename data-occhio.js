@@ -393,6 +393,7 @@ function ocrJoin(code,done){
  }).catch(function(){done(false,T("connErr"));});
 }
 function ocrAttach(code,me){
+ if(typeof rlRejoinSave==="function")rlRejoinSave("ocr",code,me);
  ocrDetach();
  OCR.code=code;OCR.me=me;OCR.data=null;OCR.sig="";OCR.closed=false;OCR.busy=false;OCR.abusy=false;OCR.cur=null;OCR.curKey="";
  OCR.unsub=fbOnValue(fbRef(fbDB,"rooms/"+code+"/oc"),function(snap){
@@ -401,16 +402,19 @@ function ocrAttach(code,me){
  });
 }
 function ocrDetach(){if(OCR.unsub){try{OCR.unsub();}catch(e){}}OCR.unsub=null;}
-function ocrLeave(){
+function ocrLeave(soft){
+ // soft: la pagina si sta chiudendo o ricaricando: si segna l'uscita ma la stanza non si chiude,
+ // così si può rientrare (vedi rlTryRejoin)
+ if(!soft&&typeof rlRejoinClear==="function")rlRejoinClear();
  if(OCR.code&&OCR.me&&fbDB&&!OCR.closed){
   var close=false;
-  try{var st=ocrState();close=(st.phase==="lobby"&&st.leader===OCR.me)||st.lobby.filter(function(n){return n!==OCR.me;}).length===0;}catch(e){}
+  try{var st=ocrState();close=(!soft&&st.phase==="lobby"&&st.leader===OCR.me)||st.lobby.filter(function(n){return n!==OCR.me;}).length===0;}catch(e){}
   if(close){try{fbRemove(fbRef(fbDB,"rooms/"+OCR.code));}catch(e){}}
   else{try{fbSet(fbRef(fbDB,ocrPath("left/"+cdrKey(OCR.me))),true);}catch(e){}}
  }
  ocrDetach();OCR.code=null;OCR.me=null;OCR.data=null;OCR.sig="";OCR.closed=false;OCR.cur=null;
 }
-window.addEventListener("pagehide",function(e){if(OCR.code&&!(e&&e.persisted))ocrLeave();});
+window.addEventListener("pagehide",function(e){if(OCR.code&&!(e&&e.persisted))ocrLeave(true);});
 function ocrExit(){ocrLeave();goBackToGames();}
 function ocrNewRound(lvl,p,qt,seedKey){return {lvl:lvl,seed:ocHash(seedKey),qt:qt,p:p.slice()};}
 function ocrStart(){
@@ -462,7 +466,7 @@ function ocrRematch(){
 }
 function ocrInvite(silent){
  if(!fbDB||!OCR.code)return;
- var inv={from:OCR.me,game:"L'OCCHIO DEI COLORI",kind:"occhio",cat:"relax",roomCode:OCR.code,dev:(typeof filosDevId==="function"?filosDevId():null),pubCode:(typeof FILOS_PUB_CODE!=="undefined"?FILOS_PUB_CODE:null)||null,ts:Date.now()};
+ var inv={from:OCR.me,game:"L'OCCHIO DEI COLORI",kind:"occhio",cat:"relax",roomCode:OCR.code,dev:(typeof filosDevId==="function"?filosDevId():null),pubCode:(typeof filosVenue==="function"?filosVenue():"")||null,ts:Date.now()};
  var key="inv_"+Date.now();
  try{fbSet(fbRef(fbDB,"filos_invites/"+key),inv);setTimeout(function(){try{fbRemove(fbRef(fbDB,"filos_invites/"+key));}catch(e){}},30000);if(!silent)cdrToast(T("cdrInviteSent"));}catch(e){}
 }
@@ -475,7 +479,7 @@ function ocrSignature(st){
 function ocrRender(force){
  if(S.screen!=="ocr")return;
  cdrStrings();ocStrings();
- var st=OCR.code?ocrState():null;var sig=OCR.code?ocrSignature(st):"none";
+ var st=OCR.code?ocrState():null;if(st&&rlGuard(st,OCR.me,OC_MAX_PLAYERS,function(){ocrLeave();}))return;var sig=OCR.code?ocrSignature(st):"none";
  if(!force&&sig===OCR.sig)return;OCR.sig=sig;
  clr();addBackArrow(ocrExit);
  var wrap=div("codice-wrap cdr agr oc");wrap.style.textAlign="center";document.getElementById("root").appendChild(wrap);

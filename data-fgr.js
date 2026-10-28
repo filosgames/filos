@@ -130,6 +130,7 @@ function fgrJoin(code,done){
  }).catch(function(){done(false,T("connErr"));});
 }
 function fgrAttach(code,me){
+ if(typeof rlRejoinSave==="function")rlRejoinSave("fgr",code,me);
  fgrDetach();
  FGR.code=code;FGR.me=me;FGR.data=null;FGR.sig="";FGR.val=null;FGR.valKey="";FGR.closed=false;FGR.busy=false;FGR.abusy=false;
  FGR.unsub=fbOnValue(fbRef(fbDB,"rooms/"+code+"/fl"),function(snap){
@@ -139,12 +140,15 @@ function fgrAttach(code,me){
  });
 }
 function fgrDetach(){if(FGR.unsub){try{FGR.unsub();}catch(e){}}FGR.unsub=null;clearTimeout(FGR.forceTimer);}
-function fgrLeave(){
+function fgrLeave(soft){
+ // soft: la pagina si sta chiudendo o ricaricando: si segna l'uscita ma la stanza non si chiude,
+ // così si può rientrare (vedi rlTryRejoin)
+ if(!soft&&typeof rlRejoinClear==="function")rlRejoinClear();
  if(FGR.code&&FGR.me&&fbDB&&!FGR.closed){
   // Lo stato si legge prima di segnare l'uscita: scrivere su Firebase aggiorna subito i dati locali
   // Se chi guida annulla la sfida mentre si aspetta, o se non resta nessuno, la stanza viene chiusa per tutti
   var close=false;
-  try{var st=fgrState();close=(st.phase==="lobby"&&st.leader===FGR.me)||st.lobby.filter(function(n){return n!==FGR.me;}).length===0;}catch(e){}
+  try{var st=fgrState();close=(!soft&&st.phase==="lobby"&&st.leader===FGR.me)||st.lobby.filter(function(n){return n!==FGR.me;}).length===0;}catch(e){}
   var code=FGR.code;
   if(close){try{fbRemove(fbRef(fbDB,"rooms/"+code));}catch(e){}}
   else{try{fbSet(fbRef(fbDB,fgrPath("left/"+cdrKey(FGR.me))),true);}catch(e){}}
@@ -152,7 +156,7 @@ function fgrLeave(){
  fgrDetach();
  FGR.code=null;FGR.me=null;FGR.data=null;FGR.sig="";FGR.val=null;FGR.closed=false;
 }
-window.addEventListener("pagehide",function(e){if(FGR.code&&!(e&&e.persisted))fgrLeave();});
+window.addEventListener("pagehide",function(e){if(FGR.code&&!(e&&e.persisted))fgrLeave(true);});
 function fgrExit(){fgrLeave();goBackToGames();}
 
 // ── Azioni ──
@@ -222,7 +226,7 @@ function fgrSetLevel(l){
 }
 function fgrInvite(silent){
  if(!fbDB||!FGR.code)return;
- var inv={from:FGR.me,game:"CHE BANDIERA È?",kind:"bandiera",cat:"relax",roomCode:FGR.code,dev:(typeof filosDevId==="function"?filosDevId():null),pubCode:(typeof FILOS_PUB_CODE!=="undefined"?FILOS_PUB_CODE:null)||null,ts:Date.now()};
+ var inv={from:FGR.me,game:"CHE BANDIERA È?",kind:"bandiera",cat:"relax",roomCode:FGR.code,dev:(typeof filosDevId==="function"?filosDevId():null),pubCode:(typeof filosVenue==="function"?filosVenue():"")||null,ts:Date.now()};
  var key="inv_"+Date.now();
  try{fbSet(fbRef(fbDB,"filos_invites/"+key),inv);setTimeout(function(){try{fbRemove(fbRef(fbDB,"filos_invites/"+key));}catch(e){}},30000);if(!silent)cdrToast(T("cdrInviteSent"));}catch(e){}
 }
@@ -238,7 +242,7 @@ function fgrSignature(st){
 function fgrRender(force){
  if(S.screen!=="fgr")return;
  cdrStrings();fgrStrings();
- var st=FGR.code?fgrState():null;
+ var st=FGR.code?fgrState():null;if(st&&rlGuard(st,FGR.me,FGR_MAX_PLAYERS,function(){fgrLeave();}))return;
  var sig=FGR.code?fgrSignature(st):"none";
  if(!force&&sig===FGR.sig)return;
  FGR.sig=sig;

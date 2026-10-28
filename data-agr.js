@@ -122,6 +122,7 @@ function agrJoin(code,done){
  }).catch(function(){done(false,T("connErr"));});
 }
 function agrAttach(code,me){
+ if(typeof rlRejoinSave==="function")rlRejoinSave("agr",code,me);
  agrDetach();
  AGR.code=code;AGR.me=me;AGR.data=null;AGR.sig="";AGR.val=null;AGR.valKey="";AGR.closed=false;AGR.busy=false;AGR.abusy=false;
  AGR.unsub=fbOnValue(fbRef(fbDB,"rooms/"+code+"/ag"),function(snap){
@@ -131,12 +132,15 @@ function agrAttach(code,me){
  });
 }
 function agrDetach(){if(AGR.unsub){try{AGR.unsub();}catch(e){}}AGR.unsub=null;clearTimeout(AGR.forceTimer);}
-function agrLeave(){
+function agrLeave(soft){
+ // soft: la pagina si sta chiudendo o ricaricando: si segna l'uscita ma la stanza non si chiude,
+ // così si può rientrare (vedi rlTryRejoin)
+ if(!soft&&typeof rlRejoinClear==="function")rlRejoinClear();
  if(AGR.code&&AGR.me&&fbDB&&!AGR.closed){
   // Lo stato si legge prima di segnare l'uscita: scrivere su Firebase aggiorna subito i dati locali
   // Se chi guida annulla la sfida mentre si aspetta, o se non resta nessuno, la stanza viene chiusa per tutti
   var close=false;
-  try{var st=agrState();close=(st.phase==="lobby"&&st.leader===AGR.me)||st.lobby.filter(function(n){return n!==AGR.me;}).length===0;}catch(e){}
+  try{var st=agrState();close=(!soft&&st.phase==="lobby"&&st.leader===AGR.me)||st.lobby.filter(function(n){return n!==AGR.me;}).length===0;}catch(e){}
   var code=AGR.code;
   if(close){try{fbRemove(fbRef(fbDB,"rooms/"+code));}catch(e){}}
   else{try{fbSet(fbRef(fbDB,agrPath("left/"+cdrKey(AGR.me))),true);}catch(e){}}
@@ -144,7 +148,7 @@ function agrLeave(){
  agrDetach();
  AGR.code=null;AGR.me=null;AGR.data=null;AGR.sig="";AGR.val=null;AGR.closed=false;
 }
-window.addEventListener("pagehide",function(e){if(AGR.code&&!(e&&e.persisted))agrLeave();});
+window.addEventListener("pagehide",function(e){if(AGR.code&&!(e&&e.persisted))agrLeave(true);});
 function agrExit(){agrLeave();goBackToGames();}
 
 // ── Azioni ──
@@ -212,7 +216,7 @@ function agrSetLevel(l){
 }
 function agrInvite(silent){
  if(!fbDB||!AGR.code)return;
- var inv={from:AGR.me,game:"ANNO GIUSTO",kind:"anno",cat:"relax",roomCode:AGR.code,dev:(typeof filosDevId==="function"?filosDevId():null),pubCode:(typeof FILOS_PUB_CODE!=="undefined"?FILOS_PUB_CODE:null)||null,ts:Date.now()};
+ var inv={from:AGR.me,game:"ANNO GIUSTO",kind:"anno",cat:"relax",roomCode:AGR.code,dev:(typeof filosDevId==="function"?filosDevId():null),pubCode:(typeof filosVenue==="function"?filosVenue():"")||null,ts:Date.now()};
  var key="inv_"+Date.now();
  try{fbSet(fbRef(fbDB,"filos_invites/"+key),inv);setTimeout(function(){try{fbRemove(fbRef(fbDB,"filos_invites/"+key));}catch(e){}},30000);if(!silent)cdrToast(T("cdrInviteSent"));}catch(e){}
 }
@@ -228,7 +232,7 @@ function agrSignature(st){
 function agrRender(force){
  if(S.screen!=="agr")return;
  cdrStrings();agrStrings();
- var st=AGR.code?agrState():null;
+ var st=AGR.code?agrState():null;if(st&&rlGuard(st,AGR.me,AGR_MAX_PLAYERS,function(){agrLeave();}))return;
  var sig=AGR.code?agrSignature(st):"none";
  if(!force&&sig===AGR.sig)return;
  AGR.sig=sig;

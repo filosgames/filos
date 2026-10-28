@@ -102,6 +102,7 @@ function tpJoin(code,done){
  }).catch(function(){done(false,T("connErr"));});
 }
 function tpAttach(code,me){
+ if(typeof rlRejoinSave==="function")rlRejoinSave("tpr",code,me);
  tpDetach();
  TP.code=code;TP.me=me;TP.data=null;TP.sig="";TP.closed=false;TP.busy=false;TP.tm=null;
  TP.unsub=fbOnValue(fbRef(fbDB,"rooms/"+code+"/tp"),function(snap){
@@ -110,16 +111,19 @@ function tpAttach(code,me){
  });
 }
 function tpDetach(){if(TP.unsub){try{TP.unsub();}catch(e){}}TP.unsub=null;cancelAnimationFrame(TP.raf);clearTimeout(TP.goT);}
-function tpLeave(){
+function tpLeave(soft){
+ // soft: la pagina si sta chiudendo o ricaricando: si segna l'uscita ma la stanza non si chiude,
+ // così si può rientrare (vedi rlTryRejoin)
+ if(!soft&&typeof rlRejoinClear==="function")rlRejoinClear();
  if(TP.code&&TP.me&&fbDB&&!TP.closed){
   var close=false;
-  try{var st=tpState();close=(st.phase==="lobby"&&st.host===TP.me)||st.lobby.filter(function(n){return n!==TP.me;}).length===0;}catch(e){}
+  try{var st=tpState();close=(!soft&&st.phase==="lobby"&&st.host===TP.me)||st.lobby.filter(function(n){return n!==TP.me;}).length===0;}catch(e){}
   if(close){try{fbRemove(fbRef(fbDB,"rooms/"+TP.code));}catch(e){}}
   else{try{fbSet(fbRef(fbDB,tpPath("left/"+cdrKey(TP.me))),true);}catch(e){}}
  }
  tpDetach();TP.code=null;TP.me=null;TP.data=null;TP.sig="";TP.closed=false;
 }
-window.addEventListener("pagehide",function(e){if(TP.code&&!(e&&e.persisted))tpLeave();});
+window.addEventListener("pagehide",function(e){if(TP.code&&!(e&&e.persisted))tpLeave(true);});
 function tpExit(){tpLeave();goBackToGames();}
 function tpWrite(m){
  if(TP.busy)return;TP.busy=true;
@@ -165,7 +169,7 @@ function tpPress(){
 }
 function tpInvite(silent){
  if(!fbDB||!TP.code)return;
- var inv={from:TP.me,game:"IL TEMPO PERFETTO",kind:"tempo",cat:"relax",roomCode:TP.code,dev:(typeof filosDevId==="function"?filosDevId():null),pubCode:(typeof FILOS_PUB_CODE!=="undefined"?FILOS_PUB_CODE:null)||null,ts:Date.now()};
+ var inv={from:TP.me,game:"IL TEMPO PERFETTO",kind:"tempo",cat:"relax",roomCode:TP.code,dev:(typeof filosDevId==="function"?filosDevId():null),pubCode:(typeof filosVenue==="function"?filosVenue():"")||null,ts:Date.now()};
  var key="inv_"+Date.now();
  try{fbSet(fbRef(fbDB,"filos_invites/"+key),inv);setTimeout(function(){try{fbRemove(fbRef(fbDB,"filos_invites/"+key));}catch(e){}},30000);if(!silent)cdrToast(T("cdrInviteSent"));}catch(e){}
 }
@@ -177,7 +181,7 @@ function tpSignature(st){
 function tpRender(force){
  if(S.screen!=="tpr")return;
  cdrStrings();tpStrings();
- var st=TP.code?tpState():null;var sig=TP.code?tpSignature(st):"none";
+ var st=TP.code?tpState():null;if(st&&rlGuard(st,TP.me,TP_MAX_PLAYERS,function(){tpLeave();}))return;var sig=TP.code?tpSignature(st):"none";
  if(!force&&sig===TP.sig){if(st&&st.host===TP.me&&st.stage==="run")tpHostLive(st);return;}
  TP.sig=sig;cancelAnimationFrame(TP.raf);clearTimeout(TP.goT);
  clr();addBackArrow(tpExit);

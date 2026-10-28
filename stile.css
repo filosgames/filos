@@ -608,3 +608,9 @@ body[data-cat="cultura"]{--f-cat:#DCE3F7;}body[data-cat="adulti"]{--f-cat:#EEDCE
 .ob-logo{display:block;height:46px;width:auto;margin:0 auto 34px;}
 .splash-logo-img{display:block;height:72px;width:auto;margin:0 auto;}
 @media(max-width:360px){.logo-img{height:24px;}}
+
+/* 29. Senza rete e rete di sicurezza */
+#net-bar{position:fixed;left:0;right:0;bottom:0;z-index:10000;background:#1A1D21;color:#fff;font-size:13px;font-weight:600;line-height:1.35;text-align:center;padding:10px 16px calc(env(safe-area-inset-bottom,0px) + 10px);pointer-events:none;}
+.err-rescue{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;min-height:55vh;padding:32px 24px;text-align:center;}
+.err-rescue-t{font-size:20px;font-weight:700;color:var(--dark,#111);}
+.err-rescue-b{padding:14px 28px;border:none;border-radius:14px;background:var(--f-sand,#F9DB4A);color:var(--f-sand-ink,#2F2B0E);font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;}

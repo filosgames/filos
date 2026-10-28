@@ -803,7 +803,7 @@ button:disabled{opacity:0.35!important;transform:none;}
 #cdr-toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 28px);transform:translate(-50%,20px);background:rgba(28,28,30,0.92);color:#fff;font-size:15px;font-weight:600;padding:11px 18px;border-radius:999px;opacity:0;transition:all .25s;pointer-events:none;z-index:9999;}
 #cdr-toast.on{opacity:1;transform:translate(-50%,0);}
 </style>
-<link rel="stylesheet" href="stile.css?v=41">
+<link rel="stylesheet" href="stile.css?v=42">
 
 <!-- Firebase SDK (bundled) -->
 <script>
@@ -1141,15 +1141,15 @@ try {
 <script src="data-quizdata.js?v=5"></script>
 <script src="data-lingua.js?v=1"></script>
 <script src="data-adulti.js?v=5"></script>
-<script src="data-quiz.js?v=72"></script>
-<script src="data-cdr.js?v=13"></script>
-<script src="data-agr.js?v=6"></script>
-<script src="data-pdr.js?v=6"></script>
-<script src="data-fgr.js?v=5"></script>
-<script src="data-lgr.js?v=3"></script>
-<script src="data-qxr.js?v=2"></script>
-<script src="data-occhio.js?v=8"></script>
-<script src="data-tempo.js?v=5"></script>
+<script src="data-quiz.js?v=73"></script>
+<script src="data-cdr.js?v=14"></script>
+<script src="data-agr.js?v=7"></script>
+<script src="data-pdr.js?v=7"></script>
+<script src="data-fgr.js?v=6"></script>
+<script src="data-lgr.js?v=4"></script>
+<script src="data-qxr.js?v=3"></script>
+<script src="data-occhio.js?v=9"></script>
+<script src="data-tempo.js?v=6"></script>
 <script>
 
 
@@ -2395,6 +2395,18 @@ Object.assign(STRINGS.it,{"nfcChecking": "Verifica del tag in corso…", "nfcInv
 Object.assign(STRINGS.en,{"nfcChecking": "Checking the tag…", "nfcInvalid": "This tag isn't valid or has been deactivated. Please ask the venue staff.", "nfcOffline": "I can't check the tag: check your connection and try again.", "nfcRetry": "Try again", "nfcInfo": "Generate the link to write on the NFC tags of your coasters. Anyone who taps a tag with their phone can play for 2 hours. Without a tag the app stays locked, except on this phone.", "nfcNeedPub": "First set and save the venue code above.", "nfcSaving": "Saving…", "nfcDenied": "Not authorised: this venue code is already managed by another phone. Enter the manager key below.", "nfcGenerate": "Generate tag link", "nfcKeyLabel": "Manager key", "nfcKeyHint": "Keep it safe: you need it to manage the tags from another phone or if you clear your browser data.", "nfcKeyPlaceholder": "Paste an existing key", "nfcKeyUse": "Use this key", "nfcKeyBad": "Invalid key.", "nfcSection": "NFC tags", "nfcRegenBtn": "Regenerate link (deactivates old tags)", "nfcRegenConfirm": "Regenerate the link? All NFC tags already written will stop working and must be rewritten."});
 Object.assign(STRINGS.es,{"nfcChecking": "Comprobando la etiqueta…", "nfcInvalid": "Esta etiqueta no es válida o se ha desactivado. Pregunta al personal del local.", "nfcOffline": "No puedo comprobar la etiqueta: revisa la conexión e inténtalo de nuevo.", "nfcRetry": "Reintentar", "nfcInfo": "Genera el enlace que hay que grabar en las etiquetas NFC de los posavasos. Quien toque una etiqueta con el móvil puede jugar durante 2 horas. Sin etiqueta la app queda bloqueada, salvo en este móvil.", "nfcNeedPub": "Primero configura y guarda el código del local arriba.", "nfcSaving": "Guardando…", "nfcDenied": "No autorizado: este código de local ya lo gestiona otro móvil. Introduce abajo la clave del gestor.", "nfcGenerate": "Generar enlace para las etiquetas", "nfcKeyLabel": "Clave del gestor", "nfcKeyHint": "Guárdala: la necesitas para gestionar las etiquetas desde otro móvil o si borras los datos del navegador.", "nfcKeyPlaceholder": "Pega una clave existente", "nfcKeyUse": "Usar esta clave", "nfcKeyBad": "Clave no válida.", "nfcSection": "Etiquetas NFC", "nfcRegenBtn": "Regenerar enlace (desactiva las etiquetas antiguas)", "nfcRegenConfirm": "¿Regenerar el enlace? Todas las etiquetas NFC ya grabadas dejarán de funcionar y habrá que volver a grabarlas."});
 Object.assign(STRINGS.it,{qvTie:"Pareggio!"});Object.assign(STRINGS.en,{qvTie:"It's a tie!"});Object.assign(STRINGS.es,{qvTie:"¡Empate!"});
+Object.assign(STRINGS.it,{"rlRejoined": "Sei rientrato nella partita"});
+Object.assign(STRINGS.en,{"rlRejoined": "You're back in the game"});
+Object.assign(STRINGS.es,{"rlRejoined": "Has vuelto a la partida"});
+Object.assign(STRINGS.it,{"pinSection":"PIN del pannello","pinInfo":"Il PIN protegge questo pannello su questo telefono.","pinInfoDefault":"Stai usando il PIN iniziale 1234: sceglierne uno tuo.","pinOldLabel":"PIN attuale","pinNewLabel":"Nuovo PIN (4 cifre)","pinRepeatLabel":"Ripeti il nuovo PIN","pinChangeBtn":"Cambia PIN","pinChanged":"PIN cambiato","pinErrFormat":"Il PIN deve avere 4 cifre","pinErrDefault":"Scegli un PIN diverso da 1234","pinErrMatch":"I due PIN non sono uguali","pinErrStore":"Non è stato possibile salvare il PIN su questo telefono","pinLocked":"Troppi tentativi: riprova tra {n} secondi"});
+Object.assign(STRINGS.en,{"pinSection":"Panel PIN","pinInfo":"The PIN protects this panel on this phone.","pinInfoDefault":"You're using the starting PIN 1234: choose your own.","pinOldLabel":"Current PIN","pinNewLabel":"New PIN (4 digits)","pinRepeatLabel":"Repeat the new PIN","pinChangeBtn":"Change PIN","pinChanged":"PIN changed","pinErrFormat":"The PIN must have 4 digits","pinErrDefault":"Choose a PIN other than 1234","pinErrMatch":"The two PINs don't match","pinErrStore":"The PIN couldn't be saved on this phone","pinLocked":"Too many attempts: try again in {n} seconds"});
+Object.assign(STRINGS.es,{"pinSection":"PIN del panel","pinInfo":"El PIN protege este panel en este teléfono.","pinInfoDefault":"Estás usando el PIN inicial 1234: elige uno tuyo.","pinOldLabel":"PIN actual","pinNewLabel":"Nuevo PIN (4 cifras)","pinRepeatLabel":"Repite el nuevo PIN","pinChangeBtn":"Cambiar PIN","pinChanged":"PIN cambiado","pinErrFormat":"El PIN debe tener 4 cifras","pinErrDefault":"Elige un PIN distinto de 1234","pinErrMatch":"Los dos PIN no coinciden","pinErrStore":"No se ha podido guardar el PIN en este teléfono","pinLocked":"Demasiados intentos: vuelve a intentarlo en {n} segundos"});
+Object.assign(STRINGS.it,{"netOff":"Sei senza connessione: i giochi sul telefono funzionano, quelli a distanza riprendono appena torna la rete","netOn":"Connessione tornata","errOops":"Qualcosa non ha funzionato","errHome":"Torna alla home"});
+Object.assign(STRINGS.en,{"netOff":"You're offline: games on this phone still work, remote games resume as soon as you're back online","netOn":"Back online","errOops":"Something went wrong","errHome":"Back to home"});
+Object.assign(STRINGS.es,{"netOff":"Estás sin conexión: los juegos en el teléfono funcionan, los juegos a distancia siguen en cuanto vuelva la red","netOn":"Conexión recuperada","errOops":"Algo no ha funcionado","errHome":"Volver al inicio"});
+Object.assign(STRINGS.it,{"backAgain": "Premi di nuovo Indietro per uscire dalla partita"});
+Object.assign(STRINGS.en,{"backAgain": "Press Back again to leave the game"});
+Object.assign(STRINGS.es,{"backAgain": "Pulsa Atrás otra vez para salir de la partida"});
 Object.assign(STRINGS.it,{"ageTitle": "Sezione 18+", "ageText": "Questa sezione contiene giochi per adulti e giochi in cui si beve. Entra solo se hai almeno 18 anni. Bere è sempre facoltativo: ogni sorso si può sostituire con una penitenza o con una bevanda analcolica.", "ageYes": "Ho almeno 18 anni", "ageNo": "Torna indietro"});
 Object.assign(STRINGS.en,{"ageTitle": "18+ section", "ageText": "This section contains adult games and drinking games. Only enter if you are at least 18. Drinking is always optional: any sip can be swapped for a forfeit or a non-alcoholic drink.", "ageYes": "I'm 18 or older", "ageNo": "Go back"});
 Object.assign(STRINGS.es,{"ageTitle": "Sección 18+", "ageText": "Esta sección contiene juegos para adultos y juegos en los que se bebe. Entra solo si tienes al menos 18 años. Beber es siempre opcional: cada trago se puede cambiar por una prenda o una bebida sin alcohol.", "ageYes": "Tengo 18 años o más", "ageNo": "Volver"});
@@ -3159,7 +3171,7 @@ function renderQuizzoneLobby(){
  // Già dentro — aspetta l'host
  var waitMsg=document.createElement('div');
  waitMsg.style.cssText='font-size:20px;color:#fff;font-weight:700;text-align:center;';
- waitMsg.innerHTML=' <span style="color:#FFA602">'+QZ.myNickname+T("ui_sei_in_lobby_aspetta_che");
+ waitMsg.innerHTML="";(function(){var _s=document.createElement("span");_s.style.color="#FFA602";_s.textContent=" "+QZ.myNickname;waitMsg.appendChild(_s);var _t=document.createElement("span");_t.innerHTML=T("ui_sei_in_lobby_aspetta_che");waitMsg.appendChild(_t);})();
  wrap.appendChild(waitMsg);
 
  // Avatar animato "in attesa"
@@ -4199,7 +4211,8 @@ function startInviteListener(){
    // Non ancora scaduto (max 30 sec)
    if(Date.now() - inv.ts > 30000) continue;
    // Filtro codice pub: l'invito deve essere per il nostro pub (o senza filtro)
-   if(inv.pubCode && FILOS_PUB_CODE && inv.pubCode !== FILOS_PUB_CODE) continue;
+   // Solo inviti dello stesso locale (telefoni entrati dallo stesso tag), oppure tra telefoni senza locale
+   if((inv.pubCode||"") !== ((typeof filosVenue==="function"?filosVenue():"")||"")) continue;
    // Non già mostrato
    if(window._lastInviteShown === keys[i]) continue;
    window._lastInviteShown = keys[i];
@@ -4319,7 +4332,7 @@ function showInviteBanner(inv, key){
     });
     return;
    }
-   var nick = S.qvMyName || FILOS_NAME || "Anonimo";
+   var nick = cdrKey(cdrMyName());
    S.qvMyName = nick;
    fbJoinRoom(inv.roomCode, function(ok, err){
     if(!ok){ alert(T("ui_stanza_non_trovata_o_scaduta")); S.screen="home"; render(); return; }
@@ -4364,7 +4377,7 @@ function sendChallenge(gameName, catId){
   game: gameName,
   cat: catId || null,
   dev: filosDevId(),
-  pubCode: FILOS_PUB_CODE || null,
+  pubCode: (typeof filosVenue==="function"?filosVenue():"") || null,
   ts: Date.now()
  };
  var key = "inv_" + Date.now();
@@ -4380,7 +4393,7 @@ function sendChallenge(gameName, catId){
 // Manda un invito QV con stanza già creata (codice incluso nell'invite)
 function sendQvChallenge(onRoomReady){
  if(!fbDB || !fbSet || !fbRef) return;
- var nick = S.qvMyName || FILOS_NAME || "Anonimo";
+ var nick = cdrKey(cdrMyName());
  S.qvMyName = nick;
  fbCreateRoom(function(code, err){
   if(err || !code){ console.warn("Errore creazione stanza QV:", err); return; }
@@ -4393,7 +4406,7 @@ function sendQvChallenge(onRoomReady){
    cat: "quantovale",
    roomCode: code,
    dev: filosDevId(),
-   pubCode: FILOS_PUB_CODE || null,
+   pubCode: (typeof filosVenue==="function"?filosVenue():"") || null,
    ts: Date.now()
   };
   var key = "inv_" + Date.now();
@@ -4544,6 +4557,62 @@ try{if(typeof applyAdulti==="function")applyAdulti();}catch(e){}
 if(FILOS_NAME && fbDB) startInviteListener();
 
 render();
+// Se la pagina si era chiusa durante una partita a distanza, si rientra da soli
+setTimeout(function(){try{if(["onboarding","home","splash"].indexOf(S.screen)>=0&&typeof rlTryRejoin==="function")rlTryRejoin();}catch(e){}},600);
+
+/* Senza rete: avviso in alto finché la connessione non torna */
+(function(){
+ function bar(){return document.getElementById("net-bar");}
+ function show(){if(bar())return;var b=document.createElement("div");b.id="net-bar";b.setAttribute("role","status");b.textContent=T("netOff");document.body.appendChild(b);}
+ function hide(){var b=bar();if(b){b.remove();if(typeof cdrToast==="function"){if(typeof cdrStrings==="function")cdrStrings();cdrToast(T("netOn"));}}}
+ window.addEventListener("offline",show);window.addEventListener("online",hide);
+ if(navigator.onLine===false)show();
+})();
+/* Rete di sicurezza: se un errore lascia lo schermo vuoto, compare un pulsante per tornare alla home */
+(function(){
+ var busy=false;
+ function log(m){try{var a=JSON.parse(localStorage.getItem("filos_err")||"[]");a.push({t:Date.now(),s:S&&S.screen,m:String(m).slice(0,300)});localStorage.setItem("filos_err",JSON.stringify(a.slice(-20)));}catch(e){}}
+ function rescue(){
+  if(busy)return;busy=true;
+  setTimeout(function(){busy=false;
+   var root=document.getElementById("root");if(!root)return;
+   if(root.children.length&&root.innerText.replace(/\s/g,"").length>0)return;
+   root.innerHTML="";var w=document.createElement("div");w.className="err-rescue";
+   var t=document.createElement("div");t.className="err-rescue-t";t.textContent=T("errOops");w.appendChild(t);
+   var b=document.createElement("button");b.className="err-rescue-b";b.textContent=T("errHome");
+   b.onclick=function(){try{if(typeof stopAllTimers==="function")stopAllTimers();goHome();}catch(e){try{S.screen="home";render();}catch(e2){location.reload();}}};
+   w.appendChild(b);root.appendChild(w);
+  },50);
+ }
+ window.addEventListener("error",function(e){log((e&&e.message)||"error");rescue();});
+ window.addEventListener("unhandledrejection",function(e){log("promise: "+((e&&e.reason&&e.reason.message)||e.reason||""));});
+})();
+/* Tasto Indietro del telefono: resta dentro l'app e fa quello che fa il pulsante "Indietro" sullo schermo */
+(function(){
+ var HOME={home:1,onboarding:1,splash:1};var guard=false;var lastBack=0;
+ function ovOn(){var o=document.getElementById("chipaga-overlay");return !!(o&&o.classList.contains("active"))||!!document.getElementById("challenge-modal");}
+ var skip=false;
+ function sync(){try{var need=!HOME[S.screen]||ovOn();if(need&&!guard){history.pushState({filos:1},"");guard=true;}
+  // Tornati alla home con i pulsanti dell'app: si toglie il passo in più, così Indietro esce subito come al solito
+  else if(!need&&guard&&history.state&&history.state.filos){guard=false;skip=true;history.back();}}catch(e){}}
+ var _r=render;render=function(){var x=_r.apply(this,arguments);sync();return x;};
+ function vis(el){return !!(el&&!el.disabled&&(el.offsetParent!==null||getComputedStyle(el).position==="fixed"));}
+ function remoteOn(){return ["AGR","CDR","FGR","LGR","OCR","PDR","QXR","TP"].some(function(v){try{return !!(window[v]&&window[v].code);}catch(e){return false;}});}
+ window.filosBack=function(){
+  var ov=document.getElementById("chipaga-overlay");
+  if(ov&&ov.classList.contains("active")){var c=document.getElementById("chipaga-close");if(c)c.click();return;}
+  var cm=document.getElementById("challenge-modal");if(cm){cm.remove();return;}
+  if(HOME[S.screen])return;
+  if(remoteOn()&&Date.now()-lastBack>3000){lastBack=Date.now();if(typeof cdrToast==="function"){if(typeof cdrStrings==="function")cdrStrings();cdrToast(T("backAgain"));}return;}
+  lastBack=0;
+  var sels=[".fb-back","#root .card-nav-btn.back","#hdrLeft button","#root .back-arrow"];
+  for(var i=0;i<sels.length;i++){var els=document.querySelectorAll(sels[i]);for(var j=0;j<els.length;j++){if(vis(els[j])){els[j].click();return;}}}
+  if(S.screen==="end"&&typeof goBackToGames==="function")goBackToGames();else goHome();
+ };
+ try{new MutationObserver(function(){sync();}).observe(document.body,{childList:true});var _o=document.getElementById("chipaga-overlay");if(_o)new MutationObserver(function(){sync();}).observe(_o,{attributes:true,attributeFilter:["class"]});}catch(e){}
+ window.addEventListener("popstate",function(){if(skip){skip=false;return;}guard=false;try{filosBack();}catch(e){try{goHome();}catch(e2){}}setTimeout(sync,0);});
+ sync();
+})();
 
 </script>
 </body>

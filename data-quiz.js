@@ -100,6 +100,22 @@ function logMenuClick(tab,itemName){
 }
 
 var PIN="1234";
+/* PIN personale del gestore: si salva solo l'impronta, mai il PIN in chiaro. Finché non viene scelto vale 1234. */
+function pinHash(p){var h1=0x811c9dc5,h2=0x01000193,s="filos-pin|"+String(p);for(var r=0;r<500;r++){for(var i=0;i<s.length;i++){h1^=s.charCodeAt(i);h1=Math.imul(h1,16777619)>>>0;h2=Math.imul(h2^s.charCodeAt(i),2654435761)>>>0;}s=h1.toString(16)+h2.toString(16)+String(p);}return h1.toString(16)+"-"+h2.toString(16);}
+function pinCustom(){try{return !!localStorage.getItem("filos_pin_h");}catch(e){return false;}}
+function pinOk(p){p=String(p||"");var h="";try{h=localStorage.getItem("filos_pin_h")||"";}catch(e){}return h?pinHash(p)===h:p===PIN;}
+function pinSet(p){try{localStorage.setItem("filos_pin_h",pinHash(String(p)));return true;}catch(e){return false;}}
+function pinValidNew(a,b){if(!/^[0-9]{4}$/.test(a||""))return "pinErrFormat";if(a===PIN)return "pinErrDefault";if(a!==b)return "pinErrMatch";return "";}
+/* Dopo 5 PIN sbagliati si aspetta 30 secondi (poi 60, 120…) */
+function pinLockLeft(){var u=0;try{u=+localStorage.getItem("filos_pin_until")||0;}catch(e){}return Math.max(0,Math.ceil((u-Date.now())/1000));}
+function pinAttempt(p){
+ if(pinLockLeft()>0)return false;
+ if(pinOk(p)){try{localStorage.removeItem("filos_pin_fail");localStorage.removeItem("filos_pin_lv");}catch(e){}return true;}
+ var f=0,lv=0;try{f=(+localStorage.getItem("filos_pin_fail")||0)+1;lv=+localStorage.getItem("filos_pin_lv")||0;}catch(e){}
+ if(f>=5){f=0;lv++;try{localStorage.setItem("filos_pin_until",String(Date.now()+30000*Math.pow(2,Math.min(lv-1,5))));localStorage.setItem("filos_pin_lv",String(lv));}catch(e){}}
+ try{localStorage.setItem("filos_pin_fail",String(f));}catch(e){}
+ return false;
+}
 var logoTaps=0,logoTimer=null,idleTimer=null,IDLE_MS=5*60*1000;
 
 // Join existing room
@@ -3839,7 +3855,7 @@ function renderQvSetup(){
     if(!el){window._qvPlayersListening=false;return;}
     if(pl){
      var names=Object.keys(pl);
-     el.innerHTML='<span style="font-weight:700;color:var(--dark);">'+names.join(" · ")+'</span>';
+     el.innerHTML="";var _sp=document.createElement("span");_sp.style.cssText="font-weight:700;color:var(--dark);";_sp.textContent=names.join(" · ");el.appendChild(_sp);
     } else {
      el.textContent=T("ui_nessun_giocatore_ancora");
     }
@@ -4007,7 +4023,7 @@ function renderChiPaga(){
  wrap.appendChild(cdEl);
 
  // Back button
- var backBtn2=document.createElement('button');
+ var backBtn2=document.createElement('button');backBtn2.className='fb-back';
  backBtn2.style.cssText='position:absolute;top:env(safe-area-inset-top,16px);left:16px;padding:10px 16px;background:transparent;color:rgba(255,255,255,0.3);border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.05em;z-index:20;';
  backBtn2.textContent=T('chiPagaBack');
  backBtn2.onclick=function(){cleanup();document.body.style.overflow='';document.body.style.userSelect='';document.body.style.webkitUserSelect='';S.screen='games';render();};
@@ -5967,21 +5983,23 @@ function renderAnalytics(){
   ].join("");
   ps.appendChild(pinInp);
 
-  if(S.pinErr){
-   var errEl=div("");errEl.style.cssText="font-size:13px;color:#ff3b30;font-weight:600;margin-top:-8px;";errEl.textContent=T("pinError");ps.appendChild(errEl);
+  var _lock=pinLockLeft();
+  if(S.pinErr||_lock){
+   var errEl=div("");errEl.style.cssText="font-size:13px;color:#ff3b30;font-weight:600;margin-top:-8px;text-align:center;";errEl.textContent=_lock?T("pinLocked").replace("{n}",_lock):T("pinError");ps.appendChild(errEl);
   }
+  if(_lock){pinInp.disabled=true;clearTimeout(window._pinLockT);window._pinLockT=setTimeout(function(){if(S.screen==="analytics"&&!S.pinOK)renderAnalytics();},1000);}
 
   // Auto-submit quando si raggiungono 4 cifre
   pinInp.addEventListener("input",function(){
    this.value=this.value.replace(/[^0-9]/g,"").slice(0,4);
    if(this.value.length===4){
-    if(this.value===PIN){S.pinOK=true;S.pinErr=false;S.pinInput="";render();}
+    if(pinAttempt(this.value)){S.pinOK=true;S.pinErr=false;S.pinInput="";render();}
     else{S.pinErr=true;S.pinInput="";setTimeout(function(){S.pinErr=false;renderAnalytics();},900);renderAnalytics();}
    }
   });
 
   // Focus automatico → apre tastiera numerica sul telefono
-  setTimeout(function(){try{pinInp.focus();}catch(e){}},120);
+  if(!_lock)setTimeout(function(){try{pinInp.focus();}catch(e){}},120);
   return;
  }
 
@@ -6013,8 +6031,11 @@ function renderAnalytics(){
   var fNome=obField(T("obFieldName"),T("obFieldNamePH"),"",40);
   var fCode=obField(T("obFieldCode"),T("obFieldCodePH"),"",30,function(v){return v.toLowerCase().replace(/[^a-z0-9_]/g,"");});
   // rimuovi bordo ultimo
-  fCode.style.borderBottom="none";
-  obCard.appendChild(fNome);obCard.appendChild(fCode);
+  var fPin=obField(T("pinNewLabel"),"• • • •","",4,function(v){return v.replace(/[^0-9]/g,"").slice(0,4);});
+  var fPin2=obField(T("pinRepeatLabel"),"• • • •","",4,function(v){return v.replace(/[^0-9]/g,"").slice(0,4);});
+  [fPin,fPin2].forEach(function(f){var i=f.querySelector("input");i.type="password";i.inputMode="numeric";i.autocomplete="new-password";});
+  fPin2.style.borderBottom="none";
+  obCard.appendChild(fNome);obCard.appendChild(fCode);obCard.appendChild(fPin);obCard.appendChild(fPin2);
   ob.appendChild(obCard);
   var obHint=div("");obHint.style.cssText="font-size:12px;color:#aeaeb2;text-align:center;margin-top:-12px;";obHint.textContent=T("ui_il_codice_pub_identifica_il");ob.appendChild(obHint);
   // Logo tondo e link del locale (si possono mettere anche dopo, dal Profilo)
@@ -6030,7 +6051,9 @@ function renderAnalytics(){
    var code=fCode.querySelector("input").value.trim();
    if(!nome){obErr.textContent=T("obErrName");return;}
    if(!code||code.length<3){obErr.textContent=T("obErrCode");return;}
+   var pinE=pinValidNew(fPin.querySelector("input").value,fPin2.querySelector("input").value);if(pinE){obErr.textContent=T(pinE);return;}
    var edErr=obEd.error();if(edErr){obErr.textContent=edErr;return;}
+   pinSet(fPin.querySelector("input").value);
    try{localStorage.setItem("filos_pub_name",nome);}catch(e){}
    try{localStorage.setItem("filos_pub_code",code);}catch(e){}
    // Azzera analytics alla prima configurazione
@@ -6234,6 +6257,27 @@ function renderAnalytics(){
    }
    box.appendChild(msg);
    section(T("nfcSection"),[box]);
+  })();
+
+  // ── PIN DEL PANNELLO ──
+  (function(){
+   var box=div("");box.style.cssText="padding:12px 16px;display:flex;flex-direction:column;gap:8px;";
+   var inf=div("",T(pinCustom()?"pinInfo":"pinInfoDefault"));inf.style.cssText="font-size:13px;color:"+(pinCustom()?"#636366":"#ff9f0a")+";line-height:1.5;font-weight:"+(pinCustom()?"400":"600")+";";box.appendChild(inf);
+   function pf(ph){var i=document.createElement("input");i.type="password";i.inputMode="numeric";i.maxLength=4;i.placeholder=ph;i.autocomplete="new-password";
+    i.style.cssText="padding:10px 12px;border:1.5px solid #d1d1d6;border-radius:8px;font-size:16px;width:100%;max-width:280px;box-sizing:border-box;font-family:inherit;background:#fff;";
+    i.addEventListener("input",function(){this.value=this.value.replace(/[^0-9]/g,"").slice(0,4);});box.appendChild(i);return i;}
+   var iOld=pf(T("pinOldLabel")),iNew=pf(T("pinNewLabel")),iNew2=pf(T("pinRepeatLabel"));
+   var m=div("");m.style.cssText="font-size:13px;font-weight:600;min-height:18px;";
+   var b=document.createElement("button");b.className="as-btn as-btn-primary";b.style.margin="4px 0 0";b.textContent=T("pinChangeBtn");
+   b.onclick=function(){
+    var lk=pinLockLeft();if(lk){m.style.color="#ff3b30";m.textContent=T("pinLocked").replace("{n}",lk);return;}
+    if(!pinAttempt(iOld.value)){m.style.color="#ff3b30";m.textContent=T("pinError");iOld.value="";return;}
+    var e=pinValidNew(iNew.value,iNew2.value);if(e){m.style.color="#ff3b30";m.textContent=T(e);return;}
+    if(!pinSet(iNew.value)){m.style.color="#ff3b30";m.textContent=T("pinErrStore");return;}
+    iOld.value=iNew.value=iNew2.value="";m.style.color="#34c759";m.textContent=T("pinChanged");inf.textContent=T("pinInfo");inf.style.color="#636366";inf.style.fontWeight="400";
+   };
+   box.appendChild(b);box.appendChild(m);
+   section(T("pinSection"),[box]);
   })();
 
   // ── LOGO E LINK DEL LOCALE ──
@@ -6607,7 +6651,7 @@ function generatePDFReport(pubName, period){
 function pinPress(d){
  if(S.pinInput.length>=4)return;S.pinInput+=String(d);
  if(S.pinInput.length===4){
- if(S.pinInput===PIN){S.pinOK=true;S.pinErr=false;render();}
+ if(pinAttempt(S.pinInput)){S.pinOK=true;S.pinErr=false;render();}
  else{S.pinErr=true;setTimeout(function(){S.pinInput="";S.pinErr=false;renderAnalytics();},800);renderAnalytics();}
  }else{renderAnalytics();}
 }
