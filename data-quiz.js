@@ -1146,7 +1146,6 @@ function renderIntesaSetup(){
  hdr.appendChild(div("dtitle",T("intesaTitle")));
  var card=div("dcard");card.appendChild(hdr);
  var body=div("dbody");card.appendChild(body);
- body.appendChild(div("rtext",T("intesaDesc")));
  var tq=div("rlabel",T("intesaTeamsQ"));tq.style.marginTop="24px";body.appendChild(tq);
  body.appendChild(makeStepperWidget(S.intesaTeamsN||1,1,6,function(n){S.intesaTeamsN=n;}));
  var dl=div("rlabel",T("intesaDifficulty"));dl.style.marginTop="24px";body.appendChild(dl);
@@ -1695,7 +1694,6 @@ function renderDadoSetup(){
  var card=div("dcard");card.appendChild(hdr);
  var body=div("dbody");card.appendChild(body);
  var gObjR=curGame()||{};
- if(gObjR.rules){var rulesDiv=div("rtext");rulesDiv.style.cssText="margin-bottom:16px;";rulesDiv.textContent=gObjR.rules;body.appendChild(rulesDiv);}
  body.appendChild(div("rlabel",T("howMany")));
  body.appendChild(div("rtext",T("dadoInsert15")));
 

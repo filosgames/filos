@@ -803,7 +803,7 @@ button:disabled{opacity:0.35!important;transform:none;}
 #cdr-toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 28px);transform:translate(-50%,20px);background:rgba(28,28,30,0.92);color:#fff;font-size:15px;font-weight:600;padding:11px 18px;border-radius:999px;opacity:0;transition:all .25s;pointer-events:none;z-index:9999;}
 #cdr-toast.on{opacity:1;transform:translate(-50%,0);}
 </style>
-<link rel="stylesheet" href="stile.css?v=42">
+<link rel="stylesheet" href="stile.css?v=43">
 
 <!-- Firebase SDK (bundled) -->
 <script>
@@ -1141,15 +1141,16 @@ try {
 <script src="data-quizdata.js?v=5"></script>
 <script src="data-lingua.js?v=1"></script>
 <script src="data-adulti.js?v=5"></script>
-<script src="data-quiz.js?v=73"></script>
+<script src="data-regole.js?v=1"></script>
+<script src="data-quiz.js?v=74"></script>
 <script src="data-cdr.js?v=14"></script>
 <script src="data-agr.js?v=7"></script>
 <script src="data-pdr.js?v=7"></script>
 <script src="data-fgr.js?v=6"></script>
 <script src="data-lgr.js?v=4"></script>
 <script src="data-qxr.js?v=3"></script>
-<script src="data-occhio.js?v=9"></script>
-<script src="data-tempo.js?v=6"></script>
+<script src="data-occhio.js?v=10"></script>
+<script src="data-tempo.js?v=7"></script>
 <script>
 
 
@@ -2404,6 +2405,9 @@ Object.assign(STRINGS.es,{"pinSection":"PIN del panel","pinInfo":"El PIN protege
 Object.assign(STRINGS.it,{"netOff":"Sei senza connessione: i giochi sul telefono funzionano, quelli a distanza riprendono appena torna la rete","netOn":"Connessione tornata","errOops":"Qualcosa non ha funzionato","errHome":"Torna alla home"});
 Object.assign(STRINGS.en,{"netOff":"You're offline: games on this phone still work, remote games resume as soon as you're back online","netOn":"Back online","errOops":"Something went wrong","errHome":"Back to home"});
 Object.assign(STRINGS.es,{"netOff":"Estás sin conexión: los juegos en el teléfono funcionan, los juegos a distancia siguen en cuanto vuelva la red","netOn":"Conexión recuperada","errOops":"Algo no ha funcionado","errHome":"Volver al inicio"});
+Object.assign(STRINGS.it,{"rulesShow":"Leggi","rulesHide":"Chiudi"});
+Object.assign(STRINGS.en,{"rulesShow":"Read","rulesHide":"Close"});
+Object.assign(STRINGS.es,{"rulesShow":"Leer","rulesHide":"Cerrar"});
 Object.assign(STRINGS.it,{"backAgain": "Premi di nuovo Indietro per uscire dalla partita"});
 Object.assign(STRINGS.en,{"backAgain": "Press Back again to leave the game"});
 Object.assign(STRINGS.es,{"backAgain": "Pulsa Atrás otra vez para salir de la partida"});
@@ -4553,6 +4557,8 @@ try{if(typeof applyAdulti==="function")applyAdulti();}catch(e){}
  });
 })();
 
+try{if(typeof applyRegole==="function")applyRegole();}catch(e){}
+
 // Avvia subito il listener se il nome esiste già
 if(FILOS_NAME && fbDB) startInviteListener();
 
@@ -4586,6 +4592,45 @@ setTimeout(function(){try{if(["onboarding","home","splash"].indexOf(S.screen)>=0
  }
  window.addEventListener("error",function(e){log((e&&e.message)||"error");rescue();});
  window.addEventListener("unhandledrejection",function(e){log("promise: "+((e&&e.reason&&e.reason.message)||e.reason||""));});
+})();
+/* "Come si gioca": riquadro con le regole in alto in ogni gioco.
+   Aperto nella prima schermata del gioco, poi si può chiudere e riaprire con un tocco. */
+(function(){
+ var SKIP={home:1,games:1,game:1,starter:1,end:1,onboarding:1,splash:1,analytics:1,connect:1,quizzone_lobby:1,quizzone_game:1,quizzone_leaderboard:1,quizzone_end:1};
+ var open={},first={},lastKey="";
+ // Nei giochi a distanza la schermata è una sola: conta la fase (inizio, sala d'attesa, partita)
+ var RV={cdr:["CDR","cdr"],agr:["AGR","agr"],pdr:["PDR","pdr"],fgr:["FGR","fgr"],lgr:["LGR","lgr"],qxr:["QXR","qxr"],ocr:["OCR","ocr"],tpr:["TP","tp"]};
+ function stage(){
+  var r=RV[S.screen];if(!r)return S.screen;
+  try{var X=window[r[0]];if(!X||!X.code)return S.screen+":start";var st=window[r[1]+"State"]();return S.screen+":"+((st&&st.phase)||"lobby");}catch(e){return S.screen;}
+ }
+ function put(){
+  try{
+   if(SKIP[S.screen])return;
+   var root=document.getElementById("root");if(!root)return;
+   var body=root.querySelector(".dbody");if(!body)return;
+   var R=(typeof regoleNow==="function")?regoleNow():null;if(!R||!R.rules)return;
+   var stg=stage();
+   if(R.key!==lastKey){lastKey=R.key;first[R.key]=stg;if(!(R.key in open))open[R.key]=true;}
+   var isOpen=!!open[R.key]&&(first[R.key]===stg||/:(start|lobby)$/.test(stg));
+   var box=body.querySelector(":scope > .rules-box");
+   if(box&&box.getAttribute("data-k")===R.key+"|"+LANG+"|"+(isOpen?1:0))return;
+   if(box)box.remove();
+   box=document.createElement("div");box.className="rules-box"+(isOpen?" open":"");box.setAttribute("data-k",R.key+"|"+LANG+"|"+(isOpen?1:0));
+   var hd=document.createElement("button");hd.type="button";hd.className="rules-head";
+   hd.innerHTML='<span class="rules-title"></span><span class="rules-tog"></span>';
+   hd.querySelector(".rules-title").textContent=T("howToPlay");
+   hd.querySelector(".rules-tog").textContent=isOpen?T("rulesHide"):T("rulesShow");
+   hd.onclick=function(){open[R.key]=!isOpen;first[R.key]=stage();put();};
+   box.appendChild(hd);
+   if(isOpen){var tx=document.createElement("div");tx.className="rules-text";tx.textContent=R.rules;box.appendChild(tx);
+    if(R.tip){var tp=document.createElement("div");tp.className="rules-tip";tp.textContent=R.tip;box.appendChild(tp);}}
+   body.insertBefore(box,body.firstChild);
+  }catch(e){}
+ }
+ window.rulesBoxPut=put;
+ var _r2=render;render=function(){var x=_r2.apply(this,arguments);put();setTimeout(put,0);return x;};
+ try{new MutationObserver(function(){put();}).observe(document.getElementById("root"),{childList:true});}catch(e){}
 })();
 /* Tasto Indietro del telefono: resta dentro l'app e fa quello che fa il pulsante "Indietro" sullo schermo */
 (function(){

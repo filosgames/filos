@@ -196,7 +196,7 @@ function tpRender(force){
  if(st.host===TP.me)tpScreenHost(wrap,st);else tpScreenPlayer(wrap,st);
 }
 function tpScreenStart(wrap){
- cdrHeader(wrap,T("cdrRemote"),T("tpTitle"),T("tpIntro"));
+ cdrHeader(wrap,T("cdrRemote"),T("tpTitle"),T("cdrIntro"));
  if(!fbDB){wrap.appendChild(div("codice-sub",T("firebaseErr")));return;}
  var err=div("cdr-err");
  var sfida=btn("codice-cta",T("ui_sfida_un_altro_tavolo"),function(){

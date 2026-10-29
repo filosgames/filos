@@ -614,3 +614,12 @@ body[data-cat="cultura"]{--f-cat:#DCE3F7;}body[data-cat="adulti"]{--f-cat:#EEDCE
 .err-rescue{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;min-height:55vh;padding:32px 24px;text-align:center;}
 .err-rescue-t{font-size:20px;font-weight:700;color:var(--dark,#111);}
 .err-rescue-b{padding:14px 28px;border:none;border-radius:14px;background:var(--f-sand,#F9DB4A);color:var(--f-sand-ink,#2F2B0E);font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;}
+
+/* 30. Regole: righe una sotto l'altra e riquadro "Come si gioca" */
+.rtext{white-space:pre-line;}
+.rules-box{background:var(--f-fill,#F0F3F6);border-radius:14px;margin:0 0 16px;text-align:left;overflow:hidden;width:100%;box-sizing:border-box;align-self:stretch;flex-shrink:0;}
+.rules-head{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:12px 14px;background:none;border:none;font-family:inherit;cursor:pointer;color:var(--dark,#1A1D21);}
+.rules-title{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;}
+.rules-tog{font-size:13px;font-weight:700;color:#5B6470;flex-shrink:0;}
+.rules-text{white-space:pre-line;font-size:15px;line-height:1.5;color:var(--dark,#1A1D21);padding:0 14px 12px;}
+.rules-tip{font-size:13px;line-height:1.45;color:#5B6470;padding:10px 14px 12px;border-top:1px solid rgba(0,0,0,.06);}

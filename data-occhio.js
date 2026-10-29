@@ -193,7 +193,6 @@ function renderOcSetup(){
  ocStrings();clr();
  var wrap=div("panel");var body=ocHdr(wrap);
  var solo=S.cat==="solitario";
- body.appendChild(div("rtext",T(solo?"ocRulesSolo":"ocRulesFriends")));
  var inputs=[];
  if(!solo){
   body.appendChild(div("rlabel",T("howMany")));
@@ -496,7 +495,7 @@ function ocrRender(force){
  else ocrScreenWait(wrap,st);
 }
 function ocrScreenStart(wrap){
- cdrHeader(wrap,T("cdrRemote"),ocTitle(),T("ocIntroRemote"));
+ cdrHeader(wrap,T("cdrRemote"),ocTitle(),T("cdrIntro"));
  if(!fbDB){wrap.appendChild(div("codice-sub",T("firebaseErr")));return;}
  var err=div("cdr-err");
  var sfida=btn("codice-cta",T("ui_sfida_un_altro_tavolo"),function(){
