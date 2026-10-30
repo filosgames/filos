@@ -224,9 +224,9 @@ function pdrSetLevel(l){
 }
 function pdrInvite(silent){
  if(!fbDB||!PDR.code)return;
- var inv={from:PDR.me,game:"PRIMA O DOPO?",kind:"primadopo",cat:"relax",roomCode:PDR.code,dev:(typeof filosDevId==="function"?filosDevId():null),pubCode:(typeof filosVenue==="function"?filosVenue():"")||null,ts:Date.now()};
- var key="inv_"+Date.now();
- try{fbSet(fbRef(fbDB,"filos_invites/"+key),inv);setTimeout(function(){try{fbRemove(fbRef(fbDB,"filos_invites/"+key));}catch(e){}},30000);if(!silent)cdrToast(T("cdrInviteSent"));}catch(e){}
+ var inv={from:PDR.me,game:"PRIMA O DOPO?",kind:"primadopo",cat:"relax",roomCode:PDR.code,dev:(typeof filosDevId==="function"?filosDevId():null),pubCode:(typeof filosVenue==="function"?filosVenue():"")||null,ts:invNow()};
+ var key="inv_"+Date.now()+"_"+Math.random().toString(36).slice(2,7);
+ try{fbSet(fbRef(fbDB,invPath(key)),inv);setTimeout(function(){try{fbRemove(fbRef(fbDB,invPath(key)));}catch(e){}},30000);if(!silent)cdrToast(T("cdrInviteSent"));}catch(e){}
 }
 
 // ── Schermate ──

@@ -1142,15 +1142,15 @@ try {
 <script src="data-lingua.js?v=1"></script>
 <script src="data-adulti.js?v=5"></script>
 <script src="data-regole.js?v=1"></script>
-<script src="data-quiz.js?v=74"></script>
-<script src="data-cdr.js?v=14"></script>
-<script src="data-agr.js?v=7"></script>
-<script src="data-pdr.js?v=7"></script>
-<script src="data-fgr.js?v=6"></script>
-<script src="data-lgr.js?v=4"></script>
-<script src="data-qxr.js?v=3"></script>
-<script src="data-occhio.js?v=10"></script>
-<script src="data-tempo.js?v=7"></script>
+<script src="data-quiz.js?v=75"></script>
+<script src="data-cdr.js?v=15"></script>
+<script src="data-agr.js?v=8"></script>
+<script src="data-pdr.js?v=8"></script>
+<script src="data-fgr.js?v=7"></script>
+<script src="data-lgr.js?v=5"></script>
+<script src="data-qxr.js?v=4"></script>
+<script src="data-occhio.js?v=11"></script>
+<script src="data-tempo.js?v=8"></script>
 <script>
 
 
@@ -4199,32 +4199,40 @@ function filosDevId(){
 }
 
 // Avvia il listener inviti (chiamato dopo che l'utente ha inserito il nome)
+var INV_SEEN={},INV_VENUE=null;
 function startInviteListener(){
  if(!fbDB || !fbOnValue || !fbRef) return;
  if(inviteUnsubscribe) try{inviteUnsubscribe();}catch(e){}
- var invitesRef = fbRef(fbDB, "filos_invites");
+ // Si ascoltano solo gli inviti del proprio locale (o dei telefoni senza locale)
+ INV_VENUE=invVenue();
+ var since=invNow();
+ var invitesRef = fbRef(fbDB, invPath());
  inviteUnsubscribe = fbOnValue(invitesRef, function(snapshot){
   var data = snapshot && snapshot.val ? snapshot.val() : null;
-  if(!data) return;
-  // Cerca un invito non ancora visto, non mandato da noi
-  var keys = Object.keys(data);
+  if(!data || typeof data!=="object") return;
+  var now=invNow();
+  // Dal più recente: se arrivano più sfide insieme si mostra l'ultima, e ognuna una volta sola
+  var keys = Object.keys(data).sort(function(a,b){return ((data[b]&&+data[b].ts)||0)-((data[a]&&+data[a].ts)||0);});
   for(var i=0;i<keys.length;i++){
    var inv = data[keys[i]];
-   if(!inv) continue;
+   if(!inv || typeof inv!=="object") continue;
+   if(INV_SEEN[keys[i]]) continue;
    if(inv.dev ? inv.dev === filosDevId() : inv.from === FILOS_NAME) continue;
-   // Non ancora scaduto (max 30 sec)
-   if(Date.now() - inv.ts > 30000) continue;
-   // Filtro codice pub: l'invito deve essere per il nostro pub (o senza filtro)
-   // Solo inviti dello stesso locale (telefoni entrati dallo stesso tag), oppure tra telefoni senza locale
+   // Valido 30 secondi (orologio del server, così non conta se l'ora del telefono è sbagliata)
+   var age=now-(+inv.ts||0);
+   if(age > 30000 || age < -30000) continue;
    if((inv.pubCode||"") !== ((typeof filosVenue==="function"?filosVenue():"")||"")) continue;
-   // Non già mostrato
-   if(window._lastInviteShown === keys[i]) continue;
+   INV_SEEN[keys[i]]=1;
+   // Se si sta già giocando a distanza, la sfida non interrompe la partita
+   if(typeof rlBusyRemote==="function"&&rlBusyRemote()) continue;
    window._lastInviteShown = keys[i];
    showInviteBanner(inv, keys[i]);
    break;
   }
  });
 }
+// Se il locale cambia (il telefono entra da un tag), si passa agli inviti del nuovo locale
+setInterval(function(){try{if(INV_VENUE!==null&&FILOS_NAME&&invVenue()!==INV_VENUE)startInviteListener();}catch(e){}},4000);
 
 // Notifica di sfida: semplice, chiara, in stile iOS
 function showInviteBanner(inv, key){
@@ -4252,7 +4260,7 @@ function showInviteBanner(inv, key){
   banner.remove();
   if(typeof stopAllTimers==="function")stopAllTimers();
   // Rimuovi l'invito da Firebase
-  try{fbRemove(fbRef(fbDB,"filos_invites/"+key));}catch(e){}
+  try{fbRemove(fbRef(fbDB,invPath(key)));}catch(e){}
 
   // Invito a Indovina il codice a distanza: entra direttamente nella partita
   if(inv.roomCode && inv.kind === "codice" && typeof cdrJoin==="function"){
@@ -4362,7 +4370,7 @@ function showInviteBanner(inv, key){
 
  ref.onclick=function(){
   close();
-  try{fbRemove(fbRef(fbDB,"filos_invites/"+key));}catch(e){}
+  try{fbRemove(fbRef(fbDB,invPath(key)));}catch(e){}
  };
 
  btns.appendChild(ref);btns.appendChild(acc);
@@ -4382,14 +4390,14 @@ function sendChallenge(gameName, catId){
   cat: catId || null,
   dev: filosDevId(),
   pubCode: (typeof filosVenue==="function"?filosVenue():"") || null,
-  ts: Date.now()
+  ts: invNow()
  };
- var key = "inv_" + Date.now();
+ var key = "inv_" + Date.now() + "_" + Math.random().toString(36).slice(2,7);
  try{
-  fbSet(fbRef(fbDB,"filos_invites/"+key), inv);
+  fbSet(fbRef(fbDB,invPath(key)), inv);
   // Auto-rimuovi dopo 30 sec
   setTimeout(function(){
-   try{fbRemove(fbRef(fbDB,"filos_invites/"+key));}catch(e){}
+   try{fbRemove(fbRef(fbDB,invPath(key)));}catch(e){}
   },30000);
  }catch(e){console.warn("Invito non inviato:",e);}
 }
@@ -4411,12 +4419,12 @@ function sendQvChallenge(onRoomReady){
    roomCode: code,
    dev: filosDevId(),
    pubCode: (typeof filosVenue==="function"?filosVenue():"") || null,
-   ts: Date.now()
+   ts: invNow()
   };
-  var key = "inv_" + Date.now();
+  var key = "inv_" + Date.now() + "_" + Math.random().toString(36).slice(2,7);
   try{
-   fbSet(fbRef(fbDB,"filos_invites/"+key), inv);
-   setTimeout(function(){ try{fbRemove(fbRef(fbDB,"filos_invites/"+key));}catch(e){} }, 30000);
+   fbSet(fbRef(fbDB,invPath(key)), inv);
+   setTimeout(function(){ try{fbRemove(fbRef(fbDB,invPath(key)));}catch(e){} }, 30000);
   }catch(e){ console.warn("Invito QV non inviato:", e); }
   if(typeof onRoomReady === "function") onRoomReady(code);
  });

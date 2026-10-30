@@ -21,6 +21,17 @@ function cdrT(k){return T(k);}
 // Le operazioni di rete hanno un limite di tempo: con connessione assente o lenta si mostra un errore invece di restare bloccati
 function cdrNet(promise,ms){return new Promise(function(res,rej){var done=false;var t=setTimeout(function(){if(!done){done=true;rej(new Error("timeout"));}},ms||9000);promise.then(function(v){if(!done){done=true;clearTimeout(t);res(v);}},function(e){if(!done){done=true;clearTimeout(t);rej(e);}});});}
 function cdrPath(p){return "rooms/"+CDR.code+"/cd"+(p?"/"+p:"");}
+// Inviti divisi per locale: ogni telefono ascolta solo quelli del suo locale (con tanti tavoli e tanti locali
+// ogni telefono non riceve più gli inviti di tutto il mondo)
+function invVenue(){var v=(typeof filosVenue==="function"?filosVenue():"")||"";v=String(v).toLowerCase().replace(/[^a-z0-9_]/g,"").slice(0,40);return v||"_";}
+function invPath(k){return "filos_invites/"+invVenue()+(k?"/"+k:"");}
+// Vero se il telefono sta già giocando una partita a distanza (non nella sala d'attesa)
+function rlBusyRemote(){
+ var G=[["CDR","cdr"],["AGR","agr"],["PDR","pdr"],["FGR","fgr"],["LGR","lgr"],["QXR","qxr"],["OCR","ocr"],["TP","tp"]];
+ for(var i=0;i<G.length;i++){try{var X=window[G[i][0]];if(X&&X.code){var st=window[G[i][1]+"State"]();if(st&&st.phase&&st.phase!=="lobby"&&!st.ended)return true;}}catch(e){}}
+ return false;
+}
+function invNow(){return (typeof fbNow==="function")?fbNow():Date.now();}
 function cdrKey(name){return String(name).replace(/[.#$\[\]\/]/g,"_");}
 function cdrEnc(secret,round){var s=secret.join("")+"|"+CDR.code+"|"+round;var o="";for(var i=0;i<s.length;i++)o+=String.fromCharCode(s.charCodeAt(i)^(23+i*7)%61);return btoa(o);}
 function cdrDec(v,round){try{var s=atob(v),o="";for(var i=0;i<s.length;i++)o+=String.fromCharCode(s.charCodeAt(i)^(23+i*7)%61);var p=o.split("|");if(p[1]!==String(CDR.code)||p[2]!==String(round))return null;return p[0].split("");}catch(e){return null;}}
@@ -252,9 +263,9 @@ function cdrRematch(){
 }
 function cdrInvite(silent){
  if(!fbDB||!CDR.code)return;
- var inv={from:CDR.me,game:"CODICE",kind:"codice",cat:"relax",roomCode:CDR.code,dev:(typeof filosDevId==="function"?filosDevId():null),pubCode:(typeof filosVenue==="function"?filosVenue():"")||null,ts:Date.now()};
- var key="inv_"+Date.now();
- try{fbSet(fbRef(fbDB,"filos_invites/"+key),inv);setTimeout(function(){try{fbRemove(fbRef(fbDB,"filos_invites/"+key));}catch(e){}},30000);if(!silent)cdrToast(T("cdrInviteSent"));}catch(e){}
+ var inv={from:CDR.me,game:"CODICE",kind:"codice",cat:"relax",roomCode:CDR.code,dev:(typeof filosDevId==="function"?filosDevId():null),pubCode:(typeof filosVenue==="function"?filosVenue():"")||null,ts:invNow()};
+ var key="inv_"+Date.now()+"_"+Math.random().toString(36).slice(2,7);
+ try{fbSet(fbRef(fbDB,invPath(key)),inv);setTimeout(function(){try{fbRemove(fbRef(fbDB,invPath(key)));}catch(e){}},30000);if(!silent)cdrToast(T("cdrInviteSent"));}catch(e){}
 }
 function cdrToast(msg){
  cdrStrings();
@@ -584,9 +595,9 @@ function qvrLeave(){
 function qvrExit(){qvrLeave();goBackToGames();}
 function qvrResend(){
  if(!fbDB||!fbRoomCode)return;
- var inv={from:S.qvMyName||FILOS_NAME||"Anonimo",game:"Quanto Vale?",cat:"quantovale",roomCode:fbRoomCode,dev:(typeof filosDevId==="function"?filosDevId():null),pubCode:(typeof filosVenue==="function"?filosVenue():"")||null,ts:Date.now()};
- var key="inv_"+Date.now();
- try{fbSet(fbRef(fbDB,"filos_invites/"+key),inv);setTimeout(function(){try{fbRemove(fbRef(fbDB,"filos_invites/"+key));}catch(e){}},30000);cdrToast(T("cdrInviteSent"));}catch(e){}
+ var inv={from:S.qvMyName||FILOS_NAME||"Anonimo",game:"Quanto Vale?",cat:"quantovale",roomCode:fbRoomCode,dev:(typeof filosDevId==="function"?filosDevId():null),pubCode:(typeof filosVenue==="function"?filosVenue():"")||null,ts:invNow()};
+ var key="inv_"+Date.now()+"_"+Math.random().toString(36).slice(2,7);
+ try{fbSet(fbRef(fbDB,invPath(key)),inv);setTimeout(function(){try{fbRemove(fbRef(fbDB,invPath(key)));}catch(e){}},30000);cdrToast(T("cdrInviteSent"));}catch(e){}
 }
 // Chi accetta l'invito: nome unico e niente ingresso a partita già iniziata
 function qvrJoin(code,done){

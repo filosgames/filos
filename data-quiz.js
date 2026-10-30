@@ -6963,6 +6963,9 @@ function filosCleanup(){
   if(!window.fbDB||!fbGet||!fbRef||!fbRemove)return;
   var last=0;try{last=+localStorage.getItem("filos_clean_at")||0;}catch(e){}
   var now=Date.now();if(now-last<CLEAN_EVERY)return;
+  // La pulizia la fa il telefono del gestore, e solo ogni tanto un cliente: con tanti telefoni non si scarica tutto da tutti
+  var owner=false;try{owner=!!localStorage.getItem("filos_pub_code");}catch(e){}
+  if(!owner&&Math.random()>0.1){try{localStorage.setItem("filos_clean_at",String(now));}catch(e){}return;}
   try{localStorage.setItem("filos_clean_at",String(now));}catch(e){}
   fbGet(fbRef(fbDB,"rooms")).then(function(snap){
    var all=(snap&&snap.val&&snap.val())||{};
@@ -6974,10 +6977,14 @@ function filosCleanup(){
     }
    });
   }).catch(function(){});
+  // Inviti scaduti: sia quelli divisi per locale (filos_invites/{locale}/{id}) sia quelli vecchi senza locale
   fbGet(fbRef(fbDB,"filos_invites")).then(function(snap){
    var all=(snap&&snap.val&&snap.val())||{};
-   Object.keys(all).forEach(function(k){var ts=+(all[k]&&all[k].ts)||0;var m=/^inv_(\d+)/.exec(k);if(!ts&&m)ts=+m[1];
-    if(ts&&now-ts>INV_TTL){try{fbRemove(fbRef(fbDB,"filos_invites/"+k)).catch(function(){});}catch(e){}}});
+   function old(o,k){var ts=+(o&&o.ts)||0;var m=/^inv_(\d+)/.exec(k);if(!ts&&m)ts=+m[1];return ts&&now-ts>INV_TTL;}
+   Object.keys(all).forEach(function(k){var o=all[k];if(!o||typeof o!=="object")return;
+    if("from" in o||"ts" in o){if(old(o,k)){try{fbRemove(fbRef(fbDB,"filos_invites/"+k)).catch(function(){});}catch(e){}}return;}
+    Object.keys(o).forEach(function(k2){if(old(o[k2],k2)){try{fbRemove(fbRef(fbDB,"filos_invites/"+k+"/"+k2)).catch(function(){});}catch(e){}}});
+   });
   }).catch(function(){});
  }catch(e){}
 }
