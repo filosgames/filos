@@ -635,3 +635,4 @@ body[data-cat="cultura"]{--f-cat:#DCE3F7;}body[data-cat="adulti"]{--f-cat:#EEDCE
    hanno altezza fissa, quindi durante il turno il pulsante non si sposta. */
 .tp-mid{position:static!important;transform:none!important;top:auto!important;padding:0!important;margin:4px 0 0!important;z-index:auto!important;}
 @media (max-height:740px){.tp-slot{height:64px!important;}.tp-big{width:min(64vw,33vh)!important;height:min(64vw,33vh)!important;font-size:26px!important;margin:8px auto!important;}}
+.tp-big.amber{background:#F5A524;color:#2B1D00;font-size:clamp(34px,13vw,64px);cursor:default;}
