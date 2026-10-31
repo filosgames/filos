@@ -282,6 +282,7 @@ function cdrSignature(st){
 }
 function cdrRender(force){
  if(String(S.screen||"").indexOf("cdr")!==0)return;
+ if(typeof geoGateNeededNow==="function"&&geoGateNeededNow())return; // fuori dal locale: resta la schermata della posizione
  cdrStrings();
  var st=CDR.code?cdrState():null;if(st&&rlGuard(st,CDR.me,CDR_MAX_PLAYERS,function(){cdrLeave();}))return;
  if(st)cdrTrackTurn(st);

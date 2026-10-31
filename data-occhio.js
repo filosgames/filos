@@ -477,6 +477,7 @@ function ocrSignature(st){
 }
 function ocrRender(force){
  if(S.screen!=="ocr")return;
+ if(typeof geoGateNeededNow==="function"&&geoGateNeededNow())return; // fuori dal locale: resta la schermata della posizione
  cdrStrings();ocStrings();
  var st=OCR.code?ocrState():null;if(st&&rlGuard(st,OCR.me,OC_MAX_PLAYERS,function(){ocrLeave();}))return;var sig=OCR.code?ocrSignature(st):"none";
  if(!force&&sig===OCR.sig)return;OCR.sig=sig;

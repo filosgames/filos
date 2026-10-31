@@ -803,7 +803,7 @@ button:disabled{opacity:0.35!important;transform:none;}
 #cdr-toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 28px);transform:translate(-50%,20px);background:rgba(28,28,30,0.92);color:#fff;font-size:15px;font-weight:600;padding:11px 18px;border-radius:999px;opacity:0;transition:all .25s;pointer-events:none;z-index:9999;}
 #cdr-toast.on{opacity:1;transform:translate(-50%,0);}
 </style>
-<link rel="stylesheet" href="stile.css?v=43">
+<link rel="stylesheet" href="stile.css?v=44">
 
 <!-- Firebase SDK (bundled) -->
 <script>
@@ -1142,15 +1142,16 @@ try {
 <script src="data-lingua.js?v=1"></script>
 <script src="data-adulti.js?v=5"></script>
 <script src="data-regole.js?v=1"></script>
-<script src="data-quiz.js?v=75"></script>
-<script src="data-cdr.js?v=15"></script>
-<script src="data-agr.js?v=8"></script>
-<script src="data-pdr.js?v=8"></script>
-<script src="data-fgr.js?v=7"></script>
-<script src="data-lgr.js?v=5"></script>
-<script src="data-qxr.js?v=4"></script>
-<script src="data-occhio.js?v=11"></script>
-<script src="data-tempo.js?v=8"></script>
+<script src="data-quiz.js?v=76"></script>
+<script src="data-geo.js?v=1"></script>
+<script src="data-cdr.js?v=16"></script>
+<script src="data-agr.js?v=9"></script>
+<script src="data-pdr.js?v=9"></script>
+<script src="data-fgr.js?v=8"></script>
+<script src="data-lgr.js?v=6"></script>
+<script src="data-qxr.js?v=5"></script>
+<script src="data-occhio.js?v=12"></script>
+<script src="data-tempo.js?v=9"></script>
 <script>
 
 
@@ -3865,6 +3866,8 @@ function render(){
  var _ch=document.getElementById("chipaga-hint");var _ov=document.getElementById("chipaga-overlay");if(_ch&&_ov&&!_ov.classList.contains("active"))_ch.textContent=T("ui_appoggiate_tutti_un_dito");
  // Senza tag NFC valido si vede la schermata di blocco (tranne il pannello del gestore; una partita già iniziata si chiude normalmente)
  if(S.screen!=="analytics"&&typeof nfcGateNeeded==="function"&&nfcGateNeeded()&&(NFC_STATE.status==="checking"||["onboarding","splash","home","games"].indexOf(S.screen)>=0)){renderNfcGate();return;}
+ // Fuori dal locale (posizione): niente giochi, tranne il pannello del gestore
+ if(S.screen!=="analytics"&&typeof geoGateNeeded==="function"&&geoGateNeeded()){renderGeoGate();return;}
  if(S.screen==="onboarding"){
   renderOnboarding();
  }

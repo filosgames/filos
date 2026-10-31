@@ -229,7 +229,7 @@ function nfcPublish(venue,cb){
 // Su Firebase: filos_pub/{locale}/p = {name, logo, url, txt, resetAt, at, menu, offer}  (leggibile da tutti)
 //              filos_pub/{locale}/k = chiave del gestore (non leggibile: serve alle regole per permettere la scrittura)
 // Sul telefono si tengono in memoria solo i campi piccoli (il menu con le foto si carica a fine partita).
-var PUB_SMALL=["name","logo","url","txt","resetAt","at"];
+var PUB_SMALL=["name","logo","url","txt","resetAt","at","geo"];
 function pubSmall(p){if(!p||typeof p!=="object")return null;var o={};PUB_SMALL.forEach(function(k){if(p[k]!==undefined&&p[k]!==null)o[k]=p[k];});return o;}
 function pubProfileCached(v){if(!v)return null;try{var x=JSON.parse(localStorage.getItem("filos_pubp_"+v)||"null");return x&&typeof x==="object"?x:null;}catch(e){return null;}}
 function pubProfileCache(v,p){try{p=pubSmall(p);if(p)localStorage.setItem("filos_pubp_"+v,JSON.stringify(p));else localStorage.removeItem("filos_pubp_"+v);}catch(e){}}
@@ -270,6 +270,8 @@ function pubProfileSave2(v,p,cb){
  var base=pubProfileCached(v)||{};p=p||{};
  function pick(k){return p[k]!==undefined?p[k]:base[k];}
  var clean={name:String(pick("name")||"").slice(0,60),logo:String(pick("logo")||""),url:String(pick("url")||"").slice(0,300),txt:String(pick("txt")||"").slice(0,60),resetAt:+pick("resetAt")||0,at:Date.now()};
+ // Centro del locale per giocare solo lì (null = controllo tolto)
+ var _g=pick("geo");if(_g&&typeof _g==="object"&&isFinite(+_g.lat)&&isFinite(+_g.lng)&&Math.abs(+_g.lat)<=90&&Math.abs(+_g.lng)<=180)clean.geo={lat:+_g.lat,lng:+_g.lng,r:Math.min(1000,Math.max(30,+_g.r||100))};
  // Sul telefono del gestore si pubblicano insieme anche menu e proposta del momento
  if(v===nfcCleanVenue(getPubCode())){
   clean.menu=pubMenuClean(typeof MENU!=="undefined"?MENU:null);
@@ -6256,6 +6258,9 @@ function renderAnalytics(){
    box.appendChild(msg);
    section(T("nfcSection"),[box]);
   })();
+
+  // ── POSIZIONE DEL LOCALE ──
+  if(typeof geoPanelSection==="function")geoPanelSection(section,pubCode);
 
   // ── PIN DEL PANNELLO ──
   (function(){

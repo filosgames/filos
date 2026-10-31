@@ -231,6 +231,7 @@ function agrSignature(st){
 }
 function agrRender(force){
  if(S.screen!=="agr")return;
+ if(typeof geoGateNeededNow==="function"&&geoGateNeededNow())return; // fuori dal locale: resta la schermata della posizione
  cdrStrings();agrStrings();
  var st=AGR.code?agrState():null;if(st&&rlGuard(st,AGR.me,AGR_MAX_PLAYERS,function(){agrLeave();}))return;
  var sig=AGR.code?agrSignature(st):"none";

@@ -219,6 +219,7 @@ function lgrSignature(st){
 }
 function lgrRender(force){
  if(S.screen!=="lgr")return;
+ if(typeof geoGateNeededNow==="function"&&geoGateNeededNow())return; // fuori dal locale: resta la schermata della posizione
  cdrStrings();lgrStrings();
  var st=LGR.code?lgrState():null;if(st&&rlGuard(st,LGR.me,LGR_MAX_PLAYERS,function(){lgrLeave();}))return;
  var sig=LGR.code?lgrSignature(st):"none";

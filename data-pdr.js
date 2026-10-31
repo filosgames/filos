@@ -239,6 +239,7 @@ function pdrSignature(st){
 }
 function pdrRender(force){
  if(S.screen!=="pdr")return;
+ if(typeof geoGateNeededNow==="function"&&geoGateNeededNow())return; // fuori dal locale: resta la schermata della posizione
  cdrStrings();pdrStrings();
  var st=PDR.code?pdrState():null;if(st&&rlGuard(st,PDR.me,PDR_MAX_PLAYERS,function(){pdrLeave();}))return;
  var sig=PDR.code?pdrSignature(st):"none";

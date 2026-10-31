@@ -217,6 +217,7 @@ function qxrSignature(st){
 }
 function qxrRender(force){
  if(S.screen!=="qxr")return;
+ if(typeof geoGateNeededNow==="function"&&geoGateNeededNow())return; // fuori dal locale: resta la schermata della posizione
  cdrStrings();qxrStrings();
  var st=QXR.code?qxrState():null;if(st&&rlGuard(st,QXR.me,QXR_MAX_PLAYERS,function(){qxrLeave();}))return;
  var sig=QXR.code?qxrSignature(st):"none";

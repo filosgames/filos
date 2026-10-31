@@ -241,6 +241,7 @@ function fgrSignature(st){
 }
 function fgrRender(force){
  if(S.screen!=="fgr")return;
+ if(typeof geoGateNeededNow==="function"&&geoGateNeededNow())return; // fuori dal locale: resta la schermata della posizione
  cdrStrings();fgrStrings();
  var st=FGR.code?fgrState():null;if(st&&rlGuard(st,FGR.me,FGR_MAX_PLAYERS,function(){fgrLeave();}))return;
  var sig=FGR.code?fgrSignature(st):"none";

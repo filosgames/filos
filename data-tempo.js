@@ -180,6 +180,7 @@ function tpSignature(st){
 }
 function tpRender(force){
  if(S.screen!=="tpr")return;
+ if(typeof geoGateNeededNow==="function"&&geoGateNeededNow())return; // fuori dal locale: resta la schermata della posizione
  cdrStrings();tpStrings();
  var st=TP.code?tpState():null;if(st&&rlGuard(st,TP.me,TP_MAX_PLAYERS,function(){tpLeave();}))return;var sig=TP.code?tpSignature(st):"none";
  if(!force&&sig===TP.sig){if(st&&st.host===TP.me&&st.stage==="run")tpHostLive(st);return;}
