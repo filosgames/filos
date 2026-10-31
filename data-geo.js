@@ -137,3 +137,29 @@ function geoPanelSection(section,pubCode){
  box.appendChild(rm);box.appendChild(msg);
  section(geoT("geoSection"),[box]);
 }
+// Riquadro di controllo per il gestore: si vede solo aprendo il link con #geodebug alla fine
+(function(){
+ if(String(location.hash||"").indexOf("geodebug")<0)return;
+ function box(){
+  var b=document.getElementById("geo-debug");
+  if(!b){b=document.createElement("div");b.id="geo-debug";b.style.cssText="position:fixed;left:8px;right:8px;bottom:8px;z-index:100000;background:#111;color:#fff;font:12px/1.45 monospace;padding:10px 12px;border-radius:12px;white-space:pre-wrap;opacity:.94;pointer-events:none;";document.body.appendChild(b);}
+  var v="",own=false,prof=null,nfc="",perm="";
+  try{v=filosVenue();}catch(e){}
+  try{own=nfcIsOwnerDevice();}catch(e){}
+  try{prof=v?pubProfileCached(v):null;}catch(e){}
+  try{nfc=NFC_STATE.status+" | token valido: "+isNfcValid();}catch(e){}
+  var g=prof&&prof.geo;
+  b.textContent="CONTROLLO POSIZIONE\n"+
+   "locale: "+(v||"(nessuno)")+"\n"+
+   "telefono del gestore: "+(own?"SÌ (mai bloccato)":"no")+"\n"+
+   "tag: "+nfc+"\n"+
+   "posizione del locale: "+(g?(g.lat+", "+g.lng+" raggio "+(g.r||100)+" m"):"(non arrivata)")+"\n"+
+   "stato: "+(GEO.status||"-")+(GEO.busy?" (in corso)":"")+"\n"+
+   "distanza: "+GEO.dist+" m  precisione: ±"+GEO.acc+" m\n"+
+   "ultimo controllo: "+(GEO.at?Math.round((Date.now()-GEO.at)/1000)+" s fa":"mai")+"\n"+
+   "permesso: "+GEO_PERM;
+ }
+ var GEO_PERM="?";
+ try{if(navigator.permissions&&navigator.permissions.query)navigator.permissions.query({name:"geolocation"}).then(function(r){GEO_PERM=r.state;r.onchange=function(){GEO_PERM=r.state;};}).catch(function(){GEO_PERM="non leggibile";});else GEO_PERM="non leggibile";}catch(e){GEO_PERM="non leggibile";}
+ setInterval(function(){try{box();}catch(e){}},1500);
+})();
