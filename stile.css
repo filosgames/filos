@@ -677,3 +677,29 @@ body[data-cat="cultura"]{--f-cat:#DCE3F7;}body[data-cat="adulti"]{--f-cat:#EEDCE
 .sc-big-lab{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#5B6470;}
 .sc-big-val{font-size:64px;font-weight:900;color:var(--f-ink,#1A1D21);line-height:1.1;}
 .sc-last{font-size:13px;color:#5B6470;}
+
+/* ── 35. L'Occhio dei colori: tabellone semplice e fermo ── */
+.oc-board3{max-width:440px;margin:0 auto 6px;display:flex;flex-direction:column;gap:14px;}
+.oc-tabs3{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.oc-tab3{position:relative;border:2px solid transparent;background:var(--f-fill);border-radius:14px;padding:8px 6px 9px;display:flex;flex-direction:column;align-items:center;gap:7px;font:inherit;font-weight:700;font-size:14px;color:var(--f-ink-2);cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.oc-tab3.on{border-color:var(--f-ink);background:var(--f-card,#fff);color:var(--f-ink);}
+.oc-tab3-sw{display:flex;width:100%;height:8px;border-radius:4px;overflow:hidden;}
+.oc-tab3-sw>div{flex:1 1 0;}
+.oc-tab3-ok{position:absolute;top:-8px;right:-6px;width:22px;height:22px;border-radius:50%;background:var(--f-ok);color:#fff;font-size:13px;line-height:22px;font-weight:800;box-shadow:0 0 0 2px var(--f-card,#fff);}
+.oc-col3{display:flex;gap:5px;height:300px;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+.oc-bar3{flex:1 1 0;min-width:0;border-radius:12px;position:relative;cursor:grab;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06);transition:transform .12s,box-shadow .12s;}
+.oc-bar3.fix{cursor:default;}
+.oc-bar3 .oc-dot{top:auto;bottom:14px;width:10px;height:10px;margin:0 0 0 -5px;background:rgba(0,0,0,.4);}
+.oc-bar3.sel{transform:translateY(-10px);box-shadow:0 10px 20px rgba(0,0,0,.22),0 0 0 2px #fff,0 0 0 4px var(--f-ink);z-index:2;}
+.oc-act{display:flex;justify-content:center;min-height:46px;}
+.oc-rowbtn{border:none;border-radius:999px;padding:12px 22px;font:inherit;font-weight:700;font-size:16px;background:var(--f-ink);color:#fff;cursor:pointer;}
+.oc-rowbtn.out{background:var(--f-fill);color:var(--f-ink);}
+.oc-prog{font-size:13px;color:var(--f-ink-2);margin:0 0 8px;}
+.oc .agr-round{margin-bottom:8px;}
+.dcard:has(.oc-board3){min-height:0!important;}
+@media (max-height:760px){
+ .dcard:has(.oc-board3) .dhdr{padding-top:12px!important;padding-bottom:12px!important;}
+ .dcard:has(.oc-board3) .dtitle{font-size:20px!important;margin-top:6px!important;}
+ .oc-board3{gap:10px;}
+ .oc-tab3{padding:6px 4px 7px;gap:5px;}
+}

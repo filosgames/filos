@@ -14,37 +14,45 @@
 // ══════════════════════════════════════════
 
 // ── Colori ──
-// Livelli: pochi colori per fila (strisce grandi, comode da toccare); la difficoltà sta nelle sfumature:
-// a ogni livello il salto di tinta tra un colore e il successivo (step, in gradi) è più piccolo
-// e i colori sono più tenui (C). Tutti i colori restano dentro la gamma dello schermo (sRGB).
+// Quattro file vivaci: rossi, gialli, verdi, blu-viola. In ogni fila cambia solo la tinta;
+// luminosità e saturazione restano uguali (spazio Lab), così l'ordine giusto è uno solo.
+// La difficoltà: più colori per fila e salto di tinta più piccolo. Il salto si calcola
+// sulla differenza percepita (ΔE94): ogni fila è difficile uguale, qualunque sia il colore.
+// Tutti i colori restano dentro la gamma dello schermo (sRGB).
 var OC_LEVELS={
- facile:{n:6,C:38,L:70,step:13},
- media:{n:7,C:36,L:70,step:9},
- difficile:{n:8,C:33,L:70,step:6},
- esperto:{n:9,C:30,L:70,step:4.5}
+ facile:{n:7,dE:3.2},
+ media:{n:8,dE:2.0},
+ difficile:{n:9,dE:1.4},
+ esperto:{n:10,dE:1.1}
 };
+var OC_HUES=[{h:30,L:60},{h:100,L:85},{h:140,L:72},{h:290,L:52}],OC_CMAX=62;
 var OC_ROWS=4,OC_MS=180000,OC_REV_MS=20000,OC_MAX_PLAYERS=20;
 function ocNextLevel(l){return l==="facile"?"media":l==="media"?"difficile":"esperto";}
-// Colore con luminosità e saturazione costanti (spazio Lab), così cambia solo la tinta
-function ocLch(L,C,h){
+function ocLabRgb(L,C,h){
  var a=C*Math.cos(h*Math.PI/180),b=C*Math.sin(h*Math.PI/180);
  var fy=(L+16)/116,fx=fy+a/500,fz=fy-b/200;
  function f(t){return t>0.206893?t*t*t:(t-16/116)/7.787;}
  var X=0.95047*f(fx),Y=1.0*f(fy),Z=1.08883*f(fz);
- var r=3.2406*X-1.5372*Y-0.4986*Z,g=-0.9689*X+1.8758*Y+0.0415*Z,bl=0.0557*X-0.2040*Y+1.0570*Z;
- function c(v){v=v<=0.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-0.055;v=Math.round(Math.max(0,Math.min(1,v))*255);return ("0"+v.toString(16)).slice(-2);}
- return "#"+c(r)+c(g)+c(bl);
+ return [3.2406*X-1.5372*Y-0.4986*Z,-0.9689*X+1.8758*Y+0.0415*Z,0.0557*X-0.2040*Y+1.0570*Z].map(function(v){return v<=0.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-0.055;});
 }
-// Ogni fila prende un tratto del cerchio dei colori, al centro del proprio quarto (rossi, gialli, verdi, blu)
+function ocInGamut(L,C,h){return ocLabRgb(L,C,h).every(function(v){return v>=-0.001&&v<=1.001;});}
+function ocLch(L,C,h){
+ return "#"+ocLabRgb(L,C,h).map(function(v){v=Math.round(Math.max(0,Math.min(1,v))*255);return ("0"+v.toString(16)).slice(-2);}).join("");
+}
+// Passo di tinta (gradi) che dà la differenza voluta tra due colori vicini
+function ocStep(C,dE){return dE*(1+0.015*C)/C*180/Math.PI;}
 function ocColors(lvl){
- var cfg=OC_LEVELS[lvl]||OC_LEVELS.facile;var n=cfg.n;var rows=[];
- var step=cfg.step;var start=(90-step*(n-1))/2;
- for(var r=0;r<OC_ROWS;r++){
-  var row=[];
-  for(var i=0;i<n;i++)row.push(ocLch(cfg.L,cfg.C,r*90+start+i*step+8));
-  rows.push(row);
- }
- return rows;
+ ocColors.c=ocColors.c||{};if(ocColors.c[lvl])return ocColors.c[lvl];
+ var cfg=OC_LEVELS[lvl]||OC_LEVELS.facile;var n=cfg.n;
+ var rows=OC_HUES.map(function(R){
+  // la saturazione più alta possibile per cui tutta la fila sta nella gamma dello schermo
+  var C=OC_CMAX;
+  for(;C>20;C--){var st=ocStep(C,cfg.dE),h0=R.h-st*(n-1)/2,ok=true;for(var i=0;i<n;i++)if(!ocInGamut(R.L,C,h0+i*st)){ok=false;break;}if(ok)break;}
+  var st2=ocStep(C,cfg.dE),h1=R.h-st2*(n-1)/2,row=[];
+  for(var k=0;k<n;k++)row.push(ocLch(R.L,C,h1+k*st2));
+  return row;
+ });
+ return (ocColors.c[lvl]=rows);
 }
 // Numeri casuali ripetibili: lo stesso "seme" dà lo stesso miscuglio su tutti i telefoni
 function ocRand(seed){var s=(seed>>>0)||1;return function(){s=(s+0x6D2B79F5)>>>0;var t=s;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296;};}
@@ -83,45 +91,61 @@ function ocValid(rows,lvl){
  return rows.every(function(r){if(!Array.isArray(r)||r.length!==n||r[0]!==0||r[n-1]!==n-1)return false;var s=r.slice().sort(function(a,b){return a-b;});for(var i=0;i<n;i++)if(s[i]!==i)return false;return true;});
 }
 
-// ── Il tabellone: 4 file da ordinare ──
-// rows: per ogni fila l'ordine attuale (numeri dei colori). onChange viene chiamato a ogni spostamento.
 // ── Il tabellone ──
-// In alto le 4 file in piccolo (si tocca una fila per sceglierla); sotto la fila scelta in grande,
-// in verticale: strisce larghe, facili da prendere anche quando i colori sono tanti.
-// Si sposta una striscia trascinandola su o giù, oppure toccandola e poi toccando il posto dove metterla.
-function ocBoard(wrap,lvl,rows,onChange,readonly){
+// In alto le 4 file (linguette); sotto la fila scelta in grande: strisce alte, una accanto all'altra.
+// Si sposta una striscia trascinandola a destra o a sinistra, oppure toccandola e poi toccando
+// il posto dove metterla. Le strisce col puntino restano ferme.
+// Ogni fila si chiude con «Fila fatta»: «Ho finito» (cta) si attiva solo quando sono fatte tutte.
+// Il tabellone sta tutto nello schermo e non cambia misura mentre si gioca: la pagina non si muove.
+function ocBoard(wrap,lvl,rows,onChange,readonly,cta){
  var colors=ocColors(lvl);var n=colors[0].length;
  if(typeof rows._r!=="number")rows._r=0;
- var box=div("oc-board2");wrap.appendChild(box);
- var over=div("oc-over");box.appendChild(over);
- var tabs=div("oc-tabs");box.appendChild(tabs);
- var col=div("oc-col oc-n"+n);box.appendChild(col);
+ if(!Array.isArray(rows._done))rows._done=rows.map(function(){return false;});
+ var box=div("oc-board3");wrap.appendChild(box);
+ var tabs=div("oc-tabs3");box.appendChild(tabs);
+ var col=div("oc-col3");box.appendChild(col);
+ var act=div("oc-act");box.appendChild(act);
+ var prog=div("oc-prog");
  var sel=null;
- function paintOver(){
-  over.innerHTML="";tabs.innerHTML="";
+ function allDone(){return rows._done.every(Boolean);}
+ function nextUndone(){for(var k=1;k<=OC_ROWS;k++){var r=(rows._r+k)%OC_ROWS;if(!rows._done[r])return r;}return -1;}
+ function goRow(r){if(r<0||r===rows._r)return;rows._r=r;sel=null;paintTabs();paintCol();paintAct();}
+ function paintTabs(){
+  tabs.innerHTML="";
   rows.forEach(function(row,r){
-   var line=div("oc-row mini"+(r===rows._r?" on":""));
-   row.forEach(function(ci){var c=div("oc-cap");c.style.background=colors[r][ci];line.appendChild(c);});
-   line.onclick=function(){if(rows._r===r)return;rows._r=r;sel=null;paintOver();paintCol();};
-   over.appendChild(line);
-   tabs.appendChild(btn("oc-tab"+(r===rows._r?" on":""),T("ocRow").replace("{n}",r+1),function(){if(rows._r===r)return;rows._r=r;sel=null;paintOver();paintCol();}));
+   var t=btn("oc-tab3"+(r===rows._r?" on":"")+(rows._done[r]?" done":""),"",function(){goRow(r);});
+   var lb=el("span","oc-tab3-l",T("ocRow").replace("{n}",r+1));t.appendChild(lb);
+   if(rows._done[r])t.appendChild(el("span","oc-tab3-ok","✓"));
+   var sw=div("oc-tab3-sw");row.forEach(function(ci){var c=div("");c.style.background=colors[r][ci];sw.appendChild(c);});t.appendChild(sw);
+   tabs.appendChild(t);
   });
  }
- // Altezza delle strisce: tutta la fila deve stare nello schermo insieme al pulsante "Ho finito"
- function barH(){
-  var top=col.getBoundingClientRect().top;var vh=window.innerHeight||700;
-  var avail=vh-top-96;
-  var h=Math.floor((avail-(n-1)*3)/n);
-  return Math.max(30,Math.min(76,h));
- }
  function paintCol(){
-  col.innerHTML="";var r=rows._r;var h=barH();
+  col.innerHTML="";var r=rows._r;
   rows[r].forEach(function(ci,i){
-   var bar=div("oc-bar"+(i===0||i===n-1?" fix":"")+(sel===i?" sel":""));
-   bar.style.background=colors[r][ci];bar.style.height=h+"px";bar.dataset.i=i;
+   var bar=div("oc-bar3"+(i===0||i===n-1?" fix":"")+(sel===i?" sel":""));
+   bar.style.background=colors[r][ci];bar.dataset.i=i;
    if(i===0||i===n-1)bar.appendChild(div("oc-dot"));
    col.appendChild(bar);
   });
+ }
+ function paintAct(){
+  act.innerHTML="";var r=rows._r;
+  if(!readonly){
+   if(!rows._done[r]){
+    act.appendChild(btn("oc-rowbtn",T("ocRowDone").replace("{n}",r+1),function(){
+     rows._done[r]=true;var nx=nextUndone();
+     if(nx>=0)goRow(nx);else{paintTabs();paintAct();}
+    }));
+   } else if(!allDone()){
+    var nx=nextUndone();
+    act.appendChild(btn("oc-rowbtn out",T("ocRowGo").replace("{n}",nx+1),function(){goRow(nx);}));
+   }
+  }
+  var left=rows._done.filter(Boolean).length;
+  prog.textContent=allDone()?"":T("ocRowsLeft").replace("{a}",left).replace("{t}",OC_ROWS);
+  prog.style.visibility=allDone()?"hidden":"visible";
+  if(cta)cta.disabled=!allDone();
  }
  function move(from,to){
   if(from===to)return;var row=rows[rows._r];var v=row.splice(from,1)[0];row.splice(to,0,v);
@@ -129,32 +153,57 @@ function ocBoard(wrap,lvl,rows,onChange,readonly){
  }
  function recolor(hold){
   var r=rows._r;var bars=col.children;
-  rows[r].forEach(function(ci,i){bars[i].style.background=colors[r][ci];bars[i].classList.toggle("sel",i===hold);});
-  // aggiorna anche la fila piccola
-  var mini=over.children[r];if(mini)rows[r].forEach(function(ci,i){mini.children[i].style.background=colors[r][ci];});
+  rows[r].forEach(function(ci,i){bars[i].style.background=colors[r][ci];bars[i].classList.toggle("sel",i===hold);bars[i].classList.toggle("lift",i===hold);});
+  var t=tabs.children[r];var sw=t&&t.querySelector(".oc-tab3-sw");if(sw)rows[r].forEach(function(ci,i){sw.children[i].style.background=colors[r][ci];});
  }
  if(!readonly){
   var st=null;
-  function idxAt(y){var bars=col.children;var best=1,bd=1e9;for(var k=1;k<bars.length-1;k++){var b=bars[k].getBoundingClientRect();var c=b.top+b.height/2;var d=Math.abs(y-c);if(d<bd){bd=d;best=k;}}return best;}
+  function idxAt(x){var bars=col.children;var best=1,bd=1e9;for(var k=1;k<bars.length-1;k++){var b=bars[k].getBoundingClientRect();var d=Math.abs(x-(b.left+b.width/2));if(d<bd){bd=d;best=k;}}return best;}
   col.addEventListener("pointerdown",function(e){
-   var bar=e.target.closest(".oc-bar");if(!bar)return;var i=+bar.dataset.i;
+   var bar=e.target.closest(".oc-bar3");if(!bar)return;var i=+bar.dataset.i;
+   e.preventDefault();
    st={i:i,x:e.clientX,y:e.clientY,drag:false,id:e.pointerId,fix:(i===0||i===n-1)};
+   try{col.setPointerCapture(e.pointerId);}catch(er){}
   });
   col.addEventListener("pointermove",function(e){
-   if(!st||st.fix||e.pointerId!==st.id)return;
-   if(!st.drag&&Math.abs(e.clientY-st.y)>8){st.drag=true;sel=null;try{col.setPointerCapture(e.pointerId);}catch(er){}}
-   if(st.drag){e.preventDefault();var to=idxAt(e.clientY);if(to!==st.i){move(st.i,to);st.i=to;}recolor(st.i);}
+   if(!st||e.pointerId!==st.id)return;e.preventDefault();
+   if(st.fix)return;
+   if(!st.drag&&Math.abs(e.clientX-st.x)>6){st.drag=true;sel=null;recolor(st.i);}
+   if(st.drag){var to=idxAt(e.clientX);if(to!==st.i){move(st.i,to);st.i=to;}recolor(st.i);}
   });
   col.addEventListener("pointerup",function(e){
    if(!st||e.pointerId!==st.id)return;var s2=st;st=null;
-   if(s2.drag){paintCol();return;}
+   if(s2.drag){paintCol();paintTabs();return;}
    if(s2.fix){sel=null;paintCol();return;}
-   if(sel!==null&&sel!==s2.i){move(sel,s2.i);sel=null;paintCol();recolor(-1);return;}
+   if(sel!==null&&sel!==s2.i){move(sel,s2.i);sel=null;paintCol();paintTabs();return;}
    sel=(sel===s2.i)?null:s2.i;paintCol();
   });
   col.addEventListener("pointercancel",function(e){if(st&&e.pointerId===st.id){st=null;paintCol();}});
+  // niente scorrimento della pagina né menu del browser mentre si toccano le strisce
+  box.addEventListener("touchmove",function(e){if(e.target.closest(".oc-col3"))e.preventDefault();},{passive:false});
+  col.addEventListener("contextmenu",function(e){e.preventDefault();});
  }
- paintOver();paintCol();
+ // Altezza delle strisce: tutto (tabellone e «Ho finito») deve stare nello schermo.
+ // Si calcola quando la schermata è pronta e solo se cambia davvero la misura dello schermo
+ // (rotazione), mai mentre si gioca: così niente si sposta.
+ var lastW=0,lastH=0;
+ function fit(force){
+  if(!document.body.contains(col)){window.removeEventListener("resize",onRs);return;}
+  var w=window.innerWidth,h=window.innerHeight;
+  if(!force&&w===lastW&&Math.abs(h-lastH)<140)return;
+  lastW=w;lastH=h;
+  // fondo del contenuto (non dell'intera pagina, che è alta almeno quanto lo schermo)
+  var root=document.getElementById("root")||document.body;
+  col.style.height="240px";
+  var over=root.getBoundingClientRect().bottom+(window.scrollY||0)-h;
+  col.style.height=Math.max(150,Math.min(400,Math.floor(240-over-2)))+"px";
+ }
+ function onRs(){fit(false);}
+ window.addEventListener("resize",onRs);
+ paintTabs();paintCol();paintAct();
+ box._fit=function(){fit(true);};
+ requestAnimationFrame(function(){requestAnimationFrame(function(){fit(true);});});
+ box._prog=prog;
  return box;
 }
 // Confronto: le file messe dal giocatore e, sotto ognuna, quella giusta
@@ -216,8 +265,8 @@ function renderOcSetup(){
  ["facile","media","difficile"].forEach(function(l){
   var c=div("oc-level");c.appendChild(el("span","oc-level-n",rlLevelName(l)));
   c.appendChild(el("span","oc-level-d",T("ocLvlDesc").replace("{n}",OC_LEVELS[l].n)));
-  // anteprima della sfumatura
-  var pv=div("oc-level-pv");var cols=ocColors(l)[0];cols.forEach(function(h){var s=div("");s.style.background=h;pv.appendChild(s);});c.appendChild(pv);
+  // anteprima: solo i colori fermi (primo e ultimo di ogni fila), così non si svela l'ordine
+  var pv=div("oc-level-pv");ocColors(l).forEach(function(row){[row[0],row[row.length-1]].forEach(function(h){var s=div("");s.style.background=h;pv.appendChild(s);});});c.appendChild(pv);
   c.onclick=function(){
    var names=solo?[(typeof FILOS_NAME!=="undefined"&&FILOS_NAME)||T("ocYou")]:(function(){var seen={};return inputs.map(function(inp,i){var v=inp.value.trim()||(T("qvPlayer")+(i+1));var b=v,c2=2;while(seen[v.toLowerCase()]){v=b+" "+c2;c2++;}seen[v.toLowerCase()]=1;return v;});})();
    ocLocalStart(names,l);
@@ -250,16 +299,19 @@ function renderOc(){
  }
  if(OCL.phase==="play"){
   if(!OCL.cur)OCL.cur=ocShuffled(rd.lvl,rd.seed);
-  wrap.appendChild(div("agr-round",(isTb?T("ocTbRound"):ocTitle())+" · "+ocLvlName(rd.lvl)));
+  wrap.appendChild(div("agr-round",(isTb?T("ocTbRound")+" · ":"")+ocLvlName(rd.lvl)));
   if(!OCL.solo)wrap.appendChild(div("codice-big oc-who",T("codiceTurnBig").replace("{n}",who)));
-  ocBoard(wrap,rd.lvl,OCL.cur,null,false);
-  wrap.appendChild(btn("codice-cta",T("ocDone"),function(){
+  var done=btn("codice-cta",T("ocDone"),function(){
+   if(done.disabled)return;
    rd.res[who]=OCL.cur.map(function(r){return r.slice();});OCL.cur=null;
    if(OCL.solo){OCL.phase="end";}
    else if(OCL.turn<rd.p.length-1){OCL.turn++;OCL.phase="pass";}
    else OCL.phase="res";
    window.scrollTo(0,0);renderOc();
-  }));
+  });
+  var bd=ocBoard(wrap,rd.lvl,OCL.cur,null,false,done);
+  wrap.appendChild(bd._prog);wrap.appendChild(done);
+  window.scrollTo(0,0);
   return;
  }
  if(OCL.solo){ocLocalSoloEnd(wrap,rd);return;}
@@ -536,9 +588,9 @@ function ocrScreenPlay(wrap,st){
  var key=st.game+"|"+st.k;
  if(OCR.curKey!==key){OCR.curKey=key;OCR.cur=ocShuffled(st.rd.lvl,st.rd.seed);}
  ocrTimer(wrap,st);
- ocBoard(wrap,st.rd.lvl,OCR.cur,null,false);
  var ok=btn("codice-cta",T("ocDone"),function(){if(ok.disabled)return;ok.disabled=true;ocrSend(OCR.cur);});
- wrap.appendChild(ok);
+ var bd=ocBoard(wrap,st.rd.lvl,OCR.cur,null,false,ok);
+ wrap.appendChild(bd._prog);wrap.appendChild(ok);
 }
 function ocrChips(wrap,st){var c=div("agr-chips");st.elig.forEach(function(n){c.appendChild(div("agr-chip"+(st.cur[n]?" on":""),n===OCR.me?T("cdrYou2"):n));});wrap.appendChild(c);}
 function ocrScreenWait(wrap,st){
@@ -597,7 +649,7 @@ function ocrScreenEnd(wrap,st){
 // ── Testi ──
 function ocStrings(){
  if(typeof STRINGS==="undefined"||STRINGS.it.ocTitle)return;
- Object.assign(STRINGS.it,{ocTitle:"L'OCCHIO DEI COLORI",ocRulesSolo:"Metti in ordine di sfumatura le quattro file di strisce colorate. La prima e l'ultima di ogni fila (con il puntino) restano ferme. Sposta le altre trascinandole su o giù, oppure tocca una striscia e poi il posto dove metterla. Conta solo la precisione.",ocRulesFriends:"A turno, sullo stesso telefono, ognuno mette in ordine di sfumatura le stesse quattro file di strisce colorate. La prima e l'ultima di ogni fila (con il puntino) restano ferme. Vince chi è più preciso; se c'è parità si rifà una prova più difficile solo tra chi è pari.",ocIntroRemote:"Ognuno gioca dal proprio telefono, anche da tavoli diversi: tutti ricevono gli stessi colori da mettere in ordine di sfumatura. Ci sono 3 minuti. Vince chi è più preciso; se c'è parità, prova più difficile solo per chi è pari.",ocChooseLevel:"SCEGLI IL LIVELLO",ocLvlDesc:"{n} colori per fila",ocExpert:"Esperto",ocYou:"Tu",ocPassSub:"Gli altri non devono guardare lo schermo mentre metti in ordine i colori.",ocHint:"Scegli una fila, poi trascina le strisce su o giù, oppure toccane una e poi il posto dove metterla. Quelle con il puntino restano ferme.",ocRow:"Fila {n}",ocDone:"Ho finito",ocPrec:"Precisione {p}%",ocPerfect:"Perfetto! Ordine senza errori.",ocCompare:"IL TUO ORDINE E QUELLO GIUSTO",ocRanking:"CLASSIFICA",ocTbRound:"Spareggio",ocTbSub:"{n} sono pari: prova più difficile solo per loro.",ocWaiting:"Hanno finito {a} su {t}",ocNoAnswer:"non ha finito"});
- Object.assign(STRINGS.en,{ocTitle:"THE COLOR EYE",ocRulesSolo:"Put the four rows of colored stripes in order of shade. The first and last stripe of each row (with the dot) stay fixed. Move the others by dragging them up or down, or tap a stripe and then the spot where it goes. Only accuracy counts.",ocRulesFriends:"Taking turns on the same phone, everyone puts the same four rows of colored stripes in order of shade. The first and last stripe of each row (with the dot) stay fixed. The most accurate player wins; if there is a tie, the tied players play a harder round.",ocIntroRemote:"Everyone plays on their own phone, even from different tables: all players get the same colors to put in order of shade. You have 3 minutes. The most accurate player wins; if there is a tie, only the tied players play a harder round.",ocChooseLevel:"CHOOSE THE LEVEL",ocLvlDesc:"{n} colors per row",ocExpert:"Expert",ocYou:"You",ocPassSub:"Nobody else should look at the screen while you sort the colors.",ocHint:"Pick a row, then drag the stripes up or down, or tap one and then the spot where it goes. The ones with a dot stay fixed.",ocRow:"Row {n}",ocDone:"I'm done",ocPrec:"Accuracy {p}%",ocPerfect:"Perfect! No mistakes.",ocCompare:"YOUR ORDER AND THE RIGHT ONE",ocRanking:"RANKING",ocTbRound:"Tie-break",ocTbSub:"{n} are tied: a harder round just for them.",ocWaiting:"{a} of {t} have finished",ocNoAnswer:"didn't finish"});
- Object.assign(STRINGS.es,{ocTitle:"EL OJO DE LOS COLORES",ocRulesSolo:"Ordena por matices las cuatro filas de franjas de colores. La primera y la última de cada fila (con el punto) no se mueven. Mueve las demás arrastrándolas arriba o abajo, o toca una franja y luego el sitio donde va. Solo cuenta la precisión.",ocRulesFriends:"Por turnos, en el mismo móvil, cada uno ordena por matices las mismas cuatro filas de franjas de colores. La primera y la última de cada fila (con el punto) no se mueven. Gana quien es más preciso; si hay empate, los empatados juegan una prueba más difícil.",ocIntroRemote:"Cada uno juega desde su móvil, incluso desde mesas distintas: todos reciben los mismos colores para ordenar por matices. Hay 3 minutos. Gana quien es más preciso; si hay empate, solo los empatados juegan una prueba más difícil.",ocChooseLevel:"ELIGE EL NIVEL",ocLvlDesc:"{n} colores por fila",ocExpert:"Experto",ocYou:"Tú",ocPassSub:"Los demás no deben mirar la pantalla mientras ordenas los colores.",ocHint:"Elige una fila y luego arrastra las franjas arriba o abajo, o toca una y luego el sitio donde va. Las que tienen un punto no se mueven.",ocRow:"Fila {n}",ocDone:"He terminado",ocPrec:"Precisión {p}%",ocPerfect:"¡Perfecto! Sin errores.",ocCompare:"TU ORDEN Y EL CORRECTO",ocRanking:"CLASIFICACIÓN",ocTbRound:"Desempate",ocTbSub:"{n} están empatados: prueba más difícil solo para ellos.",ocWaiting:"Han terminado {a} de {t}",ocNoAnswer:"no ha terminado"});
+ Object.assign(STRINGS.it,{ocTitle:"L'OCCHIO DEI COLORI",ocRulesSolo:"Metti in ordine di sfumatura le quattro file di strisce colorate. La prima e l'ultima di ogni fila (con il puntino) restano ferme. Sposta le altre trascinandole a destra o a sinistra, oppure tocca una striscia e poi il posto dove metterla. Conta solo la precisione.",ocRulesFriends:"A turno, sullo stesso telefono, ognuno mette in ordine di sfumatura le stesse quattro file di strisce colorate. La prima e l'ultima di ogni fila (con il puntino) restano ferme. Vince chi è più preciso; se c'è parità si rifà una prova più difficile solo tra chi è pari.",ocIntroRemote:"Ognuno gioca dal proprio telefono, anche da tavoli diversi: tutti ricevono gli stessi colori da mettere in ordine di sfumatura. Ci sono 3 minuti. Vince chi è più preciso; se c'è parità, prova più difficile solo per chi è pari.",ocChooseLevel:"SCEGLI IL LIVELLO",ocLvlDesc:"{n} colori per fila",ocExpert:"Esperto",ocYou:"Tu",ocPassSub:"Gli altri non devono guardare lo schermo mentre metti in ordine i colori.",ocHint:"Scegli una fila, poi trascina le strisce a destra o a sinistra, oppure toccane una e poi il posto dove metterla. Quelle con il puntino restano ferme.",ocRow:"Fila {n}",ocRowDone:"Fila {n} fatta",ocRowGo:"Vai alla fila {n}",ocRowsLeft:"File fatte: {a} di {t}",ocDone:"Ho finito",ocPrec:"Precisione {p}%",ocPerfect:"Perfetto! Ordine senza errori.",ocCompare:"IL TUO ORDINE E QUELLO GIUSTO",ocRanking:"CLASSIFICA",ocTbRound:"Spareggio",ocTbSub:"{n} sono pari: prova più difficile solo per loro.",ocWaiting:"Hanno finito {a} su {t}",ocNoAnswer:"non ha finito"});
+ Object.assign(STRINGS.en,{ocTitle:"THE COLOR EYE",ocRulesSolo:"Put the four rows of colored stripes in order of shade. The first and last stripe of each row (with the dot) stay fixed. Move the others by dragging them left or right, or tap a stripe and then the spot where it goes. Only accuracy counts.",ocRulesFriends:"Taking turns on the same phone, everyone puts the same four rows of colored stripes in order of shade. The first and last stripe of each row (with the dot) stay fixed. The most accurate player wins; if there is a tie, the tied players play a harder round.",ocIntroRemote:"Everyone plays on their own phone, even from different tables: all players get the same colors to put in order of shade. You have 3 minutes. The most accurate player wins; if there is a tie, only the tied players play a harder round.",ocChooseLevel:"CHOOSE THE LEVEL",ocLvlDesc:"{n} colors per row",ocExpert:"Expert",ocYou:"You",ocPassSub:"Nobody else should look at the screen while you sort the colors.",ocHint:"Pick a row, then drag the stripes left or right, or tap one and then the spot where it goes. The ones with a dot stay fixed.",ocRow:"Row {n}",ocRowDone:"Row {n} done",ocRowGo:"Go to row {n}",ocRowsLeft:"Rows done: {a} of {t}",ocDone:"I'm done",ocPrec:"Accuracy {p}%",ocPerfect:"Perfect! No mistakes.",ocCompare:"YOUR ORDER AND THE RIGHT ONE",ocRanking:"RANKING",ocTbRound:"Tie-break",ocTbSub:"{n} are tied: a harder round just for them.",ocWaiting:"{a} of {t} have finished",ocNoAnswer:"didn't finish"});
+ Object.assign(STRINGS.es,{ocTitle:"EL OJO DE LOS COLORES",ocRulesSolo:"Ordena por matices las cuatro filas de franjas de colores. La primera y la última de cada fila (con el punto) no se mueven. Mueve las demás arrastrándolas a la derecha o a la izquierda, o toca una franja y luego el sitio donde va. Solo cuenta la precisión.",ocRulesFriends:"Por turnos, en el mismo móvil, cada uno ordena por matices las mismas cuatro filas de franjas de colores. La primera y la última de cada fila (con el punto) no se mueven. Gana quien es más preciso; si hay empate, los empatados juegan una prueba más difícil.",ocIntroRemote:"Cada uno juega desde su móvil, incluso desde mesas distintas: todos reciben los mismos colores para ordenar por matices. Hay 3 minutos. Gana quien es más preciso; si hay empate, solo los empatados juegan una prueba más difícil.",ocChooseLevel:"ELIGE EL NIVEL",ocLvlDesc:"{n} colores por fila",ocExpert:"Experto",ocYou:"Tú",ocPassSub:"Los demás no deben mirar la pantalla mientras ordenas los colores.",ocHint:"Elige una fila y luego arrastra las franjas a la derecha o a la izquierda, o toca una y luego el sitio donde va. Las que tienen un punto no se mueven.",ocRow:"Fila {n}",ocRowDone:"Fila {n} hecha",ocRowGo:"Ir a la fila {n}",ocRowsLeft:"Filas hechas: {a} de {t}",ocDone:"He terminado",ocPrec:"Precisión {p}%",ocPerfect:"¡Perfecto! Sin errores.",ocCompare:"TU ORDEN Y EL CORRECTO",ocRanking:"CLASIFICACIÓN",ocTbRound:"Desempate",ocTbSub:"{n} están empatados: prueba más difícil solo para ellos.",ocWaiting:"Han terminado {a} de {t}",ocNoAnswer:"no ha terminado"});
 }
