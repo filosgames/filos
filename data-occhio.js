@@ -104,8 +104,9 @@ function ocBoard(wrap,lvl,rows,onChange,readonly,cta){
  var box=div("oc-board3");wrap.appendChild(box);
  var tabs=div("oc-tabs3");box.appendChild(tabs);
  var col=div("oc-col3");box.appendChild(col);
+ // sotto: «Fila N fatta» e, accanto, «Ho finito» (spento finché non sono fatte tutte)
  var act=div("oc-act");box.appendChild(act);
- var prog=div("oc-prog");
+ var slot=div("oc-slot");act.appendChild(slot);if(cta)act.appendChild(cta);
  var sel=null;
  function allDone(){return rows._done.every(Boolean);}
  function nextUndone(){for(var k=1;k<=OC_ROWS;k++){var r=(rows._r+k)%OC_ROWS;if(!rows._done[r])return r;}return -1;}
@@ -130,21 +131,19 @@ function ocBoard(wrap,lvl,rows,onChange,readonly,cta){
   });
  }
  function paintAct(){
-  act.innerHTML="";var r=rows._r;
+  slot.innerHTML="";var r=rows._r;
   if(!readonly){
    if(!rows._done[r]){
-    act.appendChild(btn("oc-rowbtn",T("ocRowDone").replace("{n}",r+1),function(){
+    slot.appendChild(btn("oc-rowbtn",T("ocRowDone").replace("{n}",r+1),function(){
      rows._done[r]=true;var nx=nextUndone();
      if(nx>=0)goRow(nx);else{paintTabs();paintAct();}
     }));
    } else if(!allDone()){
     var nx=nextUndone();
-    act.appendChild(btn("oc-rowbtn out",T("ocRowGo").replace("{n}",nx+1),function(){goRow(nx);}));
+    slot.appendChild(btn("oc-rowbtn out",T("ocRowGo").replace("{n}",nx+1),function(){goRow(nx);}));
    }
   }
-  var left=rows._done.filter(Boolean).length;
-  prog.textContent=allDone()?"":T("ocRowsLeft").replace("{a}",left).replace("{t}",OC_ROWS);
-  prog.style.visibility=allDone()?"hidden":"visible";
+  slot.style.display=slot.firstChild?"":"none";
   if(cta)cta.disabled=!allDone();
  }
  function move(from,to){
@@ -203,7 +202,6 @@ function ocBoard(wrap,lvl,rows,onChange,readonly,cta){
  paintTabs();paintCol();paintAct();
  box._fit=function(){fit(true);};
  requestAnimationFrame(function(){requestAnimationFrame(function(){fit(true);});});
- box._prog=prog;
  return box;
 }
 // Confronto: le file messe dal giocatore e, sotto ognuna, quella giusta
@@ -299,7 +297,7 @@ function renderOc(){
  }
  if(OCL.phase==="play"){
   if(!OCL.cur)OCL.cur=ocShuffled(rd.lvl,rd.seed);
-  wrap.appendChild(div("agr-round",(isTb?T("ocTbRound")+" · ":"")+ocLvlName(rd.lvl)));
+  if(OCL.solo||isTb)wrap.appendChild(div("agr-round",(isTb?T("ocTbRound")+" · ":"")+ocLvlName(rd.lvl)));
   if(!OCL.solo)wrap.appendChild(div("codice-big oc-who",T("codiceTurnBig").replace("{n}",who)));
   var done=btn("codice-cta",T("ocDone"),function(){
    if(done.disabled)return;
@@ -309,8 +307,7 @@ function renderOc(){
    else OCL.phase="res";
    window.scrollTo(0,0);renderOc();
   });
-  var bd=ocBoard(wrap,rd.lvl,OCL.cur,null,false,done);
-  wrap.appendChild(bd._prog);wrap.appendChild(done);
+  ocBoard(wrap,rd.lvl,OCL.cur,null,false,done);
   window.scrollTo(0,0);
   return;
  }
@@ -589,8 +586,7 @@ function ocrScreenPlay(wrap,st){
  if(OCR.curKey!==key){OCR.curKey=key;OCR.cur=ocShuffled(st.rd.lvl,st.rd.seed);}
  ocrTimer(wrap,st);
  var ok=btn("codice-cta",T("ocDone"),function(){if(ok.disabled)return;ok.disabled=true;ocrSend(OCR.cur);});
- var bd=ocBoard(wrap,st.rd.lvl,OCR.cur,null,false,ok);
- wrap.appendChild(bd._prog);wrap.appendChild(ok);
+ ocBoard(wrap,st.rd.lvl,OCR.cur,null,false,ok);
 }
 function ocrChips(wrap,st){var c=div("agr-chips");st.elig.forEach(function(n){c.appendChild(div("agr-chip"+(st.cur[n]?" on":""),n===OCR.me?T("cdrYou2"):n));});wrap.appendChild(c);}
 function ocrScreenWait(wrap,st){

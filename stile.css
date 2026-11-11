@@ -709,3 +709,21 @@ body[data-cat="cultura"]{--f-cat:#DCE3F7;}body[data-cat="adulti"]{--f-cat:#EEDCE
 .quiz-flag-res .agr-row.lg-bad,.quiz-flag-res .agr-row.lg-bad .agr-row-n,.quiz-flag-res .agr-row.lg-bad .agr-row-v{background:var(--f-bad-soft)!important;color:var(--f-bad)!important;}
 .quiz-flag-res .agr-row.lg-ok,.quiz-flag-res .agr-row.lg-bad{box-shadow:none!important;}
 .quiz-flag-res .agr-row.lg-ok .agr-row-n,.quiz-flag-res .agr-row.lg-ok .agr-row-v,.quiz-flag-res .agr-row.lg-bad .agr-row-n,.quiz-flag-res .agr-row.lg-bad .agr-row-v{font-weight:700;}
+/* Occhio dei colori: più arioso (strisce staccate, più spazio tra le parti) */
+.oc-board3{gap:22px;margin-bottom:18px;}
+.oc-tabs3{gap:10px;}
+.oc-col3{gap:12px;padding:0 4px;}
+.oc-bar3{border-radius:14px;}
+.oc-act{min-height:50px;}
+.oc-rowbtn{background:var(--f-fill);color:var(--f-ink);border:2px solid var(--f-ink);padding:11px 26px;}
+.oc-rowbtn.out{border-color:transparent;}
+.oc .agr-round{margin-bottom:16px;}
+.oc .oc-who{margin:0 0 14px!important;}
+@media (max-height:760px){.oc-board3{gap:14px;}.oc-col3{gap:9px;}}
+.oc-board3{width:100%;}
+.oc-act{display:flex;gap:10px;align-items:stretch;justify-content:center;min-height:0;}
+.oc-slot{flex:1 1 0;display:flex;}
+.oc-slot .oc-rowbtn{flex:1;padding:12px 8px;}
+.oc-act .codice-cta{flex:1 1 0;margin:0!important;max-width:none!important;width:auto!important;min-width:0;padding-left:8px!important;padding-right:8px!important;}
+.codice-wrap.oc{padding-left:0!important;padding-right:0!important;width:100%;box-sizing:border-box;}
+.oc-slot .oc-rowbtn{border-radius:14px;height:52px;padding:0 8px;font-size:17px;}
