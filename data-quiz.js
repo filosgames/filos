@@ -5582,7 +5582,8 @@ function quizFlagBody(body,q){
  var list=div("agr-list quiz-flag-res");
  pl.forEach(function(p){
   var c=S.quizChoice[p],ok=c===key;
-  var r=div("agr-row"+(ok?" win":""));
+  // Che lingua è: giusta in verde, sbagliata in rosso
+  var r=div("agr-row"+(isLg?(ok?" lg-ok":" lg-bad"):(ok?" win":"")));
   r.appendChild(div("agr-row-n",pl.length>1?p:(ok?T("quizFlagRight"):T("quizFlagWrong"))));
   r.appendChild(div("agr-row-v",(c!==undefined?name(c):"")+(ok?"  ✓":"  ✗")));
   list.appendChild(r);

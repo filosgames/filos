@@ -703,3 +703,9 @@ body[data-cat="cultura"]{--f-cat:#DCE3F7;}body[data-cat="adulti"]{--f-cat:#EEDCE
  .oc-board3{gap:10px;}
  .oc-tab3{padding:6px 4px 7px;gap:5px;}
 }
+
+/* ── 36. Che lingua è: risposta giusta verde, sbagliata rossa ── */
+.quiz-flag-res .agr-row.lg-ok,.quiz-flag-res .agr-row.lg-ok .agr-row-n,.quiz-flag-res .agr-row.lg-ok .agr-row-v{background:var(--f-ok-soft)!important;color:var(--f-ok)!important;}
+.quiz-flag-res .agr-row.lg-bad,.quiz-flag-res .agr-row.lg-bad .agr-row-n,.quiz-flag-res .agr-row.lg-bad .agr-row-v{background:var(--f-bad-soft)!important;color:var(--f-bad)!important;}
+.quiz-flag-res .agr-row.lg-ok,.quiz-flag-res .agr-row.lg-bad{box-shadow:none!important;}
+.quiz-flag-res .agr-row.lg-ok .agr-row-n,.quiz-flag-res .agr-row.lg-ok .agr-row-v,.quiz-flag-res .agr-row.lg-bad .agr-row-n,.quiz-flag-res .agr-row.lg-bad .agr-row-v{font-weight:700;}
