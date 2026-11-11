@@ -2406,6 +2406,9 @@ Object.assign(STRINGS.es,{"pinSection":"PIN del panel","pinInfo":"El PIN protege
 Object.assign(STRINGS.it,{"netOff":"Sei senza connessione: i giochi sul telefono funzionano, quelli a distanza riprendono appena torna la rete","netOn":"Connessione tornata","errOops":"Qualcosa non ha funzionato","errHome":"Torna alla home"});
 Object.assign(STRINGS.en,{"netOff":"You're offline: games on this phone still work, remote games resume as soon as you're back online","netOn":"Back online","errOops":"Something went wrong","errHome":"Back to home"});
 Object.assign(STRINGS.es,{"netOff":"Estás sin conexión: los juegos en el teléfono funcionan, los juegos a distancia siguen en cuanto vuelva la red","netOn":"Conexión recuperada","errOops":"Algo no ha funcionado","errHome":"Volver al inicio"});
+Object.assign(STRINGS.it,{"mwHintLabel":"Indizio per Mr. White","mwHintYes":"Sì","mwHintNo":"No","mwHintYesSub":"Mr. White vede una parola simile a quella degli altri.","mwHintNoSub":"Mr. White non vede nessuna parola: più difficile.","mwYouAre":"{n} sei","mwWhiteHintSub":"Gli altri hanno una parola simile a questa. Ascolta bene e bluffa: non farti scoprire.","mwWhiteNoHintSub":"Non conosci la parola degli altri. Ascolta bene e bluffa: non farti scoprire.","mwStartsGame":"inizia il gioco","mwStartsSub":"A turno, uno dopo l'altro, ognuno dice una parola che c'entra con quella segreta. Poi votate chi è Mr. White."});
+Object.assign(STRINGS.en,{"mwHintLabel":"Hint for Mr. White","mwHintYes":"Yes","mwHintNo":"No","mwHintYesSub":"Mr. White sees a word similar to the others'.","mwHintNoSub":"Mr. White sees no word at all: harder.","mwYouAre":"{n}, you are","mwWhiteHintSub":"The others have a word similar to this one. Listen carefully and bluff: don't get caught.","mwWhiteNoHintSub":"You don't know the others' word. Listen carefully and bluff: don't get caught.","mwStartsGame":"starts the game","mwStartsSub":"Taking turns, one after another, everyone says a word linked to the secret one. Then vote for who Mr. White is."});
+Object.assign(STRINGS.es,{"mwHintLabel":"Pista para Mr. White","mwHintYes":"Sí","mwHintNo":"No","mwHintYesSub":"Mr. White ve una palabra parecida a la de los demás.","mwHintNoSub":"Mr. White no ve ninguna palabra: más difícil.","mwYouAre":"{n}, eres","mwWhiteHintSub":"Los demás tienen una palabra parecida a esta. Escucha bien y farolea: que no te pillen.","mwWhiteNoHintSub":"No conoces la palabra de los demás. Escucha bien y farolea: que no te pillen.","mwStartsGame":"empieza el juego","mwStartsSub":"Por turnos, uno tras otro, cada uno dice una palabra relacionada con la secreta. Luego votad quién es Mr. White."});
 Object.assign(STRINGS.it,{"rulesShow":"Leggi","rulesHide":"Chiudi"});
 Object.assign(STRINGS.en,{"rulesShow":"Read","rulesHide":"Close"});
 Object.assign(STRINGS.es,{"rulesShow":"Leer","rulesHide":"Cerrar"});
@@ -4604,10 +4607,9 @@ setTimeout(function(){try{if(["onboarding","home","splash"].indexOf(S.screen)>=0
  window.addEventListener("error",function(e){log((e&&e.message)||"error");rescue();});
  window.addEventListener("unhandledrejection",function(e){log("promise: "+((e&&e.reason&&e.reason.message)||e.reason||""));});
 })();
-/* "Come si gioca": riquadro con le regole in alto in ogni gioco.
-   Aperto nella prima schermata del gioco, poi si può chiudere e riaprire con un tocco. */
+/* "Come si gioca": riquadro con le regole in alto in ogni gioco, chiuso; si apre con un tocco per ripassarle. */
 (function(){
- var SKIP={home:1,games:1,game:1,starter:1,end:1,onboarding:1,splash:1,analytics:1,connect:1,quizzone_lobby:1,quizzone_game:1,quizzone_leaderboard:1,quizzone_end:1};
+ var SKIP={home:1,games:1,game:1,end:1,onboarding:1,splash:1,analytics:1,connect:1,quizzone_lobby:1,quizzone_game:1,quizzone_leaderboard:1,quizzone_end:1};
  var open={},first={},lastKey="";
  // Nei giochi a distanza la schermata è una sola: conta la fase (inizio, sala d'attesa, partita)
  var RV={cdr:["CDR","cdr"],agr:["AGR","agr"],pdr:["PDR","pdr"],fgr:["FGR","fgr"],lgr:["LGR","lgr"],qxr:["QXR","qxr"],ocr:["OCR","ocr"],tpr:["TP","tp"]};
@@ -4619,11 +4621,12 @@ setTimeout(function(){try{if(["onboarding","home","splash"].indexOf(S.screen)>=0
   try{
    if(SKIP[S.screen])return;
    var root=document.getElementById("root");if(!root)return;
-   var body=root.querySelector(".dbody");if(!body)return;
+   var body=root.querySelector(".dbody, .starter-body");if(!body)return;
    var R=(typeof regoleNow==="function")?regoleNow():null;if(!R||!R.rules)return;
    var stg=stage();
-   if(R.key!==lastKey){lastKey=R.key;first[R.key]=stg;if(!(R.key in open))open[R.key]=true;}
-   var isOpen=!!open[R.key]&&(first[R.key]===stg||/:(start|lobby)$/.test(stg));
+   // Chiuso finché non lo apri (le regole si leggono prima, nella pagina del gioco)
+   if(R.key!==lastKey){lastKey=R.key;open[R.key]=false;}
+   var isOpen=!!open[R.key];
    var box=body.querySelector(":scope > .rules-box");
    if(box&&box.getAttribute("data-k")===R.key+"|"+LANG+"|"+(isOpen?1:0))return;
    if(box)box.remove();
@@ -4632,7 +4635,7 @@ setTimeout(function(){try{if(["onboarding","home","splash"].indexOf(S.screen)>=0
    hd.innerHTML='<span class="rules-title"></span><span class="rules-tog"></span>';
    hd.querySelector(".rules-title").textContent=T("howToPlay");
    hd.querySelector(".rules-tog").textContent=isOpen?T("rulesHide"):T("rulesShow");
-   hd.onclick=function(){open[R.key]=!isOpen;first[R.key]=stage();put();};
+   hd.onclick=function(){open[R.key]=!isOpen;put();};
    box.appendChild(hd);
    if(isOpen){var tx=document.createElement("div");tx.className="rules-text";tx.textContent=R.rules;box.appendChild(tx);
     if(R.tip){var tp=document.createElement("div");tp.className="rules-tip";tp.textContent=R.tip;box.appendChild(tp);}}

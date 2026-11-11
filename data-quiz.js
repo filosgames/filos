@@ -764,6 +764,28 @@ function renderGames(){
  row.appendChild(info);row.appendChild(div("garr",CHEV));
  row.onclick=(function(i2){return function(){
  S.game=i2;logPlay(S.cat,g._it||g.name);
+ // Prima le regole del gioco, poi «Inizia» porta al gioco
+ if(g.quizzone){gameLaunch(g);return;}
+ S.screen="game";render();
+ };})(idx);
+ list.appendChild(row);
+ })(games[i],_allGames.indexOf(games[i]));}
+ panel.appendChild(list);
+ }
+ document.getElementById("root").appendChild(panel);
+}
+
+
+// Avvia il gioco vero e proprio (dopo la schermata delle regole)
+var GAME_LAUNCH_FLAGS=["alfabeto", "annogiusto", "annoremote", "appello", "bandieraremote", "chipaga", "chiseidavvero", "codice", "codiceremote", "confessionianonime", "cosaincomune", "cosanonsa", "intesa", "lex", "linguaremote", "mimo", "mrwhite", "nomecognome", "occhio", "occhioremote", "primadoporemote", "pub", "quantovale", "quindici", "quizzone", "robot", "scultura", "sinon", "soprannome", "specchio", "superpotere", "temporemote", "traditore", "viaggiosogni"];
+function gameHasLaunch(g){
+ if(!g)return false;
+ for(var i=0;i<GAME_LAUNCH_FLAGS.length;i++)if(g[GAME_LAUNCH_FLAGS[i]])return true;
+ var gname=g._it||g.name;
+ if((S.cat==="cultura"||g.lingua)&&QUIZ_DATA[gname])return true;
+ return !!spDeck(g.name,g._it);
+}
+function gameLaunch(g){
  var gname=g._it||g.name; // nome italiano: chiave di QUIZ_DATA
  if(g.quizzone){
  // Quizzone richiede una stanza Firebase — vai alla connect screen dedicata o avvia direttamente
@@ -781,7 +803,7 @@ function renderGames(){
  return;
  }
  if(g.mrwhite){
- S.screen="game";render();return;
+ S.screen="mrwhite_setup";render();return;
  }
  if(g.intesa){
  S.screen="intesa_setup";render();return;
@@ -883,12 +905,6 @@ function renderGames(){
  } else if(spDeck(g.name,g._it)){
  S.starterGame=g.name;S.starterGameIt=g._it;S.starterIdx=0;S.screen="starter";render();
  } else {S.screen="game";render();}
- };})(idx);
- list.appendChild(row);
- })(games[i],_allGames.indexOf(games[i]));}
- panel.appendChild(list);
- }
- document.getElementById("root").appendChild(panel);
 }
 
 function renderRiddle(){
@@ -974,6 +990,7 @@ function startMrWhite(numPlayers){
  S.mwWord=pair.secret;
  S.mwSimilar=pair.similar;
  S.mwWhiteIdx=Math.floor(Math.random()*numPlayers);
+ S.mwStarter=-1;
  S.mwSeen=[];
  S.mwNumPlayers=numPlayers;
  S.mwRevealing=-1;
@@ -981,10 +998,14 @@ function startMrWhite(numPlayers){
 }
 
 
+var MW_MIN=3,MW_MAX=20;
 function mwName(i){var n=S.mwPlayerNames&&S.mwPlayerNames[i];return n||(T("mrWhitePlayer")+(i+1));}
 function renderMrWhiteSetup(){
  clr();
- if(!S.mwNumPlayers||S.mwNumPlayers<1)S.mwNumPlayers=1;
+ // Indietro: torna alle regole
+ addBackArrow(function(){S.screen="game";render();});
+ if(!S.mwNumPlayers||S.mwNumPlayers<MW_MIN)S.mwNumPlayers=MW_MIN;
+ if(S.mwNumPlayers>MW_MAX)S.mwNumPlayers=MW_MAX;
  var wrap=div("mw-wrap");
  wrap.appendChild(div("mw-title","MR. WHITE"));
  wrap.appendChild(div("mw-sub",T("mrWhiteHowMany")));
@@ -1003,21 +1024,45 @@ function renderMrWhiteSetup(){
    row.appendChild(inp);inputs.push(inp);grid.appendChild(row);
   })(k);}
  }
- var sw=makeStepperWidget(S.mwNumPlayers,1,12,function(n){S.mwNumPlayers=n;build(n);});sw.style.margin="20px 0 8px";
+ var sw=makeStepperWidget(S.mwNumPlayers,MW_MIN,MW_MAX,function(n){S.mwNumPlayers=n;build(n);});sw.style.margin="20px 0 8px";
  wrap.appendChild(sw);
  wrap.appendChild(grid);
+ // Indizio per Mr. White: sì (vede una parola simile) oppure no (non vede nessuna parola)
+ if(S.mwHint===undefined)S.mwHint=true;
+ var hb=div("mw-hint-box");
+ hb.appendChild(div("mw-hint-title",T("mwHintLabel")));
+ var seg=div("mw-hint-seg");
+ [[true,T("mwHintYes")],[false,T("mwHintNo")]].forEach(function(o){
+  var b=document.createElement("button");b.type="button";b.className="mw-hint-opt"+(S.mwHint===o[0]?" on":"");b.textContent=o[1];
+  b.onclick=function(){S.mwHint=o[0];renderMrWhiteSetup();};seg.appendChild(b);
+ });
+ hb.appendChild(seg);
+ hb.appendChild(div("mw-hint-sub",S.mwHint?T("mwHintYesSub"):T("mwHintNoSub")));
+ wrap.appendChild(hb);
  function names(){var seen={};return inputs.map(function(inp,i){var v=inp.value.trim()||(T("qvPlayer")+(i+1));var b=v,c=2;while(seen[v.toLowerCase()]){v=b+" "+c;c++;}seen[v.toLowerCase()]=1;return v;});}
  wrap.appendChild(btn("ebtn",T("ui_inizia"),function(){S.mwPlayerNames=names();S.screen="mrwhite";startMrWhite(S.mwNumPlayers);}));
-
- wrap.appendChild(btn("ebtn out",T("backToGames"),goBackToGames));
  document.getElementById("root").appendChild(wrap);
 }
 
 function renderMrWhite(){
  clr();
- addBackArrow(goBackToGames);
+ // Indietro: torna a modificare i partecipanti (la parola si estrae di nuovo)
+ addBackArrow(function(){S.screen="mrwhite_setup";render();});
  var g=curGame()||{};
  var wrap=div("mw-wrap");
+
+ // Tutti hanno visto la parola: l'app sceglie chi inizia
+ if(S.mwSeen.length===S.mwNumPlayers&&S.mwRevealing<0){
+  if(!(S.mwStarter>=0&&S.mwStarter<S.mwNumPlayers))S.mwStarter=Math.floor(Math.random()*S.mwNumPlayers);
+  var go=div("mw-go");
+  go.appendChild(div("mw-go-name",mwName(S.mwStarter)));
+  go.appendChild(div("mw-go-title",T("mwStartsGame")));
+  go.appendChild(div("mw-go-sub",T("mwStartsSub")));
+  go.appendChild(btn("ebtn",T("endGame"),function(){endGame(g.name||"MR. WHITE");}));
+  wrap.appendChild(go);
+  document.getElementById("root").appendChild(wrap);
+  return;
+ }
 
  // Reveal overlay
  if(S.mwRevealing>=0){
@@ -1025,9 +1070,13 @@ function renderMrWhite(){
  var isWhite=(S.mwRevealing===S.mwWhiteIdx);
  overlay.appendChild(div("mw-reveal-name",mwName(S.mwRevealing)));
  if(isWhite){
- overlay.appendChild(div("mw-reveal-msg",T("ui_sei_mr_white")));
- overlay.appendChild(div("mw-reveal-word",S.mwSimilar));
- overlay.appendChild(div("mw-reveal-sub",T("mrWhiteBluff")));
+ // Schermata di Mr. White: «Maria sei» + fascia gialla in diagonale + indizio (se c'è)
+ overlay.className="mw-reveal-screen mw-white";
+ overlay.innerHTML="";
+ overlay.appendChild(div("mw-white-who",T("mwYouAre").replace("{n}",mwName(S.mwRevealing))));
+ var band=div("mw-white-band");band.appendChild(div("mw-white-band-txt","Mr. White"));overlay.appendChild(band);
+ if(S.mwHint!==false){overlay.appendChild(div("mw-white-word",S.mwSimilar));overlay.appendChild(div("mw-white-sub",T("mwWhiteHintSub")));}
+ else overlay.appendChild(div("mw-white-sub",T("mwWhiteNoHintSub")));
  } else {
  overlay.appendChild(div("mw-reveal-msg",T("mrWhiteYourWord")));
  overlay.appendChild(div("mw-reveal-word",S.mwWord));
@@ -1046,8 +1095,7 @@ function renderMrWhite(){
  // Header
  var hdr=div("dhdr");hdr.style.background=(CAT_PASTEL&&CAT_PASTEL[S.cat])?CAT_PASTEL[S.cat]:getCatById(S.cat).bg;
  var dhdrTop=div("dhdr-top");hdr.appendChild(dhdrTop);
- dhdrTop.appendChild(btn("card-nav-btn back",T("backToGames"),goBackToGames));
- dhdrTop.appendChild(btn("card-nav-btn",T("exitBtn"),goHome));
+ dhdrTop.appendChild(btn("card-nav-btn back",T("backBtn"),function(){S.screen="mrwhite_setup";render();}));
  hdr.appendChild(div("dtitle","MR. WHITE"));
 
  var card=div("dcard");card.appendChild(hdr);
@@ -1070,14 +1118,6 @@ function renderMrWhite(){
  })(i);
  }
  body.appendChild(playerList);
-
- // All seen - start game
- if(S.mwSeen.length===S.mwNumPlayers){
- var startBox=div("");startBox.style.cssText="text-align:center;margin-top:8px;";
- startBox.appendChild(div("mw-sub",T("mrWhiteStart")));
- startBox.appendChild(btn("ebtn",T("starterStart"),function(){S.screen="game";render();}));
- body.appendChild(startBox);
- }
 
  document.getElementById("root").appendChild(wrap);
 }
@@ -5277,8 +5317,12 @@ function renderGame(){
  var panel=div("panel");var card=div("dcard");panel.appendChild(card);
  var hdr=div("dhdr");hdr.style.background=(CAT_PASTEL&&CAT_PASTEL[S.cat])?CAT_PASTEL[S.cat]:cat.bg;card.appendChild(hdr);
  var dhdrTop=div("dhdr-top");hdr.appendChild(dhdrTop);
+ if(g.mrwhite){
+  dhdrTop.appendChild(btn("card-nav-btn back",T("backBtn"),goBackToGames));
+ } else {
  dhdrTop.appendChild(btn("card-nav-btn back",T("backToGames"),goBackToGames));
  dhdrTop.appendChild(btn("card-nav-btn",T("exitBtn"),goHome));
+ }
  hdr.appendChild(div("dtitle",g.name));
  var bdg=div("dbadges");hdr.appendChild(bdg);
  bdg.appendChild(el("span","dbadge",g.players+" "+T("players")));
@@ -5307,14 +5351,13 @@ function renderGame(){
  if(S.qCardIdx<flat.length-1)qn.appendChild(btn("ebtn",T("qvNextQuestion"),function(){S.qCardIdx++;renderGame();}));
  }
  var ew=div("");ew.style.cssText="text-align:center;margin-top:26px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;";
- if(S.fromStarter){
- ew.appendChild(btn("ebtn out",T("backToGame"),function(){S.fromStarter=false;S.screen="starter";render();}));
+ // Prima le regole: se il gioco ha la sua schermata, qui c'è solo «Inizia».
+ // Se invece il gioco si gioca da questa pagina (domande, regole), resta «Fine gioco».
+ if(gameHasLaunch(g)){
+  ew.appendChild(btn("ebtn",T("ui_inizia"),function(){S.fromStarter=false;gameLaunch(g);}));
+ } else {
+  ew.appendChild(btn("ebtn",T("endGame"),function(){S.fromStarter=false;endGame(g.name);}));
  }
- if(g.mrwhite){
- ew.appendChild(btn("ebtn",T("startMrWhite"),function(){S.screen="mrwhite_setup";render();}));
- }
- // Se c'è già un pulsante per iniziare il gioco, "Fine gioco" diventa secondario
- ew.appendChild(btn(g.mrwhite?"ebtn out":"ebtn",T("endGame"),function(){S.fromStarter=false;endGame(g.name);}));
  body.appendChild(ew);
  document.getElementById("root").appendChild(panel);
 }
@@ -5712,7 +5755,7 @@ function renderStarter(){
  final.appendChild(div("starter-final-title",T("starterNowYou")));
  final.appendChild(div("starter-final-sub",T("starterContinue")));
  var btns=div("endbtns");final.appendChild(btns);
- btns.appendChild(btn("ebtn",T("starterStart"),function(){S.screen="game";render();}));
+ btns.appendChild(btn("ebtn",T("ui_gioca_ancora"),function(){S.starterIdx=0;S.starterDeck=null;renderStarter();}));
  btns.appendChild(btn("ebtn out",T("starterEnd"),function(){endGame(S.starterGame);}));
  btns.appendChild(btn("ebtn out",T("exitBtn"),goHome));
  document.getElementById("root").appendChild(wrap);return;
@@ -5735,7 +5778,6 @@ function renderStarter(){
  var nav=div("starter-nav");body.appendChild(nav);
  if(S.starterIdx<total-1){nav.appendChild(btn("ebtn",T("starterNext"),function(){S.starterIdx++;renderStarter();}));}
  else{nav.appendChild(btn("ebtn",T("starterDone"),function(){S.starterIdx++;renderStarter();}));}
- nav.appendChild(btn("ebtn out",T("ui_vedi_le_regole"),function(){S.fromStarter=true;S.screen="game";render();}));
  document.getElementById("root").appendChild(wrap);
 }
 
@@ -6928,8 +6970,13 @@ function shellWrap(){
  var panel=div("panel shell-panel");var card=div("dcard shell-card");panel.appendChild(card);
  var hdr=div("dhdr");hdr.style.background=(typeof CAT_PASTEL!=="undefined"&&CAT_PASTEL[S.cat])?CAT_PASTEL[S.cat]:(cat.bg||"#F2F4F7");card.appendChild(hdr);
  var top=div("dhdr-top");hdr.appendChild(top);
+ if(SHELL_BACKONLY[S.screen]){
+  // Mr. White: solo «Indietro» (niente «Torna ai giochi» ed «Esci»)
+  top.appendChild(btn("card-nav-btn back",T("backBtn"),function(e){backFn.call(this,e);}));
+ } else {
  top.appendChild(btn("card-nav-btn back",T("backToGames"),function(e){backFn.call(this,e);}));
  top.appendChild(btn("card-nav-btn",T("exitBtn"),function(){if(SHELL_REMOTE[S.screen]){backFn.call(this);if(S.screen!=="home")goHome();}else goHome();}));
+ }
  hdr.appendChild(div("dtitle",title));
  var body=div("dbody shell-body");card.appendChild(body);
  while(root.firstChild)body.appendChild(root.firstChild);
@@ -6938,6 +6985,7 @@ function shellWrap(){
  var low=String(title).toLowerCase().trim();
  [].forEach.call(body.querySelectorAll(".codice-big,.mw-title,.quiz-level-title,.intesa-title,.qv-title,.nc-title,.alfa-title"),function(e){if(String(e.textContent||"").toLowerCase().trim()===low)e.remove();});
 }
+var SHELL_BACKONLY={mrwhite_setup:1,mrwhite:1};
 var SHELL_REMOTE={cdr:1,agr:1,pdr:1,fgr:1,lgr:1,qxr:1,ocr:1,tpr:1};
 (function(){
  function start(){
