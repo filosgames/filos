@@ -24,9 +24,10 @@ var REGOLE={
  en:["1. Read the line: \"Who's most likely to…\".\n2. Count to three and everyone points at someone.\n3. Whoever gets the most fingers explains why.\n4. Tap \"Next phrase\".","Point at whoever deserves it, not the shyest one."],
  es:["1. Leed la frase: «¿Quién es más probable que…?».\n2. Contad hasta tres y todos señalan a alguien.\n3. Quien reciba más dedos explica por qué.\n4. Tocad «Siguiente frase».","Señalad a quien se lo merece, no al más tímido."]},
 "amici|TROVA LA BUGIA":{
- it:["1. A turno, uno dice tre cose su di sé: due vere e una inventata.\n2. Gli altri votano quale è la bugia.\n3. Prende un punto per ogni persona che ha ingannato.\nVince chi alla fine ha più punti.","Una bugia con tanti dettagli sembra sempre vera."],
- en:["1. In turn, one player says three things about themselves: two true, one made up.\n2. The others vote on which one is the lie.\n3. They score a point for each person they fooled.\nMost points at the end wins.","A lie with lots of details always sounds true."],
- es:["1. Por turnos, uno dice tres cosas sobre sí mismo: dos verdaderas y una inventada.\n2. Los demás votan cuál es la mentira.\n3. Gana un punto por cada persona a la que engañó.\nGana quien tenga más puntos al final.","Una mentira con muchos detalles siempre parece verdad."]},
+ f:"bugia",p:"2-20",
+ it:["1. Scrivete i nomi dei giocatori (da 2 a 20).\n2. A turno, chi tocca racconta tre cose su di sé: due vere e una inventata.\n3. Gli altri votano quale è la bugia: date +1 a chi racconta per ogni persona che ha ingannato.\n4. Toccate «Prossimo turno».\nVince chi alla fine ha più punti: la classifica è in «Classifica».","Una bugia con tanti dettagli sembra sempre vera."],
+ en:["1. Enter the players' names (2 to 20).\n2. Taking turns, whoever's up tells three things about themselves: two true, one made up.\n3. The others vote on which one is the lie: give the teller +1 for each person they fooled.\n4. Tap \"Next turn\".\nMost points at the end wins: see \"Leaderboard\".","A lie with lots of details always sounds true."],
+ es:["1. Poned los nombres de los jugadores (de 2 a 20).\n2. Por turnos, a quien le toque cuenta tres cosas sobre sí mismo: dos verdaderas y una inventada.\n3. Los demás votan cuál es la mentira: dad +1 a quien cuenta por cada persona engañada.\n4. Tocad «Siguiente turno».\nGana quien tenga más puntos al final: mirad la «Clasificación».","Una mentira con muchos detalles siempre parece verdad."]},
 "amici|OPINIONI SCOTTANTI":{
  it:["1. Leggete l'opinione ad alta voce.\n2. Al tre, mano alzata se siete d'accordo, giù se no.\n3. Chi è in minoranza ha 30 secondi per difendersi.\n4. Toccate «Prossima frase».","Le frasi che dividono il tavolo a metà sono le migliori."],
  en:["1. Read the opinion out loud.\n2. On three, hand up if you agree, down if you don't.\n3. The minority gets 30 seconds to defend themselves.\n4. Tap \"Next phrase\".","The best ones split the table in half."],
@@ -39,18 +40,20 @@ var REGOLE={
  it:["1. Uno pensa a un personaggio famoso e lo scrive sul telefono.\n2. Mostra lo schermo a tutti tranne a chi deve indovinare.\n3. Chi indovina fa domande con risposta solo sì o no.\n4. Ha 10 domande per scoprire chi è. Poi si cambia.","Partite da domande larghe: «È una donna?», «È vivo?»."],
  en:["1. One player thinks of a famous person and types it on the phone.\n2. Show the screen to everyone except the guesser.\n3. The guesser asks yes-or-no questions only.\n4. They get 10 questions to find out who it is. Then swap.","Start broad: \"Is it a woman?\", \"Are they alive?\"."],
  es:["1. Uno piensa en un personaje famoso y lo escribe en el móvil.\n2. Enseña la pantalla a todos menos a quien tiene que adivinar.\n3. Quien adivina solo hace preguntas de sí o no.\n4. Tiene 10 preguntas para descubrirlo. Luego se cambia.","Empezad con preguntas amplias: «¿Es mujer?», «¿Está vivo?»."]},
-"amici|ALIBI":{
+"azione|ALIBI":{
  it:["1. Inventate un crimine buffo (es. «chi ha finito le patatine?»).\n2. Due sospettati si allontanano: hanno 2 minuti per inventare un alibi insieme.\n3. Tornano e vengono interrogati uno alla volta.\n4. Se le loro risposte non coincidono, sono colpevoli!","Gli interroganti vincono con le domande piccole: «di che colore era la tovaglia?»."],
  en:["1. Make up a silly crime (e.g. \"who finished the crisps?\").\n2. Two suspects step away: they get 2 minutes to build an alibi together.\n3. They come back and are questioned one at a time.\n4. If their answers don't match, they're guilty!","Interrogators win with small questions: \"what colour was the tablecloth?\"."],
  es:["1. Inventad un crimen divertido (p. ej. «¿quién se acabó las patatas?»).\n2. Dos sospechosos se apartan: tienen 2 minutos para inventar una coartada juntos.\n3. Vuelven y se les interroga uno a uno.\n4. Si sus respuestas no coinciden, ¡son culpables!","Los interrogadores ganan con preguntas pequeñas: «¿de qué color era el mantel?»."]},
 "amici|CONTARE FINO A 21":{
+ p:"3+",
  it:["1. Il gruppo conta da 1 a 21, un numero alla volta.\n2. Nessun ordine fisso: chiunque può dire il numero dopo.\n3. Se due persone parlano insieme, si riparte da 1.\n4. Chi dice 21 inventa una nuova regola (es. «al posto del 7 si batte le mani»).","Guardatevi negli occhi: aiuta più di quanto sembri."],
  en:["1. The group counts from 1 to 21, one number at a time.\n2. No set order: anyone can say the next number.\n3. If two people speak at once, start again from 1.\n4. Whoever says 21 adds a new rule (e.g. \"clap instead of saying 7\").","Look each other in the eye: it helps more than you'd think."],
  es:["1. El grupo cuenta del 1 al 21, un número cada vez.\n2. Sin orden fijo: cualquiera puede decir el siguiente.\n3. Si dos personas hablan a la vez, se vuelve a empezar desde 1.\n4. Quien dice 21 añade una regla nueva (p. ej. «en vez del 7 se da una palmada»).","Miraos a los ojos: ayuda más de lo que parece."]},
 "amici|SINCRONIA":{
- it:["1. Due giocatori, al tre, dicono insieme una parola qualsiasi.\n2. Al tre successivo, devono dire una parola che unisce le due appena dette.\n3. Si continua finché dicono la stessa parola nello stesso momento.\n4. Contate quanti tentativi ci sono voluti: meno sono, meglio è.","Non pensate troppo: la prima idea è quasi sempre quella giusta."],
- en:["1. Two players, on three, each say any word at the same time.\n2. On the next three, they must say a word that links the two words just said.\n3. Keep going until they say the same word at the same moment.\n4. Count how many tries it took: fewer is better.","Don't overthink it: the first idea is usually right."],
- es:["1. Dos jugadores, a la de tres, dicen a la vez una palabra cualquiera.\n2. A la siguiente de tres, deben decir una palabra que una las dos anteriores.\n3. Seguid hasta que digan la misma palabra a la vez.\n4. Contad cuántos intentos hicieron falta: cuantos menos, mejor.","No lo penséis mucho: la primera idea suele ser la buena."]},
+ f:"sincronia",p:"2+",
+ it:["1. Fate squadre da due (si può giocare anche con una squadra sola).\n2. Al tre, i due della squadra dicono insieme una parola qualsiasi.\n3. Se sono diverse toccate «+1 tentativo» e, al tre, dite una parola che unisce le due appena dette.\n4. Quando dite la stessa parola toccate «Stessa parola!»: tocca alla squadra dopo.\nVince la squadra che ci riesce con meno tentativi.","Non pensate troppo: la prima idea è quasi sempre quella giusta."],
+ en:["1. Make teams of two (you can also play with just one team).\n2. On three, the two players say any word at the same time.\n3. If they're different, tap \"+1 try\" and, on three, say a word that links the two words just said.\n4. When you say the same word, tap \"Same word!\": it's the next team's turn.\nThe team that does it in the fewest tries wins.","Don't overthink it: the first idea is usually right."],
+ es:["1. Haced equipos de dos (también se puede jugar con un solo equipo).\n2. A la de tres, los dos del equipo dicen a la vez una palabra cualquiera.\n3. Si son distintas, tocad «+1 intento» y, a la de tres, decid una palabra que una las dos anteriores.\n4. Cuando digáis la misma palabra, tocad «¡Misma palabra!»: le toca al siguiente equipo.\nGana el equipo que lo consiga con menos intentos.","No lo penséis mucho: la primera idea suele ser la buena."]},
 "amici|SÌ, NO, NON":{
  it:["1. Uno è «sotto torchio» e tocca «Inizia»: parte il tempo.\n2. Gli altri gli fanno domande veloci per fargli dire SÌ, NO o NON.\n3. Lui risponde a tutto senza mai usare quelle parole.\n4. Appena sbaglia, toccate «Ha detto sì/no/non»: l'app segna quanto ha resistito.\nVince chi resiste più a lungo (massimo 3 minuti).","Le domande più semplici sono le più pericolose: «Ti chiami Marco?»."],
  en:["1. One player is in the hot seat and taps \"Start\": the clock runs.\n2. The others fire quick questions to make them say YES, NO or NOT.\n3. They must answer everything without ever using those words.\n4. As soon as they slip, tap \"Said yes/no/not\": the app shows how long they lasted.\nLongest time wins (3 minutes max).","The simplest questions are the deadliest: \"Is your name Mark?\"."],
@@ -241,6 +244,7 @@ var REGOLE={
  en:["1. Two players improvise any scene (e.g. two chefs).\n2. Anyone can shout \"FREEZE!\": the two stop in their pose.\n3. Whoever shouted takes the place of one of them, in the same pose.\n4. A brand-new scene begins.","The more absurd the new scene is for that pose, the funnier."],
  es:["1. Dos jugadores improvisan una escena cualquiera (p. ej. dos cocineros).\n2. Cualquiera puede gritar «¡FREEZE!»: los dos se quedan quietos en su postura.\n3. Quien gritó ocupa el sitio de uno de ellos, en la misma postura.\n4. Empieza una escena totalmente nueva.","Cuanto más absurda sea la nueva escena para esa postura, más risas."]},
 "azione|CONTARE FINO A 21":{
+ p:"3+",
  it:["1. Il gruppo conta da 1 a 21, un numero alla volta.\n2. Nessun ordine fisso: chiunque può dire il numero dopo.\n3. Se due persone parlano insieme, si riparte da 1.\n4. Chi dice 21 inventa una nuova regola (es. «al posto del 7 si batte le mani»).","Guardatevi negli occhi: aiuta più di quanto sembri."],
  en:["1. The group counts from 1 to 21, one number at a time.\n2. No set order: anyone can say the next number.\n3. If two people speak at once, start again from 1.\n4. Whoever says 21 adds a new rule (e.g. \"clap instead of saying 7\").","Look each other in the eye: it helps more than you'd think."],
  es:["1. El grupo cuenta del 1 al 21, un número cada vez.\n2. Sin orden fijo: cualquiera puede decir el siguiente.\n3. Si dos personas hablan a la vez, se vuelve a empezar desde 1.\n4. Quien dice 21 añade una regla nueva (p. ej. «en vez del 7 se da una palmada»).","Miraos a los ojos: ayuda más de lo que parece."]},
@@ -479,15 +483,32 @@ var REGOLE={
  en:["1. Pick a riddle (you can filter by difficulty).\n2. Read it out loud to the table.\n3. Whoever thinks they know says the answer.\n4. Tap \"Reveal answer\" to check.","Whoever gets it right picks the next riddle."],
  es:["1. Elige un acertijo (puedes filtrarlos por dificultad).\n2. Léelo en voz alta a la mesa.\n3. Quien crea saberlo dice la respuesta.\n4. Tocad «Revelar respuesta» para comprobarlo.","Quien acierte elige el siguiente acertijo."]}
 };
+// Giochi tolti da una categoria o spostati in un'altra (chiave = nome italiano)
+var CATALOGO={tolti:{amici:["IL SUSSURRO","CHI SONO IO?"]},sposta:[["amici","ALIBI","azione"]]};
+function applyCatalogo(){
+ var tabs=[typeof GAMES!=="undefined"?GAMES:null,typeof GAMES_EN!=="undefined"?GAMES_EN:null,typeof GAMES_ES!=="undefined"?GAMES_ES:null];
+ tabs.forEach(function(T2){
+  if(!T2)return;
+  Object.keys(CATALOGO.tolti).forEach(function(c){
+   var via=CATALOGO.tolti[c];if(!T2[c])return;
+   for(var i=T2[c].length-1;i>=0;i--){if(via.indexOf(T2[c][i]._it||T2[c][i].name)>=0)T2[c].splice(i,1);}
+  });
+  CATALOGO.sposta.forEach(function(m){
+   var from=T2[m[0]],to=T2[m[2]];if(!from||!to)return;
+   for(var i=from.length-1;i>=0;i--){var g=from[i];if((g._it||g.name)===m[1]){from.splice(i,1);if(!to.some(function(x){return (x._it||x.name)===m[1];}))to.push(g);}}
+  });
+ });
+}
 // Applica le regole a tutte le tabelle dei giochi (IT/EN/ES), dopo l'allineamento delle lingue
 function applyRegole(){
+ applyCatalogo();
  var tabs={it:(typeof GAMES!=="undefined"?GAMES:null),en:(typeof GAMES_EN!=="undefined"?GAMES_EN:null),es:(typeof GAMES_ES!=="undefined"?GAMES_ES:null)};
  Object.keys(tabs).forEach(function(L){
   var T2=tabs[L];if(!T2)return;
   Object.keys(T2).forEach(function(c){
    (T2[c]||[]).forEach(function(g){
     var r=REGOLE[c+"|"+(g._it||g.name)];if(!r)return;
-    var v=r[L]||r.it;g.rules=v[0];g.tip=v[1]||"";if(r.p)g.players=r.p;
+    var v=r[L]||r.it;g.rules=v[0];g.tip=v[1]||"";if(r.p)g.players=r.p;if(r.f)g[r.f]=true;
    });
   });
  });

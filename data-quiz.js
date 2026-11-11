@@ -777,7 +777,7 @@ function renderGames(){
 
 
 // Avvia il gioco vero e proprio (dopo la schermata delle regole)
-var GAME_LAUNCH_FLAGS=["alfabeto", "annogiusto", "annoremote", "appello", "bandieraremote", "chipaga", "chiseidavvero", "codice", "codiceremote", "confessionianonime", "cosaincomune", "cosanonsa", "intesa", "lex", "linguaremote", "mimo", "mrwhite", "nomecognome", "occhio", "occhioremote", "primadoporemote", "pub", "quantovale", "quindici", "quizzone", "robot", "scultura", "sinon", "soprannome", "specchio", "superpotere", "temporemote", "traditore", "viaggiosogni"];
+var GAME_LAUNCH_FLAGS=["bugia","sincronia","alfabeto", "annogiusto", "annoremote", "appello", "bandieraremote", "chipaga", "chiseidavvero", "codice", "codiceremote", "confessionianonime", "cosaincomune", "cosanonsa", "intesa", "lex", "linguaremote", "mimo", "mrwhite", "nomecognome", "occhio", "occhioremote", "primadoporemote", "pub", "quantovale", "quindici", "quizzone", "robot", "scultura", "sinon", "soprannome", "specchio", "superpotere", "temporemote", "traditore", "viaggiosogni"];
 function gameHasLaunch(g){
  if(!g)return false;
  for(var i=0;i<GAME_LAUNCH_FLAGS.length;i++)if(g[GAME_LAUNCH_FLAGS[i]])return true;
@@ -805,6 +805,7 @@ function gameLaunch(g){
  if(g.mrwhite){
  S.screen="mrwhite_setup";render();return;
  }
+ if(g.bugia||g.sincronia){scStart();return;}
  if(g.intesa){
  S.screen="intesa_setup";render();return;
  }
@@ -6985,7 +6986,7 @@ function shellWrap(){
  var low=String(title).toLowerCase().trim();
  [].forEach.call(body.querySelectorAll(".codice-big,.mw-title,.quiz-level-title,.intesa-title,.qv-title,.nc-title,.alfa-title"),function(e){if(String(e.textContent||"").toLowerCase().trim()===low)e.remove();});
 }
-var SHELL_BACKONLY={mrwhite_setup:1,mrwhite:1};
+var SHELL_BACKONLY={mrwhite_setup:1,mrwhite:1,sc_setup:1,sc_play:1,sc_rank:1};
 var SHELL_REMOTE={cdr:1,agr:1,pdr:1,fgr:1,lgr:1,qxr:1,ocr:1,tpr:1};
 (function(){
  function start(){

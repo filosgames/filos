@@ -655,3 +655,25 @@ body[data-cat="cultura"]{--f-cat:#DCE3F7;}body[data-cat="adulti"]{--f-cat:#EEDCE
 .mw-go-name{font-size:clamp(36px,11vw,54px);font-weight:900;color:var(--f-ink,#1A1D21);letter-spacing:-1px;overflow-wrap:anywhere;}
 .mw-go-title{font-size:22px;font-weight:700;color:var(--f-ink,#1A1D21);}
 .mw-go-sub{font-size:15px;color:#5B6470;line-height:1.55;max-width:320px;margin:8px 0 22px;}
+
+/* 34. Segnapunti (Trova la bugia, Sincronia) */
+.sc-wrap{display:flex;flex-direction:column;align-items:stretch;gap:14px;padding:4px 0 8px;text-align:center;}
+.sc-turn{font-size:26px;font-weight:900;color:var(--f-ink,#1A1D21);letter-spacing:-0.4px;overflow-wrap:anywhere;}
+.sc-turn-sub{font-size:15px;line-height:1.5;color:#5B6470;max-width:340px;margin:0 auto;}
+.sc-win{font-size:20px;font-weight:800;color:#1f8a4c;}
+.sc-list{display:flex;flex-direction:column;gap:8px;margin-top:4px;}
+.sc-row{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#F0F3F6;border-radius:14px;padding:10px 12px 10px 16px;text-align:left;}
+.sc-row.on{background:#FFF6CC;box-shadow:inset 0 0 0 2px #F2D64B;}
+.sc-name{font-size:16px;font-weight:700;color:var(--f-ink,#1A1D21);overflow-wrap:anywhere;min-width:0;}
+.sc-ctl{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.sc-btn{width:44px;height:44px;border-radius:12px;border:none;background:#fff;font-size:24px;font-weight:700;color:#1A1D21;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.08);}
+.sc-btn.plus{background:#F9DB4A;color:#2F2B0E;}
+.sc-btn:disabled{opacity:.35;cursor:default;}
+.sc-val{font-size:18px;font-weight:800;min-width:28px;text-align:center;color:var(--f-ink,#1A1D21);flex-shrink:0;}
+.sc-row .sc-val{font-size:14px;font-weight:700;color:#5B6470;}
+.sc-ctl .sc-val{font-size:20px;color:var(--f-ink,#1A1D21);}
+.sc-btns{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:6px;}
+.sc-big{background:#F0F3F6;border-radius:20px;padding:18px;margin:4px auto 0;min-width:180px;}
+.sc-big-lab{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#5B6470;}
+.sc-big-val{font-size:64px;font-weight:900;color:var(--f-ink,#1A1D21);line-height:1.1;}
+.sc-last{font-size:13px;color:#5B6470;}

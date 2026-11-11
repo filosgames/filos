@@ -803,7 +803,7 @@ button:disabled{opacity:0.35!important;transform:none;}
 #cdr-toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 28px);transform:translate(-50%,20px);background:rgba(28,28,30,0.92);color:#fff;font-size:15px;font-weight:600;padding:11px 18px;border-radius:999px;opacity:0;transition:all .25s;pointer-events:none;z-index:9999;}
 #cdr-toast.on{opacity:1;transform:translate(-50%,0);}
 </style>
-<link rel="stylesheet" href="stile.css?v=46">
+<link rel="stylesheet" href="stile.css?v=47">
 
 <!-- Firebase SDK (bundled) -->
 <script>
@@ -1141,9 +1141,10 @@ try {
 <script src="data-quizdata.js?v=5"></script>
 <script src="data-lingua.js?v=1"></script>
 <script src="data-adulti.js?v=5"></script>
-<script src="data-regole.js?v=2"></script>
-<script src="data-quiz.js?v=76"></script>
+<script src="data-regole.js?v=3"></script>
+<script src="data-quiz.js?v=77"></script>
 <script src="data-geo.js?v=2"></script>
+<script src="data-punti.js?v=1"></script>
 <script src="data-cdr.js?v=16"></script>
 <script src="data-agr.js?v=9"></script>
 <script src="data-pdr.js?v=9"></script>
@@ -3940,6 +3941,9 @@ else if(S.screen==="specchio")renderSpecchio();
  else if(S.screen==="intesa")renderIntesa();
  else if(S.screen==="intesa_end")renderIntesaEnd();
  else if(S.screen==="mrwhite")renderMrWhite();
+ else if(S.screen==="sc_setup")renderScSetup();
+ else if(S.screen==="sc_play")renderScPlay();
+ else if(S.screen==="sc_rank")renderScRank();
  else if(S.screen==="quizlevel")renderQuizLevel();
  else if(S.screen==="quiz")renderQuiz();
  else if(S.screen==="starter")renderStarter();
