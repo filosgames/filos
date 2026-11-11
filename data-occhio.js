@@ -95,32 +95,43 @@ function ocValid(rows,lvl){
 // In alto le 4 file (linguette); sotto la fila scelta in grande: strisce alte, una accanto all'altra.
 // Si sposta una striscia trascinandola a destra o a sinistra, oppure toccandola e poi toccando
 // il posto dove metterla. Le strisce col puntino restano ferme.
-// Ogni fila si chiude con «Fila fatta»: «Ho finito» (cta) si attiva solo quando sono fatte tutte.
+// Una fila conta come fatta appena ci sposti una striscia: «Ho finito» (cta) si attiva quando sono fatte tutte e 4.
 // Il tabellone sta tutto nello schermo e non cambia misura mentre si gioca: la pagina non si muove.
 function ocBoard(wrap,lvl,rows,onChange,readonly,cta){
  var colors=ocColors(lvl);var n=colors[0].length;
  if(typeof rows._r!=="number")rows._r=0;
  if(!Array.isArray(rows._done))rows._done=rows.map(function(){return false;});
  var box=div("oc-board3");wrap.appendChild(box);
+ // In alto il selettore delle file: la pillola bianca scivola sulla fila scelta
+ // (si tocca una fila oppure si fa scorrere il dito sul selettore).
  var tabs=div("oc-tabs3");box.appendChild(tabs);
+ var pill=div("oc-pill");tabs.appendChild(pill);
+ var segs=[];
+ rows.forEach(function(row,r){var t=btn("oc-tab3","",function(){goRow(r);});tabs.appendChild(t);segs.push(t);});
  var col=div("oc-col3");box.appendChild(col);
- // sotto: «Fila N fatta» e, accanto, «Ho finito» (spento finché non sono fatte tutte)
- var act=div("oc-act");box.appendChild(act);
- var slot=div("oc-slot");act.appendChild(slot);if(cta)act.appendChild(cta);
+ // Sotto, solo «Ho finito»: si accende quando in tutte e 4 le file hai spostato almeno una striscia
+ var act=div("oc-act");box.appendChild(act);if(cta)act.appendChild(cta);
  var sel=null;
  function allDone(){return rows._done.every(Boolean);}
- function nextUndone(){for(var k=1;k<=OC_ROWS;k++){var r=(rows._r+k)%OC_ROWS;if(!rows._done[r])return r;}return -1;}
- function goRow(r){if(r<0||r===rows._r)return;rows._r=r;sel=null;paintTabs();paintCol();paintAct();}
+ function goRow(r){if(r<0||r>=OC_ROWS||r===rows._r)return;rows._r=r;sel=null;paintTabs();paintCol();}
  function paintTabs(){
-  tabs.innerHTML="";
-  rows.forEach(function(row,r){
-   var t=btn("oc-tab3"+(r===rows._r?" on":"")+(rows._done[r]?" done":""),"",function(){goRow(r);});
-   // pallino col colore della fila, nome, e la spunta quando è fatta
+  pill.style.transform="translateX("+(rows._r*100)+"%)";
+  segs.forEach(function(t,r){
+   t.className="oc-tab3"+(r===rows._r?" on":"")+(rows._done[r]?" done":"");t.innerHTML="";
+   // spunta quando la fila è fatta, altrimenti un pallino col colore della fila
    if(rows._done[r])t.appendChild(el("span","oc-tab3-ok","✓"));
    else{var dot=el("span","oc-tab3-dot","");dot.style.background=colors[r][Math.floor(n/2)];t.appendChild(dot);}
    t.appendChild(el("span","oc-tab3-l",T("ocRow").replace("{n}",r+1)));
-   tabs.appendChild(t);
   });
+  if(cta)cta.disabled=!allDone();
+ }
+ if(!readonly){
+  var tst=null;
+  function segAt(x){var b=tabs.getBoundingClientRect();return Math.max(0,Math.min(OC_ROWS-1,Math.floor((x-b.left)/(b.width/OC_ROWS))));}
+  tabs.addEventListener("pointerdown",function(e){tst={id:e.pointerId};try{tabs.setPointerCapture(e.pointerId);}catch(er){}});
+  tabs.addEventListener("pointermove",function(e){if(!tst||e.pointerId!==tst.id)return;e.preventDefault();goRow(segAt(e.clientX));});
+  tabs.addEventListener("pointerup",function(e){if(!tst||e.pointerId!==tst.id)return;tst=null;goRow(segAt(e.clientX));});
+  tabs.addEventListener("pointercancel",function(){tst=null;});
  }
  function paintCol(){
   col.innerHTML="";var r=rows._r;
@@ -131,24 +142,9 @@ function ocBoard(wrap,lvl,rows,onChange,readonly,cta){
    col.appendChild(bar);
   });
  }
- function paintAct(){
-  slot.innerHTML="";var r=rows._r;
-  if(!readonly){
-   if(!rows._done[r]){
-    slot.appendChild(btn("oc-rowbtn",T("ocRowDone").replace("{n}",r+1),function(){
-     rows._done[r]=true;var nx=nextUndone();
-     if(nx>=0)goRow(nx);else{paintTabs();paintAct();}
-    }));
-   } else if(!allDone()){
-    var nx=nextUndone();
-    slot.appendChild(btn("oc-rowbtn out",T("ocRowGo").replace("{n}",nx+1),function(){goRow(nx);}));
-   }
-  }
-  slot.style.display=slot.firstChild?"":"none";
-  if(cta)cta.disabled=!allDone();
- }
  function move(from,to){
   if(from===to)return;var row=rows[rows._r];var v=row.splice(from,1)[0];row.splice(to,0,v);
+  if(!rows._done[rows._r]){rows._done[rows._r]=true;paintTabs();}
   if(onChange)onChange(rows);
  }
  function recolor(hold){
@@ -200,7 +196,7 @@ function ocBoard(wrap,lvl,rows,onChange,readonly,cta){
  }
  function onRs(){fit(false);}
  window.addEventListener("resize",onRs);
- paintTabs();paintCol();paintAct();
+ paintTabs();paintCol();
  box._fit=function(){fit(true);};
  requestAnimationFrame(function(){requestAnimationFrame(function(){fit(true);});});
  return box;
@@ -646,7 +642,7 @@ function ocrScreenEnd(wrap,st){
 // ── Testi ──
 function ocStrings(){
  if(typeof STRINGS==="undefined"||STRINGS.it.ocTitle)return;
- Object.assign(STRINGS.it,{ocTitle:"L'OCCHIO DEI COLORI",ocRulesSolo:"Metti in ordine di sfumatura le quattro file di strisce colorate. La prima e l'ultima di ogni fila (con il puntino) restano ferme. Sposta le altre trascinandole a destra o a sinistra, oppure tocca una striscia e poi il posto dove metterla. Conta solo la precisione.",ocRulesFriends:"A turno, sullo stesso telefono, ognuno mette in ordine di sfumatura le stesse quattro file di strisce colorate. La prima e l'ultima di ogni fila (con il puntino) restano ferme. Vince chi è più preciso; se c'è parità si rifà una prova più difficile solo tra chi è pari.",ocIntroRemote:"Ognuno gioca dal proprio telefono, anche da tavoli diversi: tutti ricevono gli stessi colori da mettere in ordine di sfumatura. Ci sono 3 minuti. Vince chi è più preciso; se c'è parità, prova più difficile solo per chi è pari.",ocChooseLevel:"SCEGLI IL LIVELLO",ocLvlDesc:"{n} colori per fila",ocExpert:"Esperto",ocYou:"Tu",ocPassSub:"Gli altri non devono guardare lo schermo mentre metti in ordine i colori.",ocHint:"Scegli una fila, poi trascina le strisce a destra o a sinistra, oppure toccane una e poi il posto dove metterla. Quelle con il puntino restano ferme.",ocRow:"Fila {n}",ocRowDone:"Fila {n} fatta",ocRowGo:"Vai alla fila {n}",ocRowsLeft:"File fatte: {a} di {t}",ocDone:"Ho finito",ocPrec:"Precisione {p}%",ocPerfect:"Perfetto! Ordine senza errori.",ocCompare:"IL TUO ORDINE E QUELLO GIUSTO",ocRanking:"CLASSIFICA",ocTbRound:"Spareggio",ocTbSub:"{n} sono pari: prova più difficile solo per loro.",ocWaiting:"Hanno finito {a} su {t}",ocNoAnswer:"non ha finito"});
- Object.assign(STRINGS.en,{ocTitle:"THE COLOR EYE",ocRulesSolo:"Put the four rows of colored stripes in order of shade. The first and last stripe of each row (with the dot) stay fixed. Move the others by dragging them left or right, or tap a stripe and then the spot where it goes. Only accuracy counts.",ocRulesFriends:"Taking turns on the same phone, everyone puts the same four rows of colored stripes in order of shade. The first and last stripe of each row (with the dot) stay fixed. The most accurate player wins; if there is a tie, the tied players play a harder round.",ocIntroRemote:"Everyone plays on their own phone, even from different tables: all players get the same colors to put in order of shade. You have 3 minutes. The most accurate player wins; if there is a tie, only the tied players play a harder round.",ocChooseLevel:"CHOOSE THE LEVEL",ocLvlDesc:"{n} colors per row",ocExpert:"Expert",ocYou:"You",ocPassSub:"Nobody else should look at the screen while you sort the colors.",ocHint:"Pick a row, then drag the stripes left or right, or tap one and then the spot where it goes. The ones with a dot stay fixed.",ocRow:"Row {n}",ocRowDone:"Row {n} done",ocRowGo:"Go to row {n}",ocRowsLeft:"Rows done: {a} of {t}",ocDone:"I'm done",ocPrec:"Accuracy {p}%",ocPerfect:"Perfect! No mistakes.",ocCompare:"YOUR ORDER AND THE RIGHT ONE",ocRanking:"RANKING",ocTbRound:"Tie-break",ocTbSub:"{n} are tied: a harder round just for them.",ocWaiting:"{a} of {t} have finished",ocNoAnswer:"didn't finish"});
- Object.assign(STRINGS.es,{ocTitle:"EL OJO DE LOS COLORES",ocRulesSolo:"Ordena por matices las cuatro filas de franjas de colores. La primera y la última de cada fila (con el punto) no se mueven. Mueve las demás arrastrándolas a la derecha o a la izquierda, o toca una franja y luego el sitio donde va. Solo cuenta la precisión.",ocRulesFriends:"Por turnos, en el mismo móvil, cada uno ordena por matices las mismas cuatro filas de franjas de colores. La primera y la última de cada fila (con el punto) no se mueven. Gana quien es más preciso; si hay empate, los empatados juegan una prueba más difícil.",ocIntroRemote:"Cada uno juega desde su móvil, incluso desde mesas distintas: todos reciben los mismos colores para ordenar por matices. Hay 3 minutos. Gana quien es más preciso; si hay empate, solo los empatados juegan una prueba más difícil.",ocChooseLevel:"ELIGE EL NIVEL",ocLvlDesc:"{n} colores por fila",ocExpert:"Experto",ocYou:"Tú",ocPassSub:"Los demás no deben mirar la pantalla mientras ordenas los colores.",ocHint:"Elige una fila y luego arrastra las franjas a la derecha o a la izquierda, o toca una y luego el sitio donde va. Las que tienen un punto no se mueven.",ocRow:"Fila {n}",ocRowDone:"Fila {n} hecha",ocRowGo:"Ir a la fila {n}",ocRowsLeft:"Filas hechas: {a} de {t}",ocDone:"He terminado",ocPrec:"Precisión {p}%",ocPerfect:"¡Perfecto! Sin errores.",ocCompare:"TU ORDEN Y EL CORRECTO",ocRanking:"CLASIFICACIÓN",ocTbRound:"Desempate",ocTbSub:"{n} están empatados: prueba más difícil solo para ellos.",ocWaiting:"Han terminado {a} de {t}",ocNoAnswer:"no ha terminado"});
+ Object.assign(STRINGS.it,{ocTitle:"L'OCCHIO DEI COLORI",ocRulesSolo:"Metti in ordine di sfumatura le quattro file di strisce colorate. La prima e l'ultima di ogni fila (con il puntino) restano ferme. Sposta le altre trascinandole a destra o a sinistra, oppure tocca una striscia e poi il posto dove metterla. Conta solo la precisione.",ocRulesFriends:"A turno, sullo stesso telefono, ognuno mette in ordine di sfumatura le stesse quattro file di strisce colorate. La prima e l'ultima di ogni fila (con il puntino) restano ferme. Vince chi è più preciso; se c'è parità si rifà una prova più difficile solo tra chi è pari.",ocIntroRemote:"Ognuno gioca dal proprio telefono, anche da tavoli diversi: tutti ricevono gli stessi colori da mettere in ordine di sfumatura. Ci sono 3 minuti. Vince chi è più preciso; se c'è parità, prova più difficile solo per chi è pari.",ocChooseLevel:"SCEGLI IL LIVELLO",ocLvlDesc:"{n} colori per fila",ocExpert:"Esperto",ocYou:"Tu",ocPassSub:"Gli altri non devono guardare lo schermo mentre metti in ordine i colori.",ocHint:"Scegli una fila, poi trascina le strisce a destra o a sinistra, oppure toccane una e poi il posto dove metterla. Quelle con il puntino restano ferme.",ocRow:"Fila {n}",ocDone:"Ho finito",ocPrec:"Precisione {p}%",ocPerfect:"Perfetto! Ordine senza errori.",ocCompare:"IL TUO ORDINE E QUELLO GIUSTO",ocRanking:"CLASSIFICA",ocTbRound:"Spareggio",ocTbSub:"{n} sono pari: prova più difficile solo per loro.",ocWaiting:"Hanno finito {a} su {t}",ocNoAnswer:"non ha finito"});
+ Object.assign(STRINGS.en,{ocTitle:"THE COLOR EYE",ocRulesSolo:"Put the four rows of colored stripes in order of shade. The first and last stripe of each row (with the dot) stay fixed. Move the others by dragging them left or right, or tap a stripe and then the spot where it goes. Only accuracy counts.",ocRulesFriends:"Taking turns on the same phone, everyone puts the same four rows of colored stripes in order of shade. The first and last stripe of each row (with the dot) stay fixed. The most accurate player wins; if there is a tie, the tied players play a harder round.",ocIntroRemote:"Everyone plays on their own phone, even from different tables: all players get the same colors to put in order of shade. You have 3 minutes. The most accurate player wins; if there is a tie, only the tied players play a harder round.",ocChooseLevel:"CHOOSE THE LEVEL",ocLvlDesc:"{n} colors per row",ocExpert:"Expert",ocYou:"You",ocPassSub:"Nobody else should look at the screen while you sort the colors.",ocHint:"Pick a row, then drag the stripes left or right, or tap one and then the spot where it goes. The ones with a dot stay fixed.",ocRow:"Row {n}",ocDone:"I'm done",ocPrec:"Accuracy {p}%",ocPerfect:"Perfect! No mistakes.",ocCompare:"YOUR ORDER AND THE RIGHT ONE",ocRanking:"RANKING",ocTbRound:"Tie-break",ocTbSub:"{n} are tied: a harder round just for them.",ocWaiting:"{a} of {t} have finished",ocNoAnswer:"didn't finish"});
+ Object.assign(STRINGS.es,{ocTitle:"EL OJO DE LOS COLORES",ocRulesSolo:"Ordena por matices las cuatro filas de franjas de colores. La primera y la última de cada fila (con el punto) no se mueven. Mueve las demás arrastrándolas a la derecha o a la izquierda, o toca una franja y luego el sitio donde va. Solo cuenta la precisión.",ocRulesFriends:"Por turnos, en el mismo móvil, cada uno ordena por matices las mismas cuatro filas de franjas de colores. La primera y la última de cada fila (con el punto) no se mueven. Gana quien es más preciso; si hay empate, los empatados juegan una prueba más difícil.",ocIntroRemote:"Cada uno juega desde su móvil, incluso desde mesas distintas: todos reciben los mismos colores para ordenar por matices. Hay 3 minutos. Gana quien es más preciso; si hay empate, solo los empatados juegan una prueba más difícil.",ocChooseLevel:"ELIGE EL NIVEL",ocLvlDesc:"{n} colores por fila",ocExpert:"Experto",ocYou:"Tú",ocPassSub:"Los demás no deben mirar la pantalla mientras ordenas los colores.",ocHint:"Elige una fila y luego arrastra las franjas a la derecha o a la izquierda, o toca una y luego el sitio donde va. Las que tienen un punto no se mueven.",ocRow:"Fila {n}",ocDone:"He terminado",ocPrec:"Precisión {p}%",ocPerfect:"¡Perfecto! Sin errores.",ocCompare:"TU ORDEN Y EL CORRECTO",ocRanking:"CLASIFICACIÓN",ocTbRound:"Desempate",ocTbSub:"{n} están empatados: prueba más difícil solo para ellos.",ocWaiting:"Han terminado {a} de {t}",ocNoAnswer:"no ha terminado"});
 }

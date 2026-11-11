@@ -745,3 +745,8 @@ body[data-cat="cultura"]{--f-cat:#DCE3F7;}body[data-cat="adulti"]{--f-cat:#EEDCE
 .oc-slot .oc-rowbtn.out{background:#ECECEF;color:var(--f-ink);}
 .oc-tab3-ok{width:8px;text-align:center;font-size:12px;}
 .oc-bar3.sel,.oc-bar3.lift{box-shadow:inset 0 0 0 3px #fff,inset 0 0 0 4.5px rgba(0,0,0,.35);}
+/* Occhio dei colori: selettore delle file con pillola che scivola (niente pulsante «Fila fatta») */
+.oc-tabs3{position:relative;gap:0;touch-action:none;-webkit-user-select:none;user-select:none;}
+.oc-pill{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px) / 4);background:#fff;border-radius:9px;box-shadow:0 1px 3px rgba(0,0,0,.12),0 1px 1px rgba(0,0,0,.04);transition:transform .28s cubic-bezier(.3,.7,.2,1);}
+.oc-tab3,.oc-tab3.on{position:relative;z-index:1;background:transparent!important;box-shadow:none!important;}
+.oc-act .codice-cta{max-width:none!important;}
