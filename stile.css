@@ -727,3 +727,21 @@ body[data-cat="cultura"]{--f-cat:#DCE3F7;}body[data-cat="adulti"]{--f-cat:#EEDCE
 .oc-act .codice-cta{flex:1 1 0;margin:0!important;max-width:none!important;width:auto!important;min-width:0;padding-left:8px!important;padding-right:8px!important;}
 .codice-wrap.oc{padding-left:0!important;padding-right:0!important;width:100%;box-sizing:border-box;}
 .oc-slot .oc-rowbtn{border-radius:14px;height:52px;padding:0 8px;font-size:17px;}
+/* Occhio dei colori: stile pulito ed essenziale */
+.oc-tabs3{display:flex;gap:2px;background:#ECECEF;border-radius:12px;padding:3px;}
+.oc-tab3{flex:1 1 0;flex-direction:row;justify-content:center;gap:6px;border:none!important;background:transparent;border-radius:9px;padding:9px 2px;font-size:14px;font-weight:600;color:#6B6F76;transition:background .15s,box-shadow .15s,color .15s;}
+.oc-tab3.on{background:#fff;color:var(--f-ink);box-shadow:0 1px 3px rgba(0,0,0,.12),0 1px 1px rgba(0,0,0,.04);}
+.oc-tab3-dot{width:8px;height:8px;border-radius:50%;flex:none;}
+.oc-tab3-ok{position:static;width:auto;height:auto;background:none;box-shadow:none;color:var(--f-ok);font-size:13px;line-height:1;font-weight:800;}
+.oc-col3{gap:3px;padding:0;border-radius:18px;overflow:hidden;background:#fff;}
+.oc-bar3{border-radius:3px;box-shadow:none;transition:box-shadow .12s,filter .12s;}
+.oc-bar3 .oc-dot{bottom:16px;width:7px;height:7px;margin-left:-3.5px;background:rgba(255,255,255,.85);box-shadow:0 0 0 1px rgba(0,0,0,.08);}
+.oc-bar3.sel,.oc-bar3.lift{transform:none;box-shadow:inset 0 0 0 3px #fff,inset 0 0 0 4px rgba(0,0,0,.18);filter:saturate(1.05);z-index:auto;}
+.oc .oc-who{font-size:20px!important;font-weight:700!important;}
+.oc-slot .oc-rowbtn,.oc-slot .oc-rowbtn.out{background:#ECECEF;color:var(--f-ink);border:none;border-radius:14px;font-weight:600;}
+.oc-slot .oc-rowbtn:active{background:#E2E2E6;}
+.oc-slot .oc-rowbtn{background:var(--f-ink);color:#fff;}
+.oc-slot .oc-rowbtn:active{background:#000;}
+.oc-slot .oc-rowbtn.out{background:#ECECEF;color:var(--f-ink);}
+.oc-tab3-ok{width:8px;text-align:center;font-size:12px;}
+.oc-bar3.sel,.oc-bar3.lift{box-shadow:inset 0 0 0 3px #fff,inset 0 0 0 4.5px rgba(0,0,0,.35);}

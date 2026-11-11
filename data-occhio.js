@@ -115,9 +115,10 @@ function ocBoard(wrap,lvl,rows,onChange,readonly,cta){
   tabs.innerHTML="";
   rows.forEach(function(row,r){
    var t=btn("oc-tab3"+(r===rows._r?" on":"")+(rows._done[r]?" done":""),"",function(){goRow(r);});
-   var lb=el("span","oc-tab3-l",T("ocRow").replace("{n}",r+1));t.appendChild(lb);
+   // pallino col colore della fila, nome, e la spunta quando è fatta
    if(rows._done[r])t.appendChild(el("span","oc-tab3-ok","✓"));
-   var sw=div("oc-tab3-sw");row.forEach(function(ci){var c=div("");c.style.background=colors[r][ci];sw.appendChild(c);});t.appendChild(sw);
+   else{var dot=el("span","oc-tab3-dot","");dot.style.background=colors[r][Math.floor(n/2)];t.appendChild(dot);}
+   t.appendChild(el("span","oc-tab3-l",T("ocRow").replace("{n}",r+1)));
    tabs.appendChild(t);
   });
  }
