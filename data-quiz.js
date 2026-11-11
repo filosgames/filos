@@ -1125,11 +1125,26 @@ function renderMrWhite(){
 
 
 function intesaShuffle(level){
- // Prima le parole mai uscite su questo telefono (ogni parola mostrata viene ricordata)
- var all=INTESA_WORDS[level];
- return freshOrder("in_"+level,all.length).map(function(i){return all[i];});
+ // Prima le parole mai uscite su questo telefono (ogni parola mostrata viene ricordata).
+ // Si salvano le posizioni, così la parola si mostra nella lingua scelta.
+ return freshOrder("in_"+level,(PAROLA_DATA[level]||[]).length);
 }
-function intesaMarkWord(){var w=S.intesaWords&&S.intesaWords[S.intesaIdx];var all=INTESA_WORDS[S.intesaLevel]||[];var k=all.indexOf(w);if(k>=0)freshMark("in_"+S.intesaLevel,k);}
+function intesaMarkWord(){var k=S.intesaWords&&S.intesaWords[S.intesaIdx];if(typeof k==="number")freshMark("in_"+S.intesaLevel,k);}
+function intesaCur(){return parolaEntry(S.intesaLevel,S.intesaWords&&S.intesaWords[S.intesaIdx]);}
+function intesaNoBox(){
+ var box=div("intesa-no");box.id="intesaNo";
+ var e=intesaCur();if(!e)return box;
+ var l=div("intesa-no-lbl");l.textContent=T("intesaNoLbl");box.appendChild(l);
+ var lst=div("intesa-no-list");
+ e.no.forEach(function(x){var s=document.createElement("span");s.className="intesa-no-w";s.textContent=x;lst.appendChild(s);});
+ box.appendChild(lst);return box;
+}
+function intesaShowWord(){
+ var ww=document.getElementById("intesaWord"),nb=document.getElementById("intesaNo");
+ if(!ww||!nb){render();return;}
+ var e=intesaCur();ww.textContent=e?e.w:"—";nb.parentNode.replaceChild(intesaNoBox(),nb);
+}
+function intesaLevelName(){return T("ui_"+(S.intesaLevel||"facile")).toUpperCase();}
 function intesaTeamName(i){return T("intesaTeam").replace("{n}",i+1);}
 function startIntesa(level){
  S.intesaLevel=level;
@@ -1223,7 +1238,7 @@ function renderIntesa(){
 
  // Score + timer header
  var scoreboard=div("intesa-score-board");
- var rb=div("intesa-round-badge");rb.textContent=((S.intesaTeamScores&&S.intesaTeamScores.length>1)?intesaTeamName(S.intesaTeam).toUpperCase()+" · ":"")+T("intesaLevel")+S.intesaLevel.toUpperCase();scoreboard.appendChild(rb);
+ var rb=div("intesa-round-badge");rb.textContent=((S.intesaTeamScores&&S.intesaTeamScores.length>1)?intesaTeamName(S.intesaTeam).toUpperCase()+" · ":"")+T("intesaLevel")+intesaLevelName();scoreboard.appendChild(rb);
  var sn=div("intesa-score-num");sn.textContent=S.intesaScore;scoreboard.appendChild(sn);
  var sl=div("intesa-score-label");sl.textContent=T("intesaResult");scoreboard.appendChild(sl);
  wrap.appendChild(scoreboard);
@@ -1246,9 +1261,10 @@ function renderIntesa(){
  timerNum.textContent=S.intesaTimer;
  warea.appendChild(timerNum);
 
- var currentWord=S.intesaWords[S.intesaIdx]||"—";
+ var curE=intesaCur();
  intesaMarkWord();
- var wword=div("intesa-word");wword.textContent=currentWord;warea.appendChild(wword);
+ var wword=div("intesa-word");wword.textContent=curE?curE.w:"—";warea.appendChild(wword);
+ warea.appendChild(intesaNoBox());
  var wnum=div("intesa-word-num");wnum.textContent=T("intesaWord")+(S.intesaIdx+1)+T("ui_di")+S.intesaWords.length;warea.appendChild(wnum);
  wcard.appendChild(warea);
 
@@ -1265,9 +1281,7 @@ function renderIntesa(){
  intesaEndTurn();
  return;
  }
- var ww=document.getElementById("intesaWord");intesaMarkWord();
- if(ww)ww.textContent=S.intesaWords[S.intesaIdx];
- else render();
+ intesaMarkWord();intesaShowWord();
  var wn=document.getElementById("intesaWordNum");
  if(wn)wn.textContent=T("intesaWord")+(S.intesaIdx+1)+T("ui_di")+S.intesaWords.length;
  var snn=document.getElementById("intesaScoreNum");
@@ -1279,9 +1293,7 @@ function renderIntesa(){
  intesaEndTurn();
  return;
  }
- var ww=document.getElementById("intesaWord");intesaMarkWord();
- if(ww)ww.textContent=S.intesaWords[S.intesaIdx];
- else render();
+ intesaMarkWord();intesaShowWord();
  });
  ctrl.appendChild(okBtn);
  ctrl.appendChild(skipBtn);
@@ -1330,7 +1342,7 @@ function renderIntesaEnd(){
   document.getElementById("root").appendChild(wrap);
   return;
  }
- var sub=div("end-sub",T("intesaGuessedN")+S.intesaScore+T("ui_parole_su")+S.intesaIdx+T("intesaLevelOf")+S.intesaLevel.toUpperCase());wrap.appendChild(sub);
+ var sub=div("end-sub",T("intesaGuessedN")+S.intesaScore+T("ui_parole_su")+S.intesaIdx+T("intesaLevelOf")+intesaLevelName());wrap.appendChild(sub);
 
  // Score
  var sb=div("intesa-score-board");sb.style.maxWidth="400px";sb.style.margin="24px auto";
