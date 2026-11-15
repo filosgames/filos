@@ -692,6 +692,28 @@ function renderTerms(){
 }
 
 function adultOk(){if(S.adult18)return true;try{return sessionStorage.getItem("filos_18")==="1";}catch(e){return false;}}
+// «Scegli un gioco per me»: pesca a caso uno dei giochi della lista (non lo stesso di prima),
+// lo evidenzia un attimo e lo apre come se lo si fosse toccato
+var PICK_LAST={};
+function pickPill(panel,list,label){
+ var rows=[].slice.call(list.querySelectorAll(".grow"));
+ if(rows.length<2)return;
+ var b=document.createElement("button");b.type="button";b.className="pick-pill";
+ b.innerHTML='<svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><rect x="1.5" y="1.5" width="15" height="15" rx="4" stroke="currentColor" stroke-width="1.6"/><circle cx="6" cy="6" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="9" cy="9" r="1.3" fill="currentColor"/></svg>';
+ b.appendChild(document.createTextNode(label));
+ b.onclick=function(){
+  if(b._busy)return;
+  var key=S.cat+"|"+(S.rFilter||"")+"|"+(S.bFilter||"");
+  var pool=rows.filter(function(r){return r._pickId!==PICK_LAST[key];});
+  var r=pool[Math.floor(Math.random()*pool.length)];
+  PICK_LAST[key]=r._pickId;b._busy=true;
+  rows.forEach(function(x){x.classList.remove("picked");});
+  r.classList.add("picked");
+  try{r.scrollIntoView({behavior:"smooth",block:"center"});}catch(e){}
+  setTimeout(function(){b._busy=false;if(r.isConnected){r.click();try{window.scrollTo(0,0);}catch(e){}}},750);
+ };
+ panel.appendChild(b);
+}
 function renderGames(){
  clr();
  addBackArrow(goHome);
@@ -736,8 +758,10 @@ function renderGames(){
  info.appendChild(div("gn",q));info.appendChild(div("gm",T("ui_indovinello")+stars));
  row.appendChild(info);row.appendChild(div("garr",CHEV));
  row.onclick=(function(d,ri2){return function(){S.rDiff=d;S.rIdx=ri2;S.curRiddle=RIDDLES[d][ri2];logPlay("indovinelli",q.substring(0,30));S.screen="riddle";render();};})(diff,ri);
+ row._pickId=diff+"_"+ri;
  list.appendChild(row);
  })(arr[i]);}
+ pickPill(panel,list,T("pickRiddle"));
  panel.appendChild(list);
  } else {
  var _gtable=gameTable();var _allGames=_gtable[S.cat]||[];var games=_allGames;
@@ -768,8 +792,10 @@ function renderGames(){
  if(g.quizzone){gameLaunch(g);return;}
  S.screen="game";render();
  };})(idx);
+ row._pickId=g._it||g.name;
  list.appendChild(row);
  })(games[i],_allGames.indexOf(games[i]));}
+ pickPill(panel,list,T("pickGame"));
  panel.appendChild(list);
  }
  document.getElementById("root").appendChild(panel);

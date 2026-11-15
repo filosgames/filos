@@ -750,3 +750,12 @@ body[data-cat="cultura"]{--f-cat:#DCE3F7;}body[data-cat="adulti"]{--f-cat:#EEDCE
 .oc-pill{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px) / 4);background:#fff;border-radius:9px;box-shadow:0 1px 3px rgba(0,0,0,.12),0 1px 1px rgba(0,0,0,.04);transition:transform .28s cubic-bezier(.3,.7,.2,1);}
 .oc-tab3,.oc-tab3.on{position:relative;z-index:1;background:transparent!important;box-shadow:none!important;}
 .oc-act .codice-cta{max-width:none!important;}
+
+/* 37. Fondo giallo lieve su tutta l'app; «Scegli un gioco per me» sopra la lista dei giochi */
+:root{--f-bg:#FFF8E1;}
+.hdr{background:rgba(255,248,225,0.88)!important;}
+.pick-pill{display:inline-flex;align-items:center;gap:8px;margin:0 0 16px;padding:11px 18px;border:none;border-radius:999px;background:var(--f-card);color:var(--f-ink);font:600 15px/1.2 var(--f-font);letter-spacing:-0.1px;box-shadow:var(--f-shadow);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s;}
+.pick-pill:active{transform:scale(.97);}
+.pick-pill svg{flex:none;}
+.grow.picked{box-shadow:0 0 0 2.5px #F9DB4A,var(--f-shadow)!important;transform:scale(1.015);}
+.splash{background:transparent!important;}
