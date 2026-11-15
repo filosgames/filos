@@ -759,3 +759,22 @@ body[data-cat="cultura"]{--f-cat:#DCE3F7;}body[data-cat="adulti"]{--f-cat:#EEDCE
 .pick-pill svg{flex:none;}
 .grow.picked{box-shadow:0 0 0 2.5px #F9DB4A,var(--f-shadow)!important;transform:scale(1.015);}
 .splash{background:transparent!important;}
+
+/* 38. Più telefoni allo stesso tavolo: scelta del modo e codice di 3 cifre */
+.tbl-opts{display:flex;flex-direction:column;gap:10px;margin:22px 0 26px;}
+.tbl-opt{display:block;width:100%;text-align:left;padding:18px 20px;border:none;border-radius:18px;background:#F4F4F6;color:var(--f-ink);font-family:var(--f-font);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s,background .12s;}
+.tbl-opt:active{transform:scale(.985);background:#ECECEF;}
+.tbl-opt:disabled{opacity:.6;}
+.tbl-opt-t{font-weight:700;font-size:17px;letter-spacing:-0.2px;}
+.tbl-opt-s{font-size:14px;color:var(--f-ink-2);margin-top:3px;}
+.tbl-have{margin-bottom:10px!important;}
+.tbl-join{display:flex;gap:10px;justify-content:center;align-items:stretch;}
+.tbl-in{width:132px;height:56px;border:1.5px solid var(--f-line);border-radius:14px;background:#fff;text-align:center;font:700 28px/1 var(--f-font);letter-spacing:10px;padding-left:10px;color:var(--f-ink);}
+.tbl-in:focus{outline:none;border-color:#F9DB4A;box-shadow:0 0 0 3px rgba(249,219,74,.35);}
+.tbl-in::placeholder{color:#D0D3D9;}
+.tbl-go{height:56px;padding:0 24px;border:none;border-radius:14px;background:#F9DB4A;color:#2F2B0E;font:700 16px var(--f-font);cursor:pointer;}
+.tbl-go:disabled{opacity:.45;cursor:default;}
+.tbl-code{margin:16px auto 20px;padding:16px 18px 18px;border-radius:18px;background:#FFF6CC;max-width:340px;}
+.tbl-code-l{font-size:12px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#7A6A1A;}
+.tbl-code-n{font:800 54px/1.1 var(--f-font);letter-spacing:12px;padding-left:12px;color:#2F2B0E;margin:6px 0 4px;}
+.tbl-code-h{font-size:13.5px;line-height:1.4;color:#6B5E1F;}

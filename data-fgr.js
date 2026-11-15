@@ -103,9 +103,9 @@ function fgrCreate(done){
  if(!fbDB){done(false,T("firebaseErr"));return;}
  var tries=0;
  (function attempt(){
-  tries++;var code=String(Math.floor(1000+Math.random()*9000));
+  tries++;var code=rlNewCode();
   cdrNet(fbGet(fbRef(fbDB,"rooms/"+code))).then(function(snap){
-   if(snap.exists()&&tries<8){attempt();return;}
+   if(rlTaken(snap)&&tries<rlTries()){attempt();return;}
    var me=cdrMyName();var now=Date.now();
    var room={created:now,kind:"bandiera",fl:{meta:{phase:"lobby",order:[],game:1},players:{}}};
    room.fl.players[cdrKey(me)]={n:me,t:now};
@@ -117,7 +117,7 @@ function fgrJoin(code,done){
  cdrStrings();fgrStrings();
  if(!fbDB){done(false,T("firebaseErr"));return;}
  code=String(code||"").replace(/\D/g,"");
- if(code.length!==4){done(false,T("ui_stanza_non_trovata_o_scaduta"));return;}
+ if(code.length!==4&&code.length!==3){done(false,T("ui_stanza_non_trovata_o_scaduta"));return;}
  cdrNet(fbGet(fbRef(fbDB,"rooms/"+code+"/fl"))).then(function(snap){
   if(!snap.exists()){done(false,T("ui_stanza_non_trovata_o_scaduta"));return;}
   var d=snap.val()||{};var meta=d.meta||{};
@@ -307,11 +307,12 @@ function fgrScreenLobby(wrap,st){
   go.disabled=st.lobby.length<2;
   wrap.appendChild(go);
   if(st.lobby.length<2)wrap.appendChild(div("codice-legend",T("ui_aspetta_che_si_colleghi_almeno")));
-  if(st.lobby.length<FGR_MAX_PLAYERS)wrap.appendChild(btn("cdr-link",T("cdrResend"),function(){fgrInvite();}));
-  wrap.appendChild(btn("cdr-link muted",T("ui_annulla_sfida"),fgrExit));
+  if(st.lobby.length<FGR_MAX_PLAYERS&&!rlIsTable(FGR.code))wrap.appendChild(btn("cdr-link",T("cdrResend"),function(){fgrInvite();}));
+  wrap.appendChild(btn("cdr-link muted",rlCancelLbl(FGR.code),fgrExit));
  } else {
   wrap.appendChild(btn("cdr-link muted",T("ui_esci_dalla_stanza"),fgrExit));
  }
+ rlTableBox(wrap,FGR.code);
 }
 function fgrQuestionBox(wrap,st){
  wrap.appendChild(div("agr-round",rlRoundLabel(st.meta,st.q,T("fgrRound"))+(rlBlock(st.meta,st.q)?"":" · "+rlLevelName(rlLevel(st.meta)))));

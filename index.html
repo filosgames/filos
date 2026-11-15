@@ -807,7 +807,7 @@ button:disabled{opacity:0.35!important;transform:none;}
 #cdr-toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 28px);transform:translate(-50%,20px);background:rgba(28,28,30,0.92);color:#fff;font-size:15px;font-weight:600;padding:11px 18px;border-radius:999px;opacity:0;transition:all .25s;pointer-events:none;z-index:9999;}
 #cdr-toast.on{opacity:1;transform:translate(-50%,0);}
 </style>
-<link rel="stylesheet" href="stile.css?v=59">
+<link rel="stylesheet" href="stile.css?v=60">
 
 <!-- Firebase SDK (bundled) -->
 <script>
@@ -1147,17 +1147,17 @@ try {
 <script src="data-adulti.js?v=5"></script>
 <script src="data-regole.js?v=6"></script>
 <script src="data-parola.js?v=1"></script>
-<script src="data-quiz.js?v=81"></script>
+<script src="data-quiz.js?v=82"></script>
 <script src="data-geo.js?v=2"></script>
 <script src="data-punti.js?v=1"></script>
-<script src="data-cdr.js?v=17"></script>
-<script src="data-agr.js?v=10"></script>
-<script src="data-pdr.js?v=10"></script>
-<script src="data-fgr.js?v=9"></script>
-<script src="data-lgr.js?v=7"></script>
-<script src="data-qxr.js?v=6"></script>
-<script src="data-occhio.js?v=19"></script>
-<script src="data-tempo.js?v=11"></script>
+<script src="data-cdr.js?v=18"></script>
+<script src="data-agr.js?v=11"></script>
+<script src="data-pdr.js?v=11"></script>
+<script src="data-fgr.js?v=10"></script>
+<script src="data-lgr.js?v=8"></script>
+<script src="data-qxr.js?v=7"></script>
+<script src="data-occhio.js?v=20"></script>
+<script src="data-tempo.js?v=12"></script>
 <script>
 
 
@@ -3903,6 +3903,7 @@ else if(S.screen==="specchio")renderSpecchio();
  else if(S.screen==="agr")renderAgRemote();
  else if(S.screen==="qxr")renderQvRemote();
  else if(S.screen==="ocr")renderOcRemote();
+ else if(S.screen==="table_choice")renderTableChoice();
  else if(S.screen==="tpr")renderTpRemote();
  else if(S.screen==="occhio_setup")renderOcSetup();
  else if(S.screen==="occhio")renderOc();

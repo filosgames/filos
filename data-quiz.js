@@ -813,6 +813,8 @@ function gameHasLaunch(g){
 }
 function gameLaunch(g){
  var gname=g._it||g.name; // nome italiano: chiave di QUIZ_DATA
+ // Tra amici e Cultura: si sceglie se giocare con un telefono solo o ognuno col suo
+ if(!S._tableLocal&&typeof rlTableKind==="function"&&rlTableKind(g)){S.tableGame=g;S.screen="table_choice";render();return;}
  if(g.quizzone){
  // Quizzone richiede una stanza Firebase — vai alla connect screen dedicata o avvia direttamente
  S.prevScreen='games';

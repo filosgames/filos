@@ -169,9 +169,9 @@ function cdrCreate(done){
  if(!fbDB){done(false,T("firebaseErr"));return;}
  var tries=0;
  (function attempt(){
-  tries++;var code=String(Math.floor(1000+Math.random()*9000));
+  tries++;var code=rlNewCode();
   cdrNet(fbGet(fbRef(fbDB,"rooms/"+code))).then(function(snap){
-   if(snap.exists()&&tries<8){attempt();return;}
+   if(rlTaken(snap)&&tries<rlTries()){attempt();return;}
    var me=cdrMyName();var now=Date.now();
    var room={created:now,kind:"codice",cd:{meta:{phase:"lobby",order:[],round:1},players:{}}};
    room.cd.players[cdrKey(me)]={n:me,t:now};
@@ -183,7 +183,7 @@ function cdrJoin(code,done){
  cdrStrings();
  if(!fbDB){done(false,T("firebaseErr"));return;}
  code=String(code||"").replace(/\D/g,"");
- if(code.length!==4){done(false,T("codeError4"));return;}
+ if(code.length!==4&&code.length!==3){done(false,T("codeError4"));return;}
  cdrNet(fbGet(fbRef(fbDB,"rooms/"+code+"/cd"))).then(function(snap){
   if(!snap.exists()){done(false,T("roomNotFound"));return;}
   var d=snap.val()||{};var meta=d.meta||{};
@@ -353,11 +353,12 @@ function cdrScreenLobby(wrap,st){
   wrap.appendChild(go);
   if(st.lobby.length<2)wrap.appendChild(div("codice-legend",T("ui_aspetta_che_si_colleghi_almeno")));
   // La notifica dura 30 secondi: se qualcuno se l'è persa si può rimandare
-  if(st.lobby.length<CDR_MAX_PLAYERS)wrap.appendChild(btn("cdr-link",T("cdrResend"),function(){cdrInvite();}));
-  wrap.appendChild(btn("cdr-link muted",T("ui_annulla_sfida"),cdrExit));
+  if(st.lobby.length<CDR_MAX_PLAYERS&&!rlIsTable(CDR.code))wrap.appendChild(btn("cdr-link",T("cdrResend"),function(){cdrInvite();}));
+  wrap.appendChild(btn("cdr-link muted",rlCancelLbl(CDR.code),cdrExit));
  } else {
   wrap.appendChild(btn("cdr-link muted",T("ui_esci_dalla_stanza"),cdrExit));
  }
+ rlTableBox(wrap,CDR.code);
 }
 function cdrScreenSecret(wrap,st){
  var mine=st.secrets[CDR.me];
@@ -573,9 +574,9 @@ function rlRevealCountdown(wrap,st,rt,onEnd){
 // Stringhe del gioco a distanza (aggiunte quando l'interfaccia è pronta)
 function cdrStrings(){
  if(typeof STRINGS==="undefined"||STRINGS.it.cdrRemote)return;
- Object.assign(STRINGS.it,{rlLevel:"Livello",qvrIntro:"Ognuno risponde dal proprio telefono, anche da tavoli diversi. Lancia la sfida: agli altri arriva una notifica e toccando Gioca entrano nella partita.",cdrTriedMine:"Hai provato il codice di {t}",cdrTriedYours:"{b} ha provato il tuo codice",cdrTriedOther:"{b} ha provato il codice di {t}",cdrWonMine:"Hai indovinato il codice di {t}",cdrWonYours:"Ha indovinato il tuo codice",cdrWonOther:"Ha indovinato il codice di {t}",cdrRemote:"Sfida un altro tavolo",cdrIntro:"Ognuno gioca dal proprio telefono, anche da tavoli diversi. Lancia la sfida: agli altri arriva una notifica e toccando Gioca entrano nella partita.",cdrResend:"Invia di nuovo la notifica",cdrCreate:"Crea una partita",cdrJoinLabel:"Hai un codice?",cdrJoin:"Entra",cdrRoomCode:"Codice della partita",cdrShareHint:"Fallo inserire ai tuoi amici in Indovina il codice, nella categoria Sfida un altro tavolo.",cdrShare:"Condividi",cdrInviteNear:"Invita i tavoli vicini",cdrInviteSent:"Invito inviato",cdrShareText:"Giochiamo a Indovina il codice su Filòs! Codice partita: {c}",cdrYou:"(tu)",cdrYou2:"Tu",cdrYou3:"te",cdrHost:"Guida",cdrWaitHost:"Aspetta che {n} avvii la partita",cdrRound:"Partita {n}",cdrSecretSub:"Scegli 4 cifre. Gli altri non le vedono: scoprono solo quante ne hanno indovinate.",cdrOr:"oppure",cdrSkip:"Salta il turno di {n}",cdrSkipped:"{n} ha saltato il turno",cdrSecretSaved:"Codice salvato",cdrWaitSecrets:"Aspettiamo che tutti scelgano il loro codice.",cdrReady:"pronto",cdrChoosing:"sta scegliendo",cdrYourTurn:"Tocca a te",cdrWaiting:"Aspetta il tuo turno",cdrTurnOf:"Tocca a {n}",cdrYourCode:"Il tuo codice",cdrWatchWho:"Guarda i tentativi su ogni codice",cdrMySecret:"Il tuo codice (tocca per vederlo)",cdrYouWon:"Hai vinto!",cdrTries:"tentativi",cdrInterrupted:"Partita interrotta",cdrInterruptedSub:"Sono usciti troppi giocatori per continuare.",cdrLeftTag:"uscito",cdrWaitRematch:"Aspetta che {n} avvii un'altra partita",cdrClosed:"La partita non c'è più",cdrClosedSub:"È stata chiusa o è scaduta.",cdrConnecting:"Collegamento…",cdrYouLeft:"Sei uscito dalla partita",cdrAlreadyStarted:"La partita è già iniziata",cdrRoomFull:"La partita è al completo (massimo 10 giocatori)"});
- Object.assign(STRINGS.en,{rlLevel:"Level",qvrIntro:"Everyone answers on their own phone, even from different tables. Send the challenge: the others get a notification and tap Play to join.",cdrTriedMine:"You tried {t}’s code",cdrTriedYours:"{b} tried your code",cdrTriedOther:"{b} tried {t}’s code",cdrWonMine:"You cracked {t}’s code",cdrWonYours:"Cracked your code",cdrWonOther:"Cracked {t}’s code",cdrRemote:"Challenge another table",cdrIntro:"Everyone plays on their own phone, even from different tables. Send the challenge: the others get a notification and tap Play to join.",cdrResend:"Send the notification again",cdrCreate:"Create a game",cdrJoinLabel:"Got a code?",cdrJoin:"Join",cdrRoomCode:"Game code",cdrShareHint:"Ask your friends to enter it in Crack the code, in the Challenge another table category.",cdrShare:"Share",cdrInviteNear:"Invite nearby tables",cdrInviteSent:"Invite sent",cdrShareText:"Let's play Crack the code on Filòs! Game code: {c}",cdrYou:"(you)",cdrYou2:"You",cdrYou3:"you",cdrHost:"Host",cdrWaitHost:"Waiting for {n} to start the game",cdrRound:"Game {n}",cdrSecretSub:"Pick 4 digits. The others can’t see them: they only find out how many they got right.",cdrOr:"or",cdrSkip:"Skip {n}’s turn",cdrSkipped:"{n} skipped a turn",cdrSecretSaved:"Code saved",cdrWaitSecrets:"Waiting for everyone to pick their code.",cdrReady:"ready",cdrChoosing:"choosing",cdrYourTurn:"Your turn",cdrWaiting:"Wait for your turn",cdrTurnOf:"{n}'s turn",cdrYourCode:"Your code",cdrWatchWho:"See the guesses on each code",cdrMySecret:"Your code (tap to see it)",cdrYouWon:"You won!",cdrTries:"tries",cdrInterrupted:"Game interrupted",cdrInterruptedSub:"Too many players left to carry on.",cdrLeftTag:"left",cdrWaitRematch:"Waiting for {n} to start another game",cdrClosed:"This game no longer exists",cdrClosedSub:"It was closed or has expired.",cdrConnecting:"Connecting…",cdrYouLeft:"You left the game",cdrAlreadyStarted:"The game has already started",cdrRoomFull:"The game is full (maximum 10 players)"});
- Object.assign(STRINGS.es,{rlLevel:"Nivel",qvrIntro:"Cada uno responde desde su móvil, incluso desde mesas distintas. Lanza el desafío: a los demás les llega una notificación y al tocar Jugar entran en la partida.",cdrTriedMine:"Has probado el código de {t}",cdrTriedYours:"{b} ha probado tu código",cdrTriedOther:"{b} ha probado el código de {t}",cdrWonMine:"Has adivinado el código de {t}",cdrWonYours:"Ha adivinado tu código",cdrWonOther:"Ha adivinado el código de {t}",cdrRemote:"Desafía a otra mesa",cdrIntro:"Cada uno juega desde su móvil, incluso desde mesas distintas. Lanza el desafío: a los demás les llega una notificación y al tocar Jugar entran en la partida.",cdrResend:"Enviar otra vez la notificación",cdrCreate:"Crear una partida",cdrJoinLabel:"¿Tienes un código?",cdrJoin:"Entrar",cdrRoomCode:"Código de la partida",cdrShareHint:"Pide a tus amigos que lo introduzcan en Adivina el código, en la categoría Desafía a otra mesa.",cdrShare:"Compartir",cdrInviteNear:"Invitar a mesas cercanas",cdrInviteSent:"Invitación enviada",cdrShareText:"¡Juguemos a Adivina el código en Filòs! Código de la partida: {c}",cdrYou:"(tú)",cdrYou2:"Tú",cdrYou3:"ti",cdrHost:"Anfitrión",cdrWaitHost:"Esperando a que {n} empiece la partida",cdrRound:"Partida {n}",cdrSecretSub:"Elige 4 cifras. Los demás no las ven: solo saben cuántas han acertado.",cdrOr:"o",cdrSkip:"Saltar el turno de {n}",cdrSkipped:"{n} ha perdido el turno",cdrSecretSaved:"Código guardado",cdrWaitSecrets:"Esperando a que todos elijan su código.",cdrReady:"listo",cdrChoosing:"eligiendo",cdrYourTurn:"Te toca",cdrWaiting:"Espera tu turno",cdrTurnOf:"Le toca a {n}",cdrYourCode:"Tu código",cdrWatchWho:"Mira los intentos sobre cada código",cdrMySecret:"Tu código (toca para verlo)",cdrYouWon:"¡Has ganado!",cdrTries:"intentos",cdrInterrupted:"Partida interrumpida",cdrInterruptedSub:"Se han ido demasiados jugadores para seguir.",cdrLeftTag:"se fue",cdrWaitRematch:"Esperando a que {n} empiece otra partida",cdrClosed:"Esta partida ya no existe",cdrClosedSub:"Se cerró o ha caducado.",cdrConnecting:"Conectando…",cdrYouLeft:"Has salido de la partida",cdrAlreadyStarted:"La partida ya ha empezado",cdrRoomFull:"La partida está completa (máximo 10 jugadores)"});
+ Object.assign(STRINGS.it,{rlLevel:"Livello",tblTitle:"Come giocate?",tblOne:"Un telefono per tutti",tblOneSub:"Vi passate questo telefono",tblMany:"Ognuno col suo telefono",tblManySub:"Si crea la partita con un codice di 3 cifre",tblCreating:"Creo la partita…",tblHave:"Hai già un codice?",tblJoin:"Entra",tblCodeLbl:"Codice del tavolo",tblCodeHint:"Gli amici al tavolo aprono il gioco, toccano Inizia e inseriscono questo codice",tblBadCode:"Inserisci le 3 cifre del codice",tblCancel:"Annulla partita",qvrIntro:"Ognuno risponde dal proprio telefono, anche da tavoli diversi. Lancia la sfida: agli altri arriva una notifica e toccando Gioca entrano nella partita.",cdrTriedMine:"Hai provato il codice di {t}",cdrTriedYours:"{b} ha provato il tuo codice",cdrTriedOther:"{b} ha provato il codice di {t}",cdrWonMine:"Hai indovinato il codice di {t}",cdrWonYours:"Ha indovinato il tuo codice",cdrWonOther:"Ha indovinato il codice di {t}",cdrRemote:"Sfida un altro tavolo",cdrIntro:"Ognuno gioca dal proprio telefono, anche da tavoli diversi. Lancia la sfida: agli altri arriva una notifica e toccando Gioca entrano nella partita.",cdrResend:"Invia di nuovo la notifica",cdrCreate:"Crea una partita",cdrJoinLabel:"Hai un codice?",cdrJoin:"Entra",cdrRoomCode:"Codice della partita",cdrShareHint:"Fallo inserire ai tuoi amici in Indovina il codice, nella categoria Sfida un altro tavolo.",cdrShare:"Condividi",cdrInviteNear:"Invita i tavoli vicini",cdrInviteSent:"Invito inviato",cdrShareText:"Giochiamo a Indovina il codice su Filòs! Codice partita: {c}",cdrYou:"(tu)",cdrYou2:"Tu",cdrYou3:"te",cdrHost:"Guida",cdrWaitHost:"Aspetta che {n} avvii la partita",cdrRound:"Partita {n}",cdrSecretSub:"Scegli 4 cifre. Gli altri non le vedono: scoprono solo quante ne hanno indovinate.",cdrOr:"oppure",cdrSkip:"Salta il turno di {n}",cdrSkipped:"{n} ha saltato il turno",cdrSecretSaved:"Codice salvato",cdrWaitSecrets:"Aspettiamo che tutti scelgano il loro codice.",cdrReady:"pronto",cdrChoosing:"sta scegliendo",cdrYourTurn:"Tocca a te",cdrWaiting:"Aspetta il tuo turno",cdrTurnOf:"Tocca a {n}",cdrYourCode:"Il tuo codice",cdrWatchWho:"Guarda i tentativi su ogni codice",cdrMySecret:"Il tuo codice (tocca per vederlo)",cdrYouWon:"Hai vinto!",cdrTries:"tentativi",cdrInterrupted:"Partita interrotta",cdrInterruptedSub:"Sono usciti troppi giocatori per continuare.",cdrLeftTag:"uscito",cdrWaitRematch:"Aspetta che {n} avvii un'altra partita",cdrClosed:"La partita non c'è più",cdrClosedSub:"È stata chiusa o è scaduta.",cdrConnecting:"Collegamento…",cdrYouLeft:"Sei uscito dalla partita",cdrAlreadyStarted:"La partita è già iniziata",cdrRoomFull:"La partita è al completo (massimo 10 giocatori)"});
+ Object.assign(STRINGS.en,{rlLevel:"Level",tblTitle:"How do you want to play?",tblOne:"One phone for everyone",tblOneSub:"Pass this phone around",tblMany:"Everyone on their own phone",tblManySub:"Creates a game with a 3-digit code",tblCreating:"Creating the game…",tblHave:"Got a code?",tblJoin:"Join",tblCodeLbl:"Table code",tblCodeHint:"Friends at the table open the game, tap Start and enter this code",tblBadCode:"Enter the 3-digit code",tblCancel:"Cancel game",qvrIntro:"Everyone answers on their own phone, even from different tables. Send the challenge: the others get a notification and tap Play to join.",cdrTriedMine:"You tried {t}’s code",cdrTriedYours:"{b} tried your code",cdrTriedOther:"{b} tried {t}’s code",cdrWonMine:"You cracked {t}’s code",cdrWonYours:"Cracked your code",cdrWonOther:"Cracked {t}’s code",cdrRemote:"Challenge another table",cdrIntro:"Everyone plays on their own phone, even from different tables. Send the challenge: the others get a notification and tap Play to join.",cdrResend:"Send the notification again",cdrCreate:"Create a game",cdrJoinLabel:"Got a code?",cdrJoin:"Join",cdrRoomCode:"Game code",cdrShareHint:"Ask your friends to enter it in Crack the code, in the Challenge another table category.",cdrShare:"Share",cdrInviteNear:"Invite nearby tables",cdrInviteSent:"Invite sent",cdrShareText:"Let's play Crack the code on Filòs! Game code: {c}",cdrYou:"(you)",cdrYou2:"You",cdrYou3:"you",cdrHost:"Host",cdrWaitHost:"Waiting for {n} to start the game",cdrRound:"Game {n}",cdrSecretSub:"Pick 4 digits. The others can’t see them: they only find out how many they got right.",cdrOr:"or",cdrSkip:"Skip {n}’s turn",cdrSkipped:"{n} skipped a turn",cdrSecretSaved:"Code saved",cdrWaitSecrets:"Waiting for everyone to pick their code.",cdrReady:"ready",cdrChoosing:"choosing",cdrYourTurn:"Your turn",cdrWaiting:"Wait for your turn",cdrTurnOf:"{n}'s turn",cdrYourCode:"Your code",cdrWatchWho:"See the guesses on each code",cdrMySecret:"Your code (tap to see it)",cdrYouWon:"You won!",cdrTries:"tries",cdrInterrupted:"Game interrupted",cdrInterruptedSub:"Too many players left to carry on.",cdrLeftTag:"left",cdrWaitRematch:"Waiting for {n} to start another game",cdrClosed:"This game no longer exists",cdrClosedSub:"It was closed or has expired.",cdrConnecting:"Connecting…",cdrYouLeft:"You left the game",cdrAlreadyStarted:"The game has already started",cdrRoomFull:"The game is full (maximum 10 players)"});
+ Object.assign(STRINGS.es,{rlLevel:"Nivel",tblTitle:"¿Cómo queréis jugar?",tblOne:"Un móvil para todos",tblOneSub:"Os pasáis este móvil",tblMany:"Cada uno con su móvil",tblManySub:"Se crea la partida con un código de 3 cifras",tblCreating:"Creando la partida…",tblHave:"¿Ya tienes un código?",tblJoin:"Entrar",tblCodeLbl:"Código de la mesa",tblCodeHint:"Los amigos de la mesa abren el juego, tocan Empezar e introducen este código",tblBadCode:"Introduce las 3 cifras del código",tblCancel:"Cancelar partida",qvrIntro:"Cada uno responde desde su móvil, incluso desde mesas distintas. Lanza el desafío: a los demás les llega una notificación y al tocar Jugar entran en la partida.",cdrTriedMine:"Has probado el código de {t}",cdrTriedYours:"{b} ha probado tu código",cdrTriedOther:"{b} ha probado el código de {t}",cdrWonMine:"Has adivinado el código de {t}",cdrWonYours:"Ha adivinado tu código",cdrWonOther:"Ha adivinado el código de {t}",cdrRemote:"Desafía a otra mesa",cdrIntro:"Cada uno juega desde su móvil, incluso desde mesas distintas. Lanza el desafío: a los demás les llega una notificación y al tocar Jugar entran en la partida.",cdrResend:"Enviar otra vez la notificación",cdrCreate:"Crear una partida",cdrJoinLabel:"¿Tienes un código?",cdrJoin:"Entrar",cdrRoomCode:"Código de la partida",cdrShareHint:"Pide a tus amigos que lo introduzcan en Adivina el código, en la categoría Desafía a otra mesa.",cdrShare:"Compartir",cdrInviteNear:"Invitar a mesas cercanas",cdrInviteSent:"Invitación enviada",cdrShareText:"¡Juguemos a Adivina el código en Filòs! Código de la partida: {c}",cdrYou:"(tú)",cdrYou2:"Tú",cdrYou3:"ti",cdrHost:"Anfitrión",cdrWaitHost:"Esperando a que {n} empiece la partida",cdrRound:"Partida {n}",cdrSecretSub:"Elige 4 cifras. Los demás no las ven: solo saben cuántas han acertado.",cdrOr:"o",cdrSkip:"Saltar el turno de {n}",cdrSkipped:"{n} ha perdido el turno",cdrSecretSaved:"Código guardado",cdrWaitSecrets:"Esperando a que todos elijan su código.",cdrReady:"listo",cdrChoosing:"eligiendo",cdrYourTurn:"Te toca",cdrWaiting:"Espera tu turno",cdrTurnOf:"Le toca a {n}",cdrYourCode:"Tu código",cdrWatchWho:"Mira los intentos sobre cada código",cdrMySecret:"Tu código (toca para verlo)",cdrYouWon:"¡Has ganado!",cdrTries:"intentos",cdrInterrupted:"Partida interrumpida",cdrInterruptedSub:"Se han ido demasiados jugadores para seguir.",cdrLeftTag:"se fue",cdrWaitRematch:"Esperando a que {n} empiece otra partida",cdrClosed:"Esta partida ya no existe",cdrClosedSub:"Se cerró o ha caducado.",cdrConnecting:"Conectando…",cdrYouLeft:"Has salido de la partida",cdrAlreadyStarted:"La partida ya ha empezado",cdrRoomFull:"La partida está completa (máximo 10 jugadores)"});
 }
 
 // ══════════════════════════════════════════
@@ -706,3 +707,74 @@ function qvrLobby(){
  }
 }
 window.addEventListener("pagehide",function(e){if(e.persisted)return;try{if(qvrInLobby())qvrLeave();}catch(err){}});
+
+// ══════════════════════════════════════════
+// PIÙ TELEFONI ALLO STESSO TAVOLO (Tra amici e Cultura)
+// Prima di iniziare si sceglie «Un telefono per tutti» o «Ognuno col suo telefono».
+// Con più telefoni si usa lo stesso motore delle partite a distanza, ma senza inviti:
+// la partita ha un codice di 3 cifre che gli amici al tavolo inseriscono.
+// ══════════════════════════════════════════
+var RL_TABLE=false;
+// Giochi locali che hanno la versione a più telefoni (nome italiano → motore)
+var RL_TABLE_GAMES={"INDOVINA IL CODICE":"codice","L'OCCHIO DEI COLORI":"occhio","ANNO GIUSTO":"anno","PRIMA O DOPO?":"primadopo","CHE BANDIERA È?":"bandiera","CHE LINGUA È?":"lingua","QUANTO VALE?":"qvx"};
+var RL_KINDS={codice:["cdr","cdrCreate","cdrJoin"],occhio:["ocr","ocrCreate","ocrJoin"],anno:["agr","agrCreate","agrJoin"],primadopo:["pdr","pdrCreate","pdrJoin"],bandiera:["fgr","fgrCreate","fgrJoin"],lingua:["lgr","lgrCreate","lgrJoin"],qvx:["qxr","qxrCreate","qxrJoin"],tempo:["tpr","tpCreate","tpJoin"]};
+function rlNewCode(){return RL_TABLE?String(Math.floor(100+Math.random()*900)):String(Math.floor(1000+Math.random()*9000));}
+// Un codice è occupato se la stanza esiste ed è di meno di 12 ore fa (le più vecchie si possono riusare)
+function rlTaken(snap){if(!snap||!snap.exists())return false;var v=snap.val()||{};var c=+v.created||0;return !c||Date.now()-c<12*3600*1000;}
+function rlTries(){return RL_TABLE?25:8;}
+function rlIsTable(code){return String(code||"").length===3;}
+function rlCancelLbl(code){return rlIsTable(code)?T("tblCancel"):T("ui_annulla_sfida");}
+function rlTableKind(g){if(!g)return null;if(S.cat!=="amici"&&S.cat!=="cultura")return null;return RL_TABLE_GAMES[g._it||g.name]||null;}
+// Nella sala d'attesa di una partita del tavolo: il codice grande sotto il titolo
+function rlTableBox(wrap,code){
+ if(!rlIsTable(code))return;
+ var box=div("tbl-code");box.appendChild(div("tbl-code-l",T("tblCodeLbl")));box.appendChild(div("tbl-code-n",String(code)));box.appendChild(div("tbl-code-h",T("tblCodeHint")));
+ var head=wrap.querySelector(".codice-head");var after=head;
+ if(head&&head.nextSibling&&head.nextSibling.classList&&head.nextSibling.classList.contains("codice-sub"))after=head.nextSibling;
+ if(after&&after.parentNode===wrap)wrap.insertBefore(box,after.nextSibling);else wrap.insertBefore(box,wrap.firstChild);
+}
+function rlTableCreate(kind,done){
+ var k=RL_KINDS[kind];if(!k||typeof window[k[1]]!=="function"){done(false,T("connErr"));return;}
+ RL_TABLE=true;
+ window[k[1]](function(ok,msg){RL_TABLE=false;if(!ok){done(false,msg);return;}S.screen=k[0];render();done(true);});
+}
+function rlTableJoin(code,done){
+ cdrStrings();
+ code=String(code||"").replace(/\D/g,"");
+ if(code.length!==3){done(false,T("tblBadCode"));return;}
+ if(!fbDB){done(false,T("firebaseErr"));return;}
+ cdrNet(fbGet(fbRef(fbDB,"rooms/"+code+"/kind"))).then(function(snap){
+  var kind=snap&&snap.exists()?snap.val():null;var k=RL_KINDS[kind];
+  if(!k||typeof window[k[2]]!=="function"){done(false,T("ui_stanza_non_trovata_o_scaduta"));return;}
+  window[k[2]](code,function(ok,msg){if(!ok){done(false,msg||T("ui_stanza_non_trovata_o_scaduta"));return;}S.screen=k[0];render();done(true);});
+ }).catch(function(){done(false,T("connErr"));});
+}
+function renderTableChoice(){
+ cdrStrings();
+ var g=S.tableGame;var kind=rlTableKind(g);
+ if(!kind){S.screen="games";render();return;}
+ clr();addBackArrow(function(){S.screen="game";render();});
+ var wrap=div("codice-wrap cdr tbl");wrap.style.textAlign="center";document.getElementById("root").appendChild(wrap);
+ cdrHeader(wrap,null,g.name,T("tblTitle"));
+ var err=div("cdr-err");
+ var opts=div("tbl-opts");wrap.appendChild(opts);
+ function opt(title,sub,fn){var b=document.createElement("button");b.type="button";b.className="tbl-opt";b.appendChild(div("tbl-opt-t",title));b.appendChild(div("tbl-opt-s",sub));b.onclick=fn;opts.appendChild(b);return b;}
+ opt(T("tblOne"),T("tblOneSub"),function(){S._tableLocal=true;try{gameLaunch(g);}finally{S._tableLocal=false;}});
+ var many=opt(T("tblMany"),T("tblManySub"),function(){
+  if(many.disabled)return;many.disabled=true;err.textContent="";
+  many.querySelector(".tbl-opt-s").textContent=T("tblCreating");
+  rlTableCreate(kind,function(ok,msg){if(!ok){many.disabled=false;many.querySelector(".tbl-opt-s").textContent=T("tblManySub");err.textContent=msg||T("connErr");}});
+ });
+ wrap.appendChild(div("codice-section tbl-have",T("tblHave")));
+ var row=div("tbl-join");
+ var inp=document.createElement("input");inp.className="tbl-in";inp.type="text";inp.inputMode="numeric";inp.pattern="[0-9]*";inp.maxLength=3;inp.autocomplete="off";inp.placeholder="000";inp.setAttribute("aria-label",T("tblCodeLbl"));
+ var go=btn("tbl-go",T("tblJoin"),function(){
+  if(go.disabled)return;go.disabled=true;err.textContent="";
+  rlTableJoin(inp.value,function(ok,msg){if(!ok){go.disabled=inp.value.replace(/\D/g,"").length!==3;err.textContent=msg;}});
+ });
+ go.disabled=true;
+ inp.oninput=function(){var v=inp.value.replace(/\D/g,"").slice(0,3);if(v!==inp.value)inp.value=v;go.disabled=v.length!==3;err.textContent="";};
+ inp.onkeydown=function(e){if(e.key==="Enter"&&!go.disabled)go.click();};
+ row.appendChild(inp);row.appendChild(go);wrap.appendChild(row);
+ wrap.appendChild(err);
+}

@@ -411,9 +411,9 @@ function ocrCreate(done){
  if(!fbDB){done(false,T("firebaseErr"));return;}
  var tries=0;
  (function attempt(){
-  tries++;var code=String(Math.floor(1000+Math.random()*9000));
+  tries++;var code=rlNewCode();
   cdrNet(fbGet(fbRef(fbDB,"rooms/"+code))).then(function(snap){
-   if(snap.exists()&&tries<8){attempt();return;}
+   if(rlTaken(snap)&&tries<rlTries()){attempt();return;}
    var me=cdrMyName();var now=Date.now();
    var room={created:now,kind:"occhio",oc:{meta:{phase:"lobby",order:[],game:1,lvl:"facile"},players:{}}};
    room.oc.players[cdrKey(me)]={n:me,t:now};
@@ -425,7 +425,7 @@ function ocrJoin(code,done){
  cdrStrings();ocStrings();
  if(!fbDB){done(false,T("firebaseErr"));return;}
  code=String(code||"").replace(/\D/g,"");
- if(code.length!==4){done(false,T("ui_stanza_non_trovata_o_scaduta"));return;}
+ if(code.length!==4&&code.length!==3){done(false,T("ui_stanza_non_trovata_o_scaduta"));return;}
  cdrNet(fbGet(fbRef(fbDB,"rooms/"+code+"/oc"))).then(function(snap){
   if(!snap.exists()){done(false,T("ui_stanza_non_trovata_o_scaduta"));return;}
   var d=snap.val()||{};var meta=d.meta||{};
@@ -567,9 +567,10 @@ function ocrScreenLobby(wrap,st){
  if(lead){
   var go=btn("codice-cta",T("qvStart"),ocrStart);go.disabled=st.lobby.length<2;wrap.appendChild(go);
   if(st.lobby.length<2)wrap.appendChild(div("codice-legend",T("ui_aspetta_che_si_colleghi_almeno")));
-  if(st.lobby.length<OC_MAX_PLAYERS)wrap.appendChild(btn("cdr-link",T("cdrResend"),function(){ocrInvite();}));
-  wrap.appendChild(btn("cdr-link muted",T("ui_annulla_sfida"),ocrExit));
+  if(st.lobby.length<OC_MAX_PLAYERS&&!rlIsTable(OCR.code))wrap.appendChild(btn("cdr-link",T("cdrResend"),function(){ocrInvite();}));
+  wrap.appendChild(btn("cdr-link muted",rlCancelLbl(OCR.code),ocrExit));
  } else wrap.appendChild(btn("cdr-link muted",T("ui_esci_dalla_stanza"),ocrExit));
+ rlTableBox(wrap,OCR.code);
 }
 function ocrHead(wrap,st){
  var isTb=st.k>0;
