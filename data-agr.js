@@ -267,7 +267,7 @@ function agrRender(force){
  else agrScreenWait(wrap,st);
 }
 function agrScreenStart(wrap){
- cdrHeader(wrap,T("cdrRemote"),T("ui_anno_giusto"),T("agrIntro"));
+ cdrHeader(wrap,null,T("ui_anno_giusto"),T("agrIntro"));
  if(!fbDB){wrap.appendChild(div("codice-sub",T("firebaseErr")));return;}
  var err=div("cdr-err");
  var sfida=btn("codice-cta",T("ui_sfida_un_altro_tavolo"),function(){

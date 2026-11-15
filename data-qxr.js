@@ -258,7 +258,7 @@ function qxrChallenge(){
  var b=document.querySelector(".codice-wrap.qxr .codice-cta");if(b)b.click();
 }
 function qxrScreenStart(wrap){
- cdrHeader(wrap,T("cdrRemote"),T("qvTitle"),T("qxrIntro"));
+ cdrHeader(wrap,null,T("qvTitle"),T("qxrIntro"));
  if(!fbDB){wrap.appendChild(div("codice-sub",T("firebaseErr")));return;}
  var err=div("cdr-err");
  var sfida=btn("codice-cta",T("ui_sfida_un_altro_tavolo"),function(){

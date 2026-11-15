@@ -16,7 +16,7 @@ var CATS=[
  {id:"creativi", icon:"", name:"CREATIVI", sub:"fantasia e creatività", min:3, cls:"c-creativi", bg:"linear-gradient(135deg,#059669,#047857)"},
  {id:"cultura", icon:"", name:"CULTURA", sub:"cultura e curiosità", min:2, cls:"c-cultura", bg:"linear-gradient(135deg,#D97706,#B45309)"},
  {id:"adulti", icon:"", name:"18+", sub:"solo per adulti", min:2, cls:"c-adulti", bg:"linear-gradient(135deg,#DC2626,#B91C1C)"},
- {id:"relax", icon:"", name:"A DISTANZA", sub:"gioca con chi vuoi", min:2, cls:"c-relax", bg:"linear-gradient(135deg,#1E293B,#0F172A)"},
+ {id:"relax", icon:"", name:"SFIDA UN ALTRO TAVOLO", sub:"gioca con chi vuoi", min:2, cls:"c-relax", bg:"linear-gradient(135deg,#1E293B,#0F172A)"},
  {id:"solitario", icon:"", name:"SOLO", sub:"un momento per te", min:1,max:1, cls:"c-solitario", bg:"linear-gradient(135deg,#6B7280,#4B5563)"}
 ];
 

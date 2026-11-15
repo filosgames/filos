@@ -275,7 +275,7 @@ function pdrRender(force){
  else pdrScreenWait(wrap,st);
 }
 function pdrScreenStart(wrap){
- cdrHeader(wrap,T("cdrRemote"),T("pdrTitle"),T("pdrIntro"));
+ cdrHeader(wrap,null,T("pdrTitle"),T("pdrIntro"));
  if(!fbDB){wrap.appendChild(div("codice-sub",T("firebaseErr")));return;}
  var err=div("cdr-err");
  var sfida=btn("codice-cta",T("ui_sfida_un_altro_tavolo"),function(){
