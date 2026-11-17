@@ -231,3 +231,9 @@ SOFTWARE.
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+
+================================================================
+Bowlby One (font dei titoli) — fonts/bowlby-one-latin-400-normal.woff2
+Copyright (c) 2011 by Vernon Adams, with Reserved Font Names "Bowlby" "Bowlby One" and "Bowlby One SC".
+Licensed under the SIL Open Font License, Version 1.1 — full text in fonts/OFL-BowlbyOne.txt

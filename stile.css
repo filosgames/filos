@@ -807,3 +807,7 @@ body[data-cat="cultura"]{--f-cat:#DCE3F7;}body[data-cat="adulti"]{--f-cat:#EEDCE
  .cb .ci{padding-top:2px!important;}
  .cb .cn{margin-top:2px;}
 }
+
+/* 40 — Titoli grandi: Bowlby One (SIL Open Font License 1.1, vedi fonts/OFL-BowlbyOne.txt) */
+@font-face{font-family:"Bowlby One";src:url("fonts/bowlby-one-latin-400-normal.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap;}
+.home-title,.sec-title,.dtitle,.dhdr .dtitle,.intesa-title,.end-title,.end-ti{font-family:"Bowlby One",var(--f-font)!important;font-weight:400!important;letter-spacing:0!important;line-height:1.08!important;overflow-wrap:anywhere;}
