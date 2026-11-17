@@ -815,3 +815,11 @@ body[data-cat="cultura"]{--f-cat:#DCE3F7;}body[data-cat="adulti"]{--f-cat:#EEDCE
 /* 41 — Lista giochi: riquadri del colore pieno della categoria (lo sfondo della pagina è la stessa tinta più chiara) */
 .grow,.grow:hover{background:var(--f-cat)!important;box-shadow:none!important;}
 .grow:hover{filter:brightness(0.98);}
+
+/* 42 — Barra in alto: «Indietro» e lingue del colore pieno della categoria (giallo in home), lingua scelta in bianco, testi scuri e leggibili */
+:root{--f-chip:#FFE89A;}
+.hdr .back-arrow{background:var(--f-chip)!important;color:#1A1D21!important;}
+.hdr .back-arrow:hover{background:var(--f-chip)!important;filter:brightness(0.97);}
+.hdr .lang-pill{background:var(--f-chip)!important;}
+.hdr .lang-pill button{opacity:1!important;color:#4A525C!important;}
+.hdr .lang-pill button.active{background:#fff!important;color:#1A1D21!important;}
