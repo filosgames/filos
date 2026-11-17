@@ -807,7 +807,7 @@ button:disabled{opacity:0.35!important;transform:none;}
 #cdr-toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 28px);transform:translate(-50%,20px);background:rgba(28,28,30,0.92);color:#fff;font-size:15px;font-weight:600;padding:11px 18px;border-radius:999px;opacity:0;transition:all .25s;pointer-events:none;z-index:9999;}
 #cdr-toast.on{opacity:1;transform:translate(-50%,0);}
 </style>
-<link rel="stylesheet" href="stile.css?v=64">
+<link rel="stylesheet" href="stile.css?v=65">
 
 <!-- Firebase SDK (bundled) -->
 <script>
@@ -3849,15 +3849,27 @@ function fitTitles(){
  if(r&&window.MutationObserver)new MutationObserver(function(){requestAnimationFrame(fitTitles);}).observe(r,{childList:true});
  window.addEventListener('resize',function(){requestAnimationFrame(fitTitles);});
 })();
+// Sfondo della pagina: dentro una categoria (lista giochi e giochi) prende una tinta più chiara del colore della categoria; in home resta il giallo
+var CATBG_OFF=["onboarding","splash","home","terms","analytics","chipaga"];
+function catBgTint(hex,k){var n=parseInt(hex.slice(1),16),r=n>>16&255,g=n>>8&255,b=n&255;function m(c){return Math.round(c+(255-c)*k);}return [m(r),m(g),m(b)];}
+function catBgOff(){try{var st=document.documentElement.style;st.removeProperty("--f-bg");st.removeProperty("--f-hdr-bg");}catch(e){}}
+function catBgApply(){
+ try{
+  var st=document.documentElement.style,on=S.cat&&typeof CAT_PASTEL!=="undefined"&&CAT_PASTEL[S.cat]&&CATBG_OFF.indexOf(S.screen)<0;
+  if(on){var c=catBgTint(CAT_PASTEL[S.cat],0.5);st.setProperty("--f-bg","rgb("+c.join(",")+")");st.setProperty("--f-hdr-bg","rgba("+c.join(",")+",0.88)");}
+  else{st.removeProperty("--f-bg");st.removeProperty("--f-hdr-bg");}
+ }catch(e){}
+}
 function render(){
  updateHdr();resetIdle();
  try{document.body.setAttribute("data-cat",S.cat||"");}catch(e){}
+ catBgApply();
  renderLangPill();
  var _ch=document.getElementById("chipaga-hint");var _ov=document.getElementById("chipaga-overlay");if(_ch&&_ov&&!_ov.classList.contains("active"))_ch.textContent=T("ui_appoggiate_tutti_un_dito");
  // Senza tag NFC valido si vede la schermata di blocco (tranne il pannello del gestore; una partita già iniziata si chiude normalmente)
- if(S.screen!=="analytics"&&typeof nfcGateNeeded==="function"&&nfcGateNeeded()&&(NFC_STATE.status==="checking"||["onboarding","splash","home","games"].indexOf(S.screen)>=0)){renderNfcGate();return;}
+ if(S.screen!=="analytics"&&typeof nfcGateNeeded==="function"&&nfcGateNeeded()&&(NFC_STATE.status==="checking"||["onboarding","splash","home","games"].indexOf(S.screen)>=0)){catBgOff();renderNfcGate();return;}
  // Fuori dal locale (posizione): niente giochi, tranne il pannello del gestore
- if(S.screen!=="analytics"&&typeof geoGateNeeded==="function"&&geoGateNeeded()){renderGeoGate();return;}
+ if(S.screen!=="analytics"&&typeof geoGateNeeded==="function"&&geoGateNeeded()){catBgOff();renderGeoGate();return;}
  if(S.screen==="onboarding"){
   renderOnboarding();
  }
