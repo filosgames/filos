@@ -807,7 +807,7 @@ button:disabled{opacity:0.35!important;transform:none;}
 #cdr-toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 28px);transform:translate(-50%,20px);background:rgba(28,28,30,0.92);color:#fff;font-size:15px;font-weight:600;padding:11px 18px;border-radius:999px;opacity:0;transition:all .25s;pointer-events:none;z-index:9999;}
 #cdr-toast.on{opacity:1;transform:translate(-50%,0);}
 </style>
-<link rel="stylesheet" href="stile.css?v=70">
+<link rel="stylesheet" href="stile.css?v=74">
 
 <!-- Firebase SDK (bundled) -->
 <script>
@@ -1141,22 +1141,22 @@ try {
 <script src="data-ag.js?v=4"></script>
 <script src="data-qv.js?v=4"></script>
 <script src="data-sp.js?v=6"></script>
-<script src="data-cats.js?v=26"></script>
+<script src="data-cats.js?v=27"></script>
 <script src="data-quizdata.js?v=5"></script>
 <script src="data-lingua.js?v=1"></script>
 <script src="data-adulti.js?v=5"></script>
-<script src="data-regole.js?v=6"></script>
+<script src="data-regole.js?v=7"></script>
 <script src="data-parola.js?v=1"></script>
-<script src="data-quiz.js?v=83"></script>
+<script src="data-quiz.js?v=84"></script>
 <script src="data-geo.js?v=2"></script>
-<script src="data-punti.js?v=1"></script>
-<script src="data-cdr.js?v=20"></script>
+<script src="data-punti.js?v=2"></script>
+<script src="data-cdr.js?v=21"></script>
 <script src="data-agr.js?v=11"></script>
 <script src="data-pdr.js?v=11"></script>
 <script src="data-fgr.js?v=10"></script>
 <script src="data-lgr.js?v=8"></script>
 <script src="data-qxr.js?v=7"></script>
-<script src="data-occhio.js?v=20"></script>
+<script src="data-occhio.js?v=21"></script>
 <script src="data-tempo.js?v=12"></script>
 <script>
 
@@ -2397,6 +2397,10 @@ Object.assign(STRINGS.it,{"mwHintLabel":"Indizio per Mr. White","mwHintYes":"Sì
 Object.assign(STRINGS.en,{"mwHintLabel":"Hint for Mr. White","mwHintYes":"Yes","mwHintNo":"No","mwHintYesSub":"Mr. White sees a word similar to the others'.","mwHintNoSub":"Mr. White sees no word at all: harder.","mwYouAre":"{n}, you are","mwWhiteHintSub":"The others have a word similar to this one. Listen carefully and bluff: don't get caught.","mwWhiteNoHintSub":"You don't know the others' word. Listen carefully and bluff: don't get caught.","mwStartsGame":"starts the game","mwStartsSub":"Taking turns, one after another, everyone says a word linked to the secret one. Then vote for who Mr. White is."});
 Object.assign(STRINGS.es,{"mwHintLabel":"Pista para Mr. White","mwHintYes":"Sí","mwHintNo":"No","mwHintYesSub":"Mr. White ve una palabra parecida a la de los demás.","mwHintNoSub":"Mr. White no ve ninguna palabra: más difícil.","mwYouAre":"{n}, eres","mwWhiteHintSub":"Los demás tienen una palabra parecida a esta. Escucha bien y farolea: que no te pillen.","mwWhiteNoHintSub":"No conoces la palabra de los demás. Escucha bien y farolea: que no te pillen.","mwStartsGame":"empieza el juego","mwStartsSub":"Por turnos, uno tras otro, cada uno dice una palabra relacionada con la secreta. Luego votad quién es Mr. White."});
 Object.assign(STRINGS.it,{"rulesShow":"Leggi","rulesHide":"Chiudi"});
+Object.assign(STRINGS.it,{player1:"giocatore"});Object.assign(STRINGS.en,{player1:"player"});Object.assign(STRINGS.es,{player1:"jugador"});
+Object.assign(STRINGS.it,{nmAdd:"Aggiungi un giocatore",nmAddTeam:"Aggiungi una squadra"});
+Object.assign(STRINGS.en,{nmAdd:"Add a player",nmAddTeam:"Add a team"});
+Object.assign(STRINGS.es,{nmAdd:"Añadir un jugador",nmAddTeam:"Añadir un equipo"});
 Object.assign(STRINGS.en,{"rulesShow":"Read","rulesHide":"Close"});
 Object.assign(STRINGS.es,{"rulesShow":"Leer","rulesHide":"Cerrar"});
 Object.assign(STRINGS.it,{"backAgain": "Premi di nuovo Indietro per uscire dalla partita"});
@@ -2547,7 +2551,6 @@ var GAMES={
  {name:T("codiceTitle"),players:"1+",time:"15 min",hot:true,codice:true,
  rules:"Ognuno sceglie di nascosto un codice segreto di 4 cifre (es. 3-7-1-9) e l'app lo ricorda. A turno provi a indovinare il codice di un avversario scrivendo tutte e 4 le cifre: l'app ti dice quante sono giuste al posto giusto (verde) e quante sono giuste ma al posto sbagliato (giallo). Chi per primo indovina un codice intero vince!",
  tip:"Usa i tentativi precedenti, anche quelli degli altri: sono tutti visibili. Se una cifra non dà né verde né giallo, scartala subito."},
- {name:"L'OCCHIO DEI COLORI",players:"1-8",time:"10 min",isnew:true,occhio:true,rules:"A turno, sullo stesso telefono, ognuno mette in ordine di sfumatura le stesse quattro file di strisce colorate. La prima e l'ultima di ogni fila (con il puntino) restano ferme; le altre si spostano trascinandole, oppure toccandone una e poi il posto dove metterla. Vince chi è più preciso. Niente pareggi: chi è pari in testa rifà una prova più difficile, finché uno vince.",tip:"Chi aspetta il proprio turno non deve guardare: i colori sono gli stessi per tutti."},
  {name:"CHE LINGUA È?",players:"1-8",time:"15 min",isnew:true,lingua:true,rules:"L'app mostra una frase scritta in un'altra lingua, nel suo alfabeto originale. A turno, sullo stesso telefono, ognuno sceglie tra 4 lingue quella giusta senza far vedere la risposta agli altri. Poi si scopre la soluzione, con il paese d'origine e il significato della frase. 10 frasi a partita, tre livelli di difficoltà. Niente pareggi: chi è pari in testa gioca altre 3 frasi più difficili, finché uno vince.",tip:"Guarda le lettere strane e gli accenti: ogni lingua ha i suoi segni particolari."}
  ],
  coppia:[
@@ -2655,7 +2658,8 @@ var GAMES={
  "Cosa di te è cambiato dall'inizio della nostra storia — in meglio?",
  "Qual è la cosa che di solito non dico ma che voglio dirti adesso?"
  ]}
- ]}
+ ]},
+ {name:"L'OCCHIO DEI COLORI",players:"1-8",time:"10 min",isnew:true,occhio:true,rules:"A turno, sullo stesso telefono, ognuno mette in ordine di sfumatura le stesse quattro file di strisce colorate. La prima e l'ultima di ogni fila (con il puntino) restano ferme; le altre si spostano trascinandole, oppure toccandone una e poi il posto dove metterla. Vince chi è più preciso. Niente pareggi: chi è pari in testa rifà una prova più difficile, finché uno vince.",tip:"Chi aspetta il proprio turno non deve guardare: i colori sono gli stessi per tutti."}
  ],
  bambini:[
  {name:"APPELLO",players:"1+",time:"10 min",hot:true,appello:true,rules:"Tutti hanno 60 secondi per memorizzare il nome di ogni persona al tavolo. Poi il moderatore indica qualcuno a caso e un altro giocatore deve dire il suo nome entro 3 secondi. Chi sbaglia è eliminato.",tip:"È il gioco perfetto da fare subito, appena ci si incontra per la prima volta."},
@@ -4610,49 +4614,90 @@ setTimeout(function(){try{if(["onboarding","home","splash"].indexOf(S.screen)>=0
  window.addEventListener("error",function(e){log((e&&e.message)||"error");rescue();});
  window.addEventListener("unhandledrejection",function(e){log("promise: "+((e&&e.reason&&e.reason.message)||e.reason||""));});
 })();
-/* "Come si gioca": riquadro con le regole in alto in ogni gioco, chiuso; si apre con un tocco per ripassarle. */
+/* Intestazione delle schede di gioco, uguale ovunque:
+   - niente «Esci» (alla home si torna toccando il logo Filòs);
+   - «Torna ai giochi» diventa solo la freccia nel cerchio (il testo resta per chi usa la lettura vocale);
+   - a destra l'icona delle regole: apre le regole sopra il gioco, senza perdere nomi o partita.
+   Le regole si leggono a punti: il testo che va a capo resta allineato dopo il numero. */
+function rulesList(text){
+ var box=document.createElement("div");box.className="rl";
+ String(text||"").split(/\n+/).forEach(function(line){
+  line=line.trim();if(!line)return;
+  var m=/^(\d+)[.)]\s*(.*)$/.exec(line);
+  if(m){var it=document.createElement("div");it.className="rl-item";
+   var n=document.createElement("span");n.className="rl-n";n.textContent=m[1]+".";
+   var t=document.createElement("span");t.className="rl-t";t.textContent=m[2];
+   it.appendChild(n);it.appendChild(t);box.appendChild(it);}
+  else{var p=document.createElement("div");p.className="rl-p";p.textContent=line;box.appendChild(p);}
+ });
+ return box;
+}
+var RULES_ICO='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>';
+function rulesSheetOpen(){return !!document.getElementById("rules-sheet");}
+function rulesSheetClose(){var o=document.getElementById("rules-sheet");if(!o)return;o.remove();document.documentElement.classList.remove("rs-lock");var f=document.querySelector("#root .rules-ico");if(f)try{f.focus({preventScroll:true});}catch(e){}}
+function rulesSheetShow(){
+ try{
+  var R=(typeof regoleNow==="function")?regoleNow():null;if(!R||!R.rules)return;
+  rulesSheetClose();
+  var g=(typeof curGame==="function")?curGame():null;
+  var title=(typeof shellTitle==="function"&&shellTitle())||(g&&g.name)||"";
+  var ov=document.createElement("div");ov.id="rules-sheet";ov.className="rs";ov.setAttribute("role","dialog");ov.setAttribute("aria-modal","true");ov.setAttribute("aria-label",T("howToPlay"));
+  var card=document.createElement("div");card.className="dcard rs-card";ov.appendChild(card);
+  var hdr=document.createElement("div");hdr.className="dhdr";
+  hdr.style.background=(typeof CAT_PASTEL!=="undefined"&&CAT_PASTEL[S.cat])?CAT_PASTEL[S.cat]:"#FFE89A";card.appendChild(hdr);
+  var top=document.createElement("div");top.className="dhdr-top";hdr.appendChild(top);
+  var bk=document.createElement("button");bk.type="button";bk.className="card-nav-btn back rs-back";bk.textContent=T("backBtn");bk.setAttribute("aria-label",T("backBtn"));bk.onclick=rulesSheetClose;top.appendChild(bk);
+  if(title){var tt=document.createElement("div");tt.className="dtitle";tt.textContent=title;hdr.appendChild(tt);}
+  if(g&&!REGOLE_SCREEN[S.screen]&&(g.players||g.time)){var bd=document.createElement("div");bd.className="dbadges";
+   if(g.players){var b1=document.createElement("span");b1.className="dbadge";b1.textContent=playersTxt(g.players);bd.appendChild(b1);}
+   if(g.time){var b2=document.createElement("span");b2.className="dbadge";b2.textContent=g.time;bd.appendChild(b2);}
+   hdr.appendChild(bd);}
+  var body=document.createElement("div");body.className="dbody rs-body";card.appendChild(body);
+  var lb=document.createElement("div");lb.className="rlabel";lb.textContent=T("howToPlay");body.appendChild(lb);
+  body.appendChild(rulesList(R.rules));
+  if(R.tip){var tp=document.createElement("div");tp.className="tip";var st=document.createElement("strong");st.textContent=T("tipLabel");tp.appendChild(st);tp.appendChild(document.createTextNode(" — "+R.tip));body.appendChild(tp);}
+  ov.addEventListener("click",function(e){if(e.target===ov)rulesSheetClose();});
+  ov._scr=S.screen;document.body.appendChild(ov);document.documentElement.classList.add("rs-lock");
+  try{bk.focus({preventScroll:true});}catch(e){}
+ }catch(e){}
+}
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&rulesSheetOpen())rulesSheetClose();});
 (function(){
- var SKIP={home:1,games:1,game:1,end:1,onboarding:1,splash:1,analytics:1,connect:1,quizzone_lobby:1,quizzone_game:1,quizzone_leaderboard:1,quizzone_end:1};
- var open={},first={},lastKey="";
- // Nei giochi a distanza la schermata è una sola: conta la fase (inizio, sala d'attesa, partita)
- var RV={cdr:["CDR","cdr"],agr:["AGR","agr"],pdr:["PDR","pdr"],fgr:["FGR","fgr"],lgr:["LGR","lgr"],qxr:["QXR","qxr"],ocr:["OCR","ocr"],tpr:["TP","tp"]};
- function stage(){
-  var r=RV[S.screen];if(!r)return S.screen;
-  try{var X=window[r[0]];if(!X||!X.code)return S.screen+":start";var st=window[r[1]+"State"]();return S.screen+":"+((st&&st.phase)||"lobby");}catch(e){return S.screen;}
- }
- function put(){
+ // Schermate senza icona delle regole: la pagina delle regole stessa e le schermate fuori dai giochi
+ var NOICO={home:1,games:1,game:1,end:1,onboarding:1,splash:1,analytics:1,connect:1,terms:1,legal:1,chipaga:1,table_choice:1,quizzone_lobby:1,quizzone_game:1,quizzone_leaderboard:1,quizzone_end:1};
+ function fix(){
   try{
-   if(SKIP[S.screen])return;
    var root=document.getElementById("root");if(!root)return;
-   var body=root.querySelector(".dbody, .starter-body");if(!body)return;
-   var R=(typeof regoleNow==="function")?regoleNow():null;if(!R||!R.rules)return;
-   var stg=stage();
-   // Chiuso finché non lo apri (le regole si leggono prima, nella pagina del gioco)
-   if(R.key!==lastKey){lastKey=R.key;open[R.key]=false;}
-   var isOpen=!!open[R.key];
-   var box=body.querySelector(":scope > .rules-box");
-   if(box&&box.getAttribute("data-k")===R.key+"|"+LANG+"|"+(isOpen?1:0))return;
-   if(box)box.remove();
-   box=document.createElement("div");box.className="rules-box"+(isOpen?" open":"");box.setAttribute("data-k",R.key+"|"+LANG+"|"+(isOpen?1:0));
-   var hd=document.createElement("button");hd.type="button";hd.className="rules-head";
-   hd.innerHTML='<span class="rules-title"></span><span class="rules-tog"></span>';
-   hd.querySelector(".rules-title").textContent=T("howToPlay");
-   hd.querySelector(".rules-tog").textContent=isOpen?T("rulesHide"):T("rulesShow");
-   hd.onclick=function(){open[R.key]=!isOpen;put();};
-   box.appendChild(hd);
-   if(isOpen){var tx=document.createElement("div");tx.className="rules-text";tx.textContent=R.rules;box.appendChild(tx);
-    if(R.tip){var tp=document.createElement("div");tp.className="rules-tip";tp.textContent=R.tip;box.appendChild(tp);}}
-   body.insertBefore(box,body.firstChild);
+   var ex=T("exitBtn");
+   [].forEach.call(root.querySelectorAll(".card-nav-btn"),function(b){
+    if(b.classList.contains("back")){if(!b.getAttribute("aria-label"))b.setAttribute("aria-label",(b.textContent||"").trim()||T("backBtn"));return;}
+    if((b.textContent||"").trim()===ex)b.remove();
+   });
+   // Schermata dei giocatori (e scelta del livello): sotto il titolo giocatori e minuti, come nella pagina del gioco
+   if(root.querySelector(".nm-wrap,.nm-step")){var dh=root.querySelector(".dhdr");var tt=dh&&dh.querySelector(".dtitle");var g0=(typeof curGame==="function")?curGame():null;
+    if(tt&&g0&&!dh.querySelector(".dbadges")&&(g0.players||g0.time)){var bd=document.createElement("div");bd.className="dbadges";
+     if(g0.players){var b1=document.createElement("span");b1.className="dbadge";b1.textContent=playersTxt(g0.players);bd.appendChild(b1);}
+     if(g0.time){var b2=document.createElement("span");b2.className="dbadge";b2.textContent=g0.time;bd.appendChild(b2);}
+     tt.parentNode.insertBefore(bd,tt.nextSibling);}}
+   var R=NOICO[S.screen]?null:((typeof regoleNow==="function")?regoleNow():null);
+   var bar=root.querySelector(".dhdr-top");
+   var old=root.querySelectorAll(".rules-ico");
+   if(!R||!R.rules||!bar){[].forEach.call(old,function(x){x.remove();});return;}
+   if(old.length===1&&old[0].parentNode===bar)return;
+   [].forEach.call(old,function(x){x.remove();});
+   var ib=document.createElement("button");ib.type="button";ib.className="card-nav-btn rules-ico";ib.innerHTML=RULES_ICO;
+   ib.setAttribute("aria-label",T("howToPlay"));ib.title=T("howToPlay");ib.onclick=rulesSheetShow;
+   bar.appendChild(ib);
   }catch(e){}
  }
- window.rulesBoxPut=put;
- var _r2=render;render=function(){var x=_r2.apply(this,arguments);put();setTimeout(put,0);return x;};
- try{new MutationObserver(function(){put();}).observe(document.getElementById("root"),{childList:true});}catch(e){}
+ window.rulesBoxPut=fix;
+ var _r2=render;render=function(){var x=_r2.apply(this,arguments);var rs=document.getElementById("rules-sheet");if(rs&&rs._scr!==S.screen)rulesSheetClose();fix();setTimeout(fix,0);return x;};
+ try{new MutationObserver(function(){fix();}).observe(document.getElementById("root"),{childList:true,subtree:true});}catch(e){}
 })();
 /* Tasto Indietro del telefono: resta dentro l'app e fa quello che fa il pulsante "Indietro" sullo schermo */
 (function(){
  var HOME={home:1,onboarding:1,splash:1};var guard=false;var lastBack=0;
- function ovOn(){var o=document.getElementById("chipaga-overlay");return !!(o&&o.classList.contains("active"))||!!document.getElementById("challenge-modal");}
+ function ovOn(){var o=document.getElementById("chipaga-overlay");return !!(o&&o.classList.contains("active"))||!!document.getElementById("challenge-modal")||!!document.getElementById("rules-sheet");}
  var skip=false;
  function sync(){try{var need=!HOME[S.screen]||ovOn();if(need&&!guard){history.pushState({filos:1},"");guard=true;}
   // Tornati alla home con i pulsanti dell'app: si toglie il passo in più, così Indietro esce subito come al solito
@@ -4664,6 +4709,7 @@ setTimeout(function(){try{if(["onboarding","home","splash"].indexOf(S.screen)>=0
   var ov=document.getElementById("chipaga-overlay");
   if(ov&&ov.classList.contains("active")){var c=document.getElementById("chipaga-close");if(c)c.click();return;}
   var cm=document.getElementById("challenge-modal");if(cm){cm.remove();return;}
+  if(rulesSheetOpen()){rulesSheetClose();return;}
   if(HOME[S.screen])return;
   if(remoteOn()&&Date.now()-lastBack>3000){lastBack=Date.now();if(typeof cdrToast==="function"){if(typeof cdrStrings==="function")cdrStrings();cdrToast(T("backAgain"));}return;}
   lastBack=0;

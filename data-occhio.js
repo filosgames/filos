@@ -223,39 +223,30 @@ function ocPrecTxt(p){return T("ocPrec").replace("{p}",p);}
 // ══════════════════════════════════════════
 var OCL=null;
 function ocTitle(){return T("ocTitle");}
-function ocHdr(wrap){
+function ocHdr(wrap,backFn){
  var cat=getCatById(S.cat);
  var hdr=div("dhdr");hdr.style.background=(CAT_PASTEL&&CAT_PASTEL[S.cat])?CAT_PASTEL[S.cat]:cat.bg;
  var top=div("dhdr-top");hdr.appendChild(top);
- top.appendChild(btn("card-nav-btn back",T("backToGames"),goBackToGames));
- top.appendChild(btn("card-nav-btn",T("exitBtn"),goHome));
+ top.appendChild(btn("card-nav-btn back",T("backToGames"),backFn||goBackToGames));
  hdr.appendChild(div("dtitle",ocTitle()));
  var card=div("dcard");card.appendChild(hdr);var body=div("dbody");card.appendChild(body);wrap.appendChild(card);
  return body;
 }
 function renderOcSetup(){
  ocStrings();clr();
- var wrap=div("panel");var body=ocHdr(wrap);
  var solo=S.cat==="solitario";
- var inputs=[];
- if(!solo){
-  body.appendChild(div("rlabel",T("howMany")));
-  if(!S.ocNames)S.ocNames=[];
-  var grid=div("player-names-grid");
-  var build=function(n){
-   grid.innerHTML="";inputs=[];
-   for(var k=0;k<n;k++){(function(idx){
-    var row=div("player-name-row");row.appendChild(div("player-name-label",T("qvPlayer")+(idx+1)));
-    var inp=document.createElement("input");inp.type="text";inp.className="player-name-input";inp.maxLength=16;
-    inp.placeholder=T("playerNamePH")+(idx+1);inp.value=S.ocNames[idx]||"";
-    inp.addEventListener("input",function(){S.ocNames[idx]=inp.value;});
-    row.appendChild(inp);inputs.push(inp);grid.appendChild(row);
-   })(k);}
-  };
-  body.appendChild(makeStepperWidget(S.ocNum||1,1,OC_MAX_PLAYERS,function(n){S.ocNum=n;build(n);}));
-  body.appendChild(grid);
+ // Con più giocatori: prima i nomi, poi «Inizia» e la scelta del livello
+ if(!solo&&S.ocStep!==2){
+  var wrap1=div("panel");var body1=ocHdr(wrap1);
+  var ed=namesEditor({min:1,max:OC_MAX_PLAYERS,get:function(){return S.ocNames;},set:function(v){S.ocNames=v;S.ocNum=v.length;}});
+  body1.appendChild(ed.el);
+  body1.appendChild(nmStart(T("ui_inizia"),function(){S.ocPlay=ed.names();S.ocStep=2;renderOcSetup();window.scrollTo(0,0);}));
+  document.getElementById("root").appendChild(wrap1);
+  return;
  }
- var lt=div("rlabel",T("ocChooseLevel"));lt.style.marginTop="18px";body.appendChild(lt);
+ var wrap=div("panel");var body=ocHdr(wrap,solo?null:function(){S.ocStep=1;renderOcSetup();});
+ var stepBox=div("nm-step");body.appendChild(stepBox);
+ var lt=div("rlabel nm-step-l",T("ocChooseLevel"));stepBox.appendChild(lt);
  var lg=div("oc-levels");
  ["facile","media","difficile"].forEach(function(l){
   var c=div("oc-level");c.appendChild(el("span","oc-level-n",rlLevelName(l)));
@@ -263,12 +254,12 @@ function renderOcSetup(){
   // anteprima: solo i colori fermi (primo e ultimo di ogni fila), così non si svela l'ordine
   var pv=div("oc-level-pv");ocColors(l).forEach(function(row){[row[0],row[row.length-1]].forEach(function(h){var s=div("");s.style.background=h;pv.appendChild(s);});});c.appendChild(pv);
   c.onclick=function(){
-   var names=solo?[(typeof FILOS_NAME!=="undefined"&&FILOS_NAME)||T("ocYou")]:(function(){var seen={};return inputs.map(function(inp,i){var v=inp.value.trim()||(T("qvPlayer")+(i+1));var b=v,c2=2;while(seen[v.toLowerCase()]){v=b+" "+c2;c2++;}seen[v.toLowerCase()]=1;return v;});})();
+   var names=solo?[(typeof FILOS_NAME!=="undefined"&&FILOS_NAME)||T("ocYou")]:((S.ocPlay&&S.ocPlay.length)?S.ocPlay.slice():[T("qvPlayer")+"1"]);
    ocLocalStart(names,l);
   };
   lg.appendChild(c);
  });
- body.appendChild(lg);
+ stepBox.appendChild(lg);
  document.getElementById("root").appendChild(wrap);
 }
 function ocLocalStart(players,lvl){

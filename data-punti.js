@@ -28,27 +28,13 @@ function scTurnsTxt(n){return n+" "+(n===1?scT("scTurn1"):scT("scTurnN"));}
 function scName(i){return SC.names[i]||(SC.kind==="sinc"?scT("scTeam",{n:i+1}):(T("qvPlayer")+(i+1)));}
 function renderScSetup(){
  clr();scStrings();
- addBackArrow(function(){S.screen="game";render();});
+ addBackArrow(goBackToGames);
  var wrap=div("mw-wrap");
- wrap.appendChild(div("mw-sub",SC.kind==="sinc"?scT("scWhoTeams"):scT("scWho")));
- var grid=div("player-names-grid");var inputs=[];
- function build(n){
-  grid.innerHTML="";inputs=[];
-  for(var k=0;k<n;k++){(function(idx){
-   var row=div("player-name-row");
-   var lab=SC.kind==="sinc"?scT("scTeam",{n:idx+1}):(T("qvPlayer")+(idx+1));
-   row.appendChild(div("player-name-label",lab));
-   var inp=document.createElement("input");inp.type="text";inp.className="player-name-input";inp.maxLength=16;
-   inp.placeholder=SC.kind==="sinc"?scT("scTeam",{n:idx+1}):(T("playerNamePH")+(idx+1));inp.value=SC.names[idx]||"";
-   inp.addEventListener("input",function(){SC.names[idx]=inp.value;});
-   row.appendChild(inp);inputs.push(inp);grid.appendChild(row);
-  })(k);}
- }
- var sw=makeStepperWidget(SC.n,SC.kind==="sinc"?1:2,20,function(n){SC.n=n;build(n);});sw.style.margin="20px 0 8px";
- wrap.appendChild(sw);wrap.appendChild(grid);build(SC.n);
- wrap.appendChild(btn("ebtn",T("ui_inizia"),function(){
-  var seen={};
-  SC.names=inputs.map(function(inp,i){var d=SC.kind==="sinc"?scT("scTeam",{n:i+1}):(T("qvPlayer")+(i+1));var v=inp.value.trim()||d;var b=v,c=2;while(seen[v.toLowerCase()]){v=b+" "+c;c++;}seen[v.toLowerCase()]=1;return v;});
+ var sinc=SC.kind==="sinc";
+ var ed=namesEditor({min:sinc?1:2,max:20,teams:sinc,get:function(){return SC.names;},set:function(v){SC.names=v;SC.n=v.length;}});
+ wrap.appendChild(ed.el);
+ wrap.appendChild(nmStart(T("ui_inizia"),function(){
+  SC.names=ed.names();SC.n=SC.names.length;
   SC.scores=SC.names.map(function(){return 0;});SC.tries=SC.names.map(function(){return 0;});SC.turns=SC.names.map(function(){return 0;});
   SC.turn=0;SC.cur=0;SC.last=null;S.screen="sc_play";render();
  }));

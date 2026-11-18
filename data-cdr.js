@@ -726,7 +726,7 @@ function rlTaken(snap){if(!snap||!snap.exists())return false;var v=snap.val()||{
 function rlTries(){return RL_TABLE?25:8;}
 function rlIsTable(code){return String(code||"").length===3;}
 function rlCancelLbl(code){return rlIsTable(code)?T("tblCancel"):T("ui_annulla_sfida");}
-function rlTableKind(g){if(!g)return null;if(S.cat!=="amici"&&S.cat!=="cultura")return null;return RL_TABLE_GAMES[g._it||g.name]||null;}
+function rlTableKind(g){if(!g)return null;if(S.cat!=="amici"&&S.cat!=="cultura"&&S.cat!=="coppia")return null;return RL_TABLE_GAMES[g._it||g.name]||null;}
 // Nella sala d'attesa di una partita del tavolo: il codice grande sotto il titolo
 function rlTableBox(wrap,code){
  if(!rlIsTable(code))return;

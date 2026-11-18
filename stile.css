@@ -810,7 +810,7 @@ body[data-cat="cultura"]{--f-cat:#DCE3F7;}body[data-cat="adulti"]{--f-cat:#EEDCE
 
 /* 40 — Titoli grandi: Bowlby One (SIL Open Font License 1.1, vedi fonts/OFL-BowlbyOne.txt) */
 @font-face{font-family:"Bowlby One";src:url("fonts/bowlby-one-latin-400-normal.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap;}
-.home-title,.sec-title,.dtitle,.dhdr .dtitle,.intesa-title,.end-title,.end-ti{font-family:"Bowlby One",var(--f-font)!important;font-weight:400!important;letter-spacing:0!important;line-height:1.08!important;overflow-wrap:anywhere;}
+.home-title,.sec-title,.dtitle,.dhdr .dtitle,.intesa-title,.end-title,.end-ti,.starter-title,.quiz-title,.quiz-level-title,.mw-title,.starter-final-title,.end2-title{font-family:"Bowlby One",var(--f-font)!important;font-weight:400!important;letter-spacing:0!important;line-height:1.08!important;overflow-wrap:anywhere;}
 
 /* 41 — Lista giochi: riquadri del colore pieno della categoria (lo sfondo della pagina è la stessa tinta più chiara) */
 .grow,.grow:hover{background:var(--f-cat)!important;box-shadow:none!important;}
@@ -823,3 +823,53 @@ body[data-cat="cultura"]{--f-cat:#DCE3F7;}body[data-cat="adulti"]{--f-cat:#EEDCE
 .hdr .lang-pill{background:var(--f-chip)!important;}
 .hdr .lang-pill button{opacity:1!important;color:#4A525C!important;}
 .hdr .lang-pill button.active{background:#fff!important;color:#1A1D21!important;}
+
+/* 43 — Schede di gioco: freccia e regole nei cerchi, regole a punti, regole sopra il gioco */
+.dhdr-top .card-nav-btn.back,.dhdr-top .rules-ico{width:40px;height:40px;min-width:40px;padding:0!important;border-radius:50%!important;display:inline-flex;align-items:center;justify-content:center;font-size:0!important;line-height:0;flex:0 0 auto;
+ background:rgba(26,29,33,0.08)!important;background:color-mix(in srgb,var(--f-chip,#FFE89A),#1A1D21 9%)!important;color:#1A1D21!important;}
+.dhdr-top .card-nav-btn.back::before{width:9px!important;height:9px!important;margin:0 0 0 4px!important;border-left-width:2.4px!important;border-bottom-width:2.4px!important;vertical-align:0!important;}
+.dhdr-top .card-nav-btn.back:hover,.dhdr-top .rules-ico:hover{filter:brightness(0.96);}
+.dhdr-top .card-nav-btn.back:focus-visible,.dhdr-top .rules-ico:focus-visible{outline:2px solid #1A1D21;outline-offset:2px;}
+.dhdr-top .rules-ico{margin-left:auto;}
+.dhdr-top .rules-ico svg{display:block;}
+.rl{font-size:16px;color:var(--f-ink,#1A1D21);text-align:left;}
+.rl-item{display:flex;align-items:baseline;gap:8px;line-height:1.36;margin:0 0 14px;}
+.rl-n{flex:0 0 auto;min-width:1.45em;font-weight:800;font-size:1.08em;}
+.rl-t{flex:1 1 auto;min-width:0;}
+.rl-p{line-height:1.36;margin:2px 0 14px;}
+.rl>:last-child{margin-bottom:0;}
+@media(min-width:769px){.rl{font-size:17px;}}
+.rl + .tip{margin-top:22px;}
+.rs{position:fixed;inset:0;z-index:2000;background:rgba(26,29,33,0.38);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;animation:rsIn .18s ease;}
+.rs-card{width:100%;max-width:720px;max-height:calc(100dvh - 32px);min-height:0!important;height:auto!important;overflow:auto!important;animation:rsUp .22s ease;}
+.rs-card .dbody{flex:0 0 auto;}
+html.rs-lock,html.rs-lock body{overflow:hidden!important;}
+@keyframes rsIn{from{opacity:0}to{opacity:1}}
+@keyframes rsUp{from{transform:translateY(16px);opacity:.6}to{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){.rs,.rs-card{animation:none;}}
+
+/* 44 — Partita a frasi: fascia colorata sottile con freccia e regole, frase nel bianco, pulsante in fondo */
+.starter-card-hdr{padding:16px 18px!important;gap:0!important;}
+.starter-card-hdr .dhdr-top{margin:0!important;}
+.starter-body{display:flex;flex-direction:column;min-height:min(380px,52vh);min-height:min(380px,52dvh);padding:26px 26px 26px!important;box-sizing:border-box;}
+.starter-phrase-box{flex:1 1 auto;display:flex;align-items:center;justify-content:center;padding:8px 0 24px;}
+.starter-body .starter-phrase{font-size:clamp(20px,5.4vw,26px)!important;line-height:1.35!important;color:var(--f-ink,#1A1D21)!important;max-width:560px;}
+.starter-body .starter-nav{flex:0 0 auto;}
+
+/* 45 — Schermata dei giocatori: nomi centrati senza riquadri, «+» per aggiungere, «Inizia» in fondo */
+.dhdr .dtitle{text-align:left!important;}
+.nm-wrap{display:flex;flex-direction:column;align-items:center;width:100%;margin:6px 0 0;}
+.nm-list{display:flex;flex-direction:column;width:100%;max-width:300px;}
+.nm-in{display:block;width:100%;box-sizing:border-box;border:none!important;border-bottom:1px solid rgba(26,29,33,0.10)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;
+ padding:14px 8px!important;font-size:17px!important;font-weight:500;color:var(--f-ink,#1A1D21)!important;text-align:center;outline:none;-webkit-appearance:none;appearance:none;}
+.nm-in::placeholder{color:#9AA1AA;opacity:1;font-weight:400;}
+.nm-in:focus{border-bottom-color:#1A1D21!important;}
+.nm-add{margin:14px auto 0;width:48px;height:48px;border-radius:50%;border:none;background:transparent;color:#5B636D;font-size:30px;font-weight:300;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;}
+.nm-add:hover{background:rgba(26,29,33,0.05);}
+.nm-add:focus-visible{outline:2px solid #1A1D21;outline-offset:2px;}
+.nm-add[hidden]{display:none;}
+.nm-start{margin-top:auto;padding-top:28px;text-align:center;}
+.nm-step-l{margin-top:6px;text-align:center;}
+.mw-wrap:has(.nm-wrap,.nm-step),.quiz-level-wrap:has(.nm-wrap,.nm-step){display:flex;flex-direction:column;flex:1 1 auto;width:100%;}
+.nm-step{width:100%;}
+.starter-body .starter-phrase{hyphens:manual!important;-webkit-hyphens:manual!important;overflow-wrap:break-word;}
