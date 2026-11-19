@@ -5553,7 +5553,7 @@ function renderQplay(){
   if(!S.qOrder||S.qOrder.length!==flat.length){var o=flat.map(function(_,i){return i;});for(var i=o.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=o[i];o[i]=o[j];o[j]=t;}S.qOrder=o;}
   flat=S.qOrder.map(function(i){return flat[i];});
  }
- flat=flat.slice(0,10); // massimo 10 domande per partita, in tutti i giochi
+ if(qKey!=="36 DOMANDE")flat=flat.slice(0,10); // massimo 10 domande per partita (36 domande: tutte e 36)
  var total=flat.length;
  if(S.qCardIdx<0)S.qCardIdx=0;
  if(S.qCardIdx>=total)S.qCardIdx=total-1;
