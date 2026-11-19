@@ -778,6 +778,7 @@ function renderGames(){
  var _qzOn=false;try{_qzOn=localStorage.getItem("filos_quizzone")==="1";}catch(e){}
  games=games.filter(function(g){return !g.quizzone||_qzOn;});
  games=games.filter(function(g){return !g.hidden;});
+ games=games.filter(function(g){var p=GIOCHI_IN_PAUSA[S.cat];return !(p&&p.indexOf(g._it||g.name)>=0);});
  var list=div("glist");
  var lastSection="";
  for(var i=0;i<games.length;i++){(function(g,idx){
@@ -807,6 +808,11 @@ function renderGames(){
 
 
 // Avvia il gioco vero e proprio (dopo la schermata delle regole)
+// Giochi tolti dalla lista ma tenuti nel codice, per poterli rimettere in futuro:
+// basta togliere il nome da qui. (Novembre 2026: richiesta di togliere questi giochi da Azione.)
+var GIOCHI_IN_PAUSA={
+ azione:["CONTARE FINO A 21","IL MIMO","SCULTURA UMANA","IL NODO UMANO","IL DOPPIATORE","CACCIA ALL'OGGETTO"]
+};
 // Categoria DOMANDE: in quale micro categoria sta ogni gioco (Primo appuntamento, Rompighiaccio, Conosciamoci)
 var DOMANDE_MICRO={
  "LE DOMANDE DEL PRIMO APPUNTAMENTO":"primo","IL GIOCO DELLE DOMANDE":"primo","QUESTO O QUELLO — VERSIONE SERIA":"primo",
