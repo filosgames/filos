@@ -927,3 +927,15 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none;user-select:none;-webkit-u
 .pc-btn:focus-visible{outline:2px solid #1A1D21;outline-offset:2px;}
 @media(prefers-reduced-motion:reduce){.pc-bar{transition:none;}}
 .pc-box{flex-direction:column!important;gap:12px;}
+
+/* 51 — Fine gioco (bozza): valutazione, menu del locale in un riquadro, «Indietro» e «Gioca ancora» */
+.end2-menu{background:color-mix(in srgb,var(--f-chip,#FFE89A) 45%,#fff);background:rgba(255,255,255,.55);background:color-mix(in srgb,var(--f-chip,#FFE89A) 40%,#fff);border-radius:20px;padding:16px 14px 14px;margin:6px 0 10px!important;}
+.end2-menu-t{text-align:center;margin:0 0 12px!important;color:#6B727C!important;}
+.end2-menu .menu-tabs{justify-content:center;margin-bottom:12px!important;}
+.end2-menu .menu-tab{background:#fff!important;border:1.5px solid rgba(26,29,33,.10)!important;color:#5B636D!important;padding:9px 24px!important;}
+.end2-menu .menu-tab.on{background:#FFBE00!important;border-color:#1A1D21!important;color:#1A1D21!important;}
+.end2-item{box-shadow:none!important;}
+.end2 .menu-note{margin-top:12px!important;}
+.end2-nav{margin-top:26px;}
+.end2-back{background:#fff;box-shadow:0 1px 3px rgba(26,29,33,.08);}
+.end2-back:hover{background:#FAFAFA;}

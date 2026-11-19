@@ -5153,7 +5153,7 @@ function renderGame(){
 
 function renderEnd(){
  clr();
- addBackArrow(function(){S.screen="games";render();});
+ // «Indietro» sta in basso, accanto a «Gioca ancora» (il tasto indietro del telefono porta comunque ai giochi)
  var panel=div("panel");var screen=div("endscreen end2");panel.appendChild(screen);
  var v=filosVenue();var prof=pubProfileCached(v)||{};
  // Il locale: logo tondo e nome
@@ -5235,10 +5235,14 @@ function renderEnd(){
   fill(d);
  });
  // Pulsanti: restare a giocare è la scelta principale
- var eb=div("endbtns end2-btns");screen.appendChild(eb);
- eb.appendChild(btn("ebtn",T("otherGames"),function(){S.screen="games";render();}));
- eb.appendChild(btn("ebtn out",T("ui_chi_paga_il_conto"),function(){if(typeof openChiPaga==="function")openChiPaga();}));
- screen.appendChild(btn("end2-exit",T("exitBtn"),goHome));
+ var eb=div("pc-nav end2-nav");screen.appendChild(eb);
+ eb.appendChild(btn("pc-btn end2-back",T("pcPrev"),function(){S.screen="games";render();window.scrollTo(0,0);}));
+ eb.appendChild(btn("pc-btn pc-next",T("pcAgain"),function(){
+  var g=(typeof curGame==="function")?curGame():null;window.scrollTo(0,0);
+  if(g&&typeof gameHasLaunch==="function"&&gameHasLaunch(g)){S.starterIdx=0;S.starterDeck=null;S.qOrder=null;gameLaunch(g);}
+  else if(g){S.screen="game";render();}
+  else{S.screen="games";render();}
+ }));
  document.getElementById("root").appendChild(panel);
 }
 // Foto del prodotto, oppure un'icona pulita (bicchiere o piatto)
@@ -5568,17 +5572,7 @@ function renderStarter(){
  var shuffled=S.starterDeck.list;
  var maxPhrases=(gameName==="IL SUSSURRO"||gameName==="THE WHISPER"||gameName==="EL SUSURRO")?10:(gameName==="CHI È PIÙ PROBABILE? (COPPIA)"||gameName==="WHO'S MORE LIKELY? (COUPLE)"||gameName==="¿QUIÉN ES MÁS PROBABLE? (PAREJA)")?15:(gameName==="SCALA DA 1 A 10"||gameName==="SCALE OF 1 TO 10"||gameName==="ESCALA DEL 1 AL 10")?20:25;
  var phrases=shuffled.slice(0,Math.min(maxPhrases,shuffled.length));var total=phrases.length;
- if(S.starterIdx>=total){
- var wrap=div("starter-wrap");var final=div("starter-final");wrap.appendChild(final);
- 
- final.appendChild(div("starter-final-title",T("starterNowYou")));
- final.appendChild(div("starter-final-sub",T("starterContinue")));
- var btns=div("endbtns");final.appendChild(btns);
- btns.appendChild(btn("ebtn",T("ui_gioca_ancora"),function(){S.starterIdx=0;S.starterDeck=null;renderStarter();}));
- btns.appendChild(btn("ebtn out",T("starterEnd"),function(){endGame(S.starterGame);}));
- btns.appendChild(btn("ebtn out",T("exitBtn"),goHome));
- document.getElementById("root").appendChild(wrap);return;
- }
+ if(S.starterIdx>=total){endGame(gameName);return;}
  var phrase=phrases[S.starterIdx];var cat=getCatById(S.cat);
  if(S.starterDeck&&S.starterDeck.ord)freshMark(S.starterDeck.sk,S.starterDeck.ord[S.starterIdx]);
  var last=S.starterIdx>=total-1;
