@@ -16,7 +16,7 @@ var ADULTI_GAMES=[
 "time": "20 min",
 "it": {
 "name": "CHI È PIÙ PROBABILE?",
-"rules": "Si legge la frase ad alta voce, si conta fino a tre e tutti puntano il dito su qualcuno. Niente autodenunce: non si punta sé stessi. Chi raccoglie più dita ha due strade: si difende in 30 secondi davanti alla giuria oppure beve in silenzio, che è comunque un'ammissione di colpa.",
+"rules": "Si legge la frase ad alta voce, si conta fino a tre e tutti puntano il dito su qualcuno. Niente autodenunce: non si punta sé stessi. Chi raccoglie più dita ha due strade: si difende in 30 secondi davanti alla giuria oppure paga pegno o sorseggia un analcolico, che è comunque un'ammissione di colpa.",
 "tip": "Non puntate il più timido per pietà, puntate chi lo merita. Le frasi migliori sono quelle in cui tutti hanno già la risposta in testa ma nessuno ha mai avuto il coraggio di dirla.",
 "deck": [
 "Chi è più probabile che abbia un 'amico' salvato in rubrica con un nome falso?",
@@ -73,7 +73,7 @@ var ADULTI_GAMES=[
 },
 "en": {
 "name": "WHO'S MORE LIKELY?",
-"rules": "Read the line out loud, count to three and everyone points at someone. No self-incrimination: you can't point at yourself. Whoever collects the most fingers has two options: defend themselves for 30 seconds in front of the jury, or drink in silence — which is basically a confession.",
+"rules": "Read the line out loud, count to three and everyone points at someone. No self-incrimination: you can't point at yourself. Whoever collects the most fingers has two options: defend themselves for 30 seconds in front of the jury, or pay a forfeit or sip a soft drink — which is basically a confession.",
 "tip": "Don't point at the shy one out of pity, point at whoever deserves it. The best lines are the ones where everyone already knows the answer but nobody has ever dared say it.",
 "deck": [
 "Who's more likely to have a 'friend' saved in their phone under a fake name?",
@@ -130,7 +130,7 @@ var ADULTI_GAMES=[
 },
 "es": {
 "name": "¿QUIÉN ES MÁS PROBABLE?",
-"rules": "Se lee la frase en voz alta, se cuenta hasta tres y todos señalan a alguien. Nada de autoinculparse: no puedes señalarte a ti. Quien reúna más dedos tiene dos opciones: defenderse 30 segundos ante el jurado o beber en silencio, que viene a ser una confesión.",
+"rules": "Se lee la frase en voz alta, se cuenta hasta tres y todos señalan a alguien. Nada de autoinculparse: no puedes señalarte a ti. Quien reúna más dedos tiene dos opciones: defenderse 30 segundos ante el jurado o pagar prenda o dar un sorbo a una bebida sin alcohol, que viene a ser una confesión.",
 "tip": "No señales al tímido por pena, señala a quien se lo merece. Las mejores frases son las que todos tienen ya respondidas en la cabeza pero nadie se ha atrevido nunca a decir.",
 "deck": [
 "¿Quién es más probable que tenga a un 'amigo' guardado en el móvil con un nombre falso?",
@@ -341,9 +341,9 @@ var ADULTI_GAMES=[
 "players": "1+",
 "time": "20 min",
 "it": {
-"name": "RISPONDI O BEVI",
-"rules": "A turno si legge una domanda a un giocatore scelto dal gruppo. Due possibilità: risponde dicendo la verità, tutta la verità, oppure beve e passa. Bere è sempre permesso, ma ha un prezzo: il gruppo si ricorderà benissimo cosa hai preferito non dire.",
-"tip": "Il silenzio dopo una domanda vale più di qualsiasi risposta. Chi beve senza esitare ha appena confessato qualcosa: prendetene nota.",
+"name": "RISPONDI O PAGA PEGNO",
+"rules": "A turno si legge una domanda a un giocatore scelto dal gruppo. Due possibilità: risponde dicendo la verità, tutta la verità, oppure paga pegno o sorseggia un analcolico, e passa. Passare è sempre permesso, ma ha un prezzo: il gruppo si ricorderà benissimo cosa hai preferito non dire.",
+"tip": "Il silenzio dopo una domanda vale più di qualsiasi risposta. Chi passa senza esitare ha appena confessato qualcosa: prendetene nota.",
 "deck": [
 "Qual è la scusa più creativa che hai usato per sparire dopo un primo appuntamento?",
 "Hai mai finto di essere single? Con chi e perché?",
@@ -398,9 +398,9 @@ var ADULTI_GAMES=[
 ]
 },
 "en": {
-"name": "ANSWER OR SIP",
-"rules": "In turn, read a question to a player chosen by the group. Two options: answer with the truth, the whole truth, or drink and pass. Drinking is always allowed, but it comes at a price: the group will remember exactly what you chose not to say.",
-"tip": "The silence after a question is worth more than any answer. Anyone who drinks without hesitating has just confessed something: take note.",
+"name": "ANSWER OR PAY A FORFEIT",
+"rules": "In turn, read a question to a player chosen by the group. Two options: answer with the truth, the whole truth, or pay a forfeit or sip a soft drink, and pass. Passing is always allowed, but it comes at a price: the group will remember exactly what you chose not to say.",
+"tip": "The silence after a question is worth more than any answer. Anyone who passes without hesitating has just confessed something: take note.",
 "deck": [
 "What's the most creative excuse you've used to disappear after a first date?",
 "Have you ever pretended to be single? With whom, and why?",
@@ -455,9 +455,9 @@ var ADULTI_GAMES=[
 ]
 },
 "es": {
-"name": "RESPONDE O BEBE",
-"rules": "Por turnos se lee una pregunta a un jugador elegido por el grupo. Dos opciones: responde con la verdad, toda la verdad, o bebe y pasa. Beber siempre está permitido, pero tiene un precio: el grupo recordará perfectamente lo que preferiste no decir.",
-"tip": "El silencio después de una pregunta vale más que cualquier respuesta. Quien bebe sin dudar acaba de confesar algo: tomad nota.",
+"name": "RESPONDE O PAGA PRENDA",
+"rules": "Por turnos se lee una pregunta a un jugador elegido por el grupo. Dos opciones: responde con la verdad, toda la verdad, o paga prenda o da un sorbo a una bebida sin alcohol, y pasa. Pasar siempre está permitido, pero tiene un precio: el grupo recordará perfectamente lo que preferiste no decir.",
+"tip": "El silencio después de una pregunta vale más que cualquier respuesta. Quien pasa sin dudar acaba de confesar algo: tomad nota.",
 "deck": [
 "¿Cuál es la excusa más creativa que has usado para desaparecer después de una primera cita?",
 "¿Alguna vez has fingido estar soltero? ¿Con quién y por qué?",
@@ -520,7 +520,7 @@ var ADULTI_GAMES=[
 "time": "20 min",
 "it": {
 "name": "CONFESSIONI ANONIME",
-"rules": "Ognuno, a turno e di nascosto, scrive sul telefono una confessione vera: qualcosa che non ha mai detto ad alta voce. Se non sai da dove partire, l'app ti suggerisce uno spunto. Poi l'app mescola tutto e legge le confessioni una alla volta: il gruppo deve indovinare chi l'ha scritta. Se vieni smascherato, bevi o paghi pegno. Se nessuno ci arriva, la gloria è tua.",
+"rules": "Ognuno, a turno e di nascosto, scrive sul telefono una confessione vera: qualcosa che non ha mai detto ad alta voce. Se non sai da dove partire, l'app ti suggerisce uno spunto. Poi l'app mescola tutto e legge le confessioni una alla volta: il gruppo deve indovinare chi l'ha scritta. Se vieni smascherato, paghi pegno o sorseggi un analcolico. Se nessuno ci arriva, la gloria è tua.",
 "tip": "La confessione perfetta è credibile per almeno tre persone al tavolo. Scrivete come scriverebbe qualcun altro: depistare è parte del gioco.",
 "deck": [
 "Confessa la cosa più strana che hai fatto per vedere qualcuno 'per caso'.",
@@ -557,7 +557,7 @@ var ADULTI_GAMES=[
 },
 "en": {
 "name": "ANONYMOUS CONFESSIONS",
-"rules": "In turn and in secret, everyone types a true confession on the phone: something they've never said out loud. If you don't know where to start, the app suggests a prompt. Then the app shuffles everything and reads the confessions one by one: the group has to guess who wrote each one. If you're unmasked, you drink or pay a forfeit. If nobody guesses, the glory is yours.",
+"rules": "In turn and in secret, everyone types a true confession on the phone: something they've never said out loud. If you don't know where to start, the app suggests a prompt. Then the app shuffles everything and reads the confessions one by one: the group has to guess who wrote each one. If you're unmasked, you pay a forfeit or sip a soft drink. If nobody guesses, the glory is yours.",
 "tip": "The perfect confession is believable for at least three people at the table. Write the way someone else would: misdirection is part of the game.",
 "deck": [
 "Confess the strangest thing you've done to bump into someone 'by chance'.",
@@ -594,7 +594,7 @@ var ADULTI_GAMES=[
 },
 "es": {
 "name": "CONFESIONES ANÓNIMAS",
-"rules": "Cada uno, por turnos y a escondidas, escribe en el móvil una confesión verdadera: algo que nunca ha dicho en voz alta. Si no sabes por dónde empezar, la app te sugiere una idea. Después la app lo mezcla todo y lee las confesiones una a una: el grupo tiene que adivinar quién ha escrito cada una. Si te pillan, bebes o pagas prenda. Si nadie lo adivina, la gloria es tuya.",
+"rules": "Cada uno, por turnos y a escondidas, escribe en el móvil una confesión verdadera: algo que nunca ha dicho en voz alta. Si no sabes por dónde empezar, la app te sugiere una idea. Después la app lo mezcla todo y lee las confesiones una a una: el grupo tiene que adivinar quién ha escrito cada una. Si te pillan, pagas prenda o das un sorbo a una bebida sin alcohol. Si nadie lo adivina, la gloria es tuya.",
 "tip": "La confesión perfecta es creíble para al menos tres personas de la mesa. Escribe como lo haría otro: despistar forma parte del juego.",
 "deck": [
 "Confiesa lo más raro que has hecho para encontrarte con alguien 'por casualidad'.",
@@ -632,13 +632,14 @@ var ADULTI_GAMES=[
 },
 {
 "key": "processo",
+"moveTo": "amici",
 "mode": "starter",
 "flag": null,
 "players": "1+",
 "time": "25 min",
 "it": {
 "name": "IL PROCESSO",
-"rules": "L'app estrae un capo d'accusa. Si scelgono tre ruoli: l'IMPUTATO (che deve difendersi come se ne andasse della sua reputazione, perché è così), l'AVVOCATO (che trova scuse sempre più assurde) e il PM (che lo inchioda con prove inventate ma credibili). Un minuto a testa, poi la giuria vota: colpevole o innocente. Il condannato beve o paga pegno; se viene assolto, beve il PM.",
+"rules": "L'app estrae un capo d'accusa. Si scelgono tre ruoli: l'IMPUTATO (che deve difendersi come se ne andasse della sua reputazione, perché è così), l'AVVOCATO (che trova scuse sempre più assurde) e il PM (che lo inchioda con prove inventate ma credibili). Un minuto a testa, poi la giuria vota: colpevole o innocente. Il condannato paga pegno; se viene assolto, paga pegno il PM.",
 "tip": "Scegliete come imputato chi sembra più innocente: è lì che il processo diventa uno spettacolo. Testimoni a sorpresa dal pubblico sono sempre ammessi.",
 "deck": [
 "L'imputato è accusato di aver risposto 'sto arrivando' mentre era ancora sotto la doccia.",
@@ -685,7 +686,7 @@ var ADULTI_GAMES=[
 },
 "en": {
 "name": "THE TRIAL",
-"rules": "The app draws a charge. Pick three roles: the DEFENDANT (who must defend themselves as if their reputation depends on it — because it does), the LAWYER (who comes up with ever more absurd excuses) and the PROSECUTOR (who nails them with made-up but believable evidence). One minute each, then the jury votes: guilty or innocent. If convicted, the defendant drinks or pays a forfeit; if acquitted, the prosecutor drinks.",
+"rules": "The app draws a charge. Pick three roles: the DEFENDANT (who must defend themselves as if their reputation depends on it — because it does), the LAWYER (who comes up with ever more absurd excuses) and the PROSECUTOR (who nails them with made-up but believable evidence). One minute each, then the jury votes: guilty or innocent. If convicted, the defendant pays a forfeit; if acquitted, the prosecutor does.",
 "tip": "Pick the most innocent-looking person as the defendant: that's when the trial becomes a show. Surprise witnesses from the audience are always allowed.",
 "deck": [
 "The defendant is charged with texting 'on my way' while still in the shower.",
@@ -732,7 +733,7 @@ var ADULTI_GAMES=[
 },
 "es": {
 "name": "EL JUICIO",
-"rules": "La app saca una acusación. Se reparten tres papeles: el ACUSADO (que debe defenderse como si le fuera la reputación en ello, porque es así), el ABOGADO (que busca excusas cada vez más absurdas) y el FISCAL (que lo acorrala con pruebas inventadas pero creíbles). Un minuto cada uno y el jurado vota: culpable o inocente. Si lo condenan, el acusado bebe o paga prenda; si sale absuelto, bebe el fiscal.",
+"rules": "La app saca una acusación. Se reparten tres papeles: el ACUSADO (que debe defenderse como si le fuera la reputación en ello, porque es así), el ABOGADO (que busca excusas cada vez más absurdas) y el FISCAL (que lo acorrala con pruebas inventadas pero creíbles). Un minuto cada uno y el jurado vota: culpable o inocente. Si lo condenan, el acusado paga prenda; si sale absuelto, la paga el fiscal.",
 "tip": "Elegid como acusado a quien parezca más inocente: ahí es cuando el juicio se convierte en un espectáculo. Los testigos sorpresa del público siempre están permitidos.",
 "deck": [
 "El acusado ha escrito 'ya voy' cuando todavía estaba en la ducha.",
@@ -786,7 +787,7 @@ var ADULTI_GAMES=[
 "time": "20 min",
 "it": {
 "name": "L'EX",
-"rules": "A turno, ogni giocatore pesca un tema e ha 2 minuti per raccontare la storia più assurda, imbarazzante o surreale legata a un ex. Gli altri possono interrompere con domande scomode. Alla fine si vota la storia migliore: chi vince decide chi beve. Regola d'oro: nessun nome vero, solo soprannomi. Le vendette si consumano fredde, non a tavola.",
+"rules": "A turno, ogni giocatore pesca un tema e ha 2 minuti per raccontare la storia più assurda, imbarazzante o surreale legata a un ex. Gli altri possono interrompere con domande scomode. Alla fine si vota la storia migliore: chi vince decide chi paga pegno o sorseggia un analcolico. Regola d'oro: nessun nome vero, solo soprannomi. Le vendette si consumano fredde, non a tavola.",
 "tip": "Le storie migliori sono quelle in cui chi racconta non ne esce benissimo. Se ti vergogni un po' mentre parli, sei sulla strada giusta.",
 "deck": [
 "Il primo appuntamento peggiore con qualcuno che poi è diventato tuo ex.",
@@ -823,7 +824,7 @@ var ADULTI_GAMES=[
 },
 "en": {
 "name": "THE EX",
-"rules": "In turn, each player draws a topic and has 2 minutes to tell the most absurd, embarrassing or surreal story involving an ex. The others can interrupt with awkward questions. At the end, vote for the best story: the winner decides who drinks. Golden rule: no real names, only nicknames. Revenge is a dish best served cold, not at the table.",
+"rules": "In turn, each player draws a topic and has 2 minutes to tell the most absurd, embarrassing or surreal story involving an ex. The others can interrupt with awkward questions. At the end, vote for the best story: the winner decides who pays a forfeit or sips a soft drink. Golden rule: no real names, only nicknames. Revenge is a dish best served cold, not at the table.",
 "tip": "The best stories are the ones where the teller doesn't come out of it looking great. If you're a bit embarrassed while talking, you're on the right track.",
 "deck": [
 "The worst first date with someone who later became your ex.",
@@ -860,7 +861,7 @@ var ADULTI_GAMES=[
 },
 "es": {
 "name": "EL EX",
-"rules": "Por turnos, cada jugador saca un tema y tiene 2 minutos para contar la historia más absurda, vergonzosa o surrealista relacionada con un ex. Los demás pueden interrumpir con preguntas incómodas. Al final se vota la mejor historia: quien gana decide quién bebe. Regla de oro: nada de nombres reales, solo apodos. La venganza se sirve fría, no en la mesa.",
+"rules": "Por turnos, cada jugador saca un tema y tiene 2 minutos para contar la historia más absurda, vergonzosa o surrealista relacionada con un ex. Los demás pueden interrumpir con preguntas incómodas. Al final se vota la mejor historia: quien gana decide quién paga prenda o da un sorbo a una bebida sin alcohol. Regla de oro: nada de nombres reales, solo apodos. La venganza se sirve fría, no en la mesa.",
 "tip": "Las mejores historias son aquellas en las que quien las cuenta no sale muy bien parado. Si te da un poco de vergüenza mientras hablas, vas por buen camino.",
 "deck": [
 "La peor primera cita con alguien que luego fue tu ex.",
@@ -904,7 +905,7 @@ var ADULTI_GAMES=[
 "time": "15 min",
 "it": {
 "name": "SCALA PICCANTE",
-"rules": "Si legge la situazione e, al tre, tutti alzano da 1 a 5 dita. 1 vuol dire 'mai nella vita', 5 vuol dire 'già fatto, e lo rifarei'. Chi alza meno dita e chi ne alza di più hanno 30 secondi per spiegarsi. Chi mente spudoratamente e viene smascherato dal gruppo beve.",
+"rules": "Si legge la situazione e, al tre, tutti alzano da 1 a 5 dita. 1 vuol dire 'mai nella vita', 5 vuol dire 'già fatto, e lo rifarei'. Chi alza meno dita e chi ne alza di più hanno 30 secondi per spiegarsi. Chi mente spudoratamente e viene smascherato dal gruppo paga pegno o sorseggia un analcolico.",
 "tip": "Guardate le mani degli altri prima di alzare la vostra: è lì che si capisce chi bluffa. Un 3 detto con troppa calma di solito è un 5.",
 "deck": [
 "Mandare un messaggio a un ex dopo il secondo drink.",
@@ -956,7 +957,7 @@ var ADULTI_GAMES=[
 },
 "en": {
 "name": "SPICY SCALE",
-"rules": "Read the situation and, on three, everyone holds up 1 to 5 fingers. 1 means 'never in my life', 5 means 'done it already, and I'd do it again'. Whoever shows the fewest fingers and whoever shows the most get 30 seconds to explain. Anyone caught shamelessly lying by the group drinks.",
+"rules": "Read the situation and, on three, everyone holds up 1 to 5 fingers. 1 means 'never in my life', 5 means 'done it already, and I'd do it again'. Whoever shows the fewest fingers and whoever shows the most get 30 seconds to explain. Anyone caught shamelessly lying by the group pays a forfeit or sips a soft drink.",
 "tip": "Watch the others' hands before raising yours: that's where you spot the bluffers. A 3 said too calmly is usually a 5.",
 "deck": [
 "Texting an ex after the second drink.",
@@ -1008,7 +1009,7 @@ var ADULTI_GAMES=[
 },
 "es": {
 "name": "ESCALA PICANTE",
-"rules": "Se lee la situación y, a la de tres, todos levantan de 1 a 5 dedos. 1 significa 'jamás en la vida', 5 significa 'ya lo he hecho, y lo repetiría'. Quien levante menos dedos y quien levante más tienen 30 segundos para explicarse. Si el grupo pilla a alguien mintiendo descaradamente, bebe.",
+"rules": "Se lee la situación y, a la de tres, todos levantan de 1 a 5 dedos. 1 significa 'jamás en la vida', 5 significa 'ya lo he hecho, y lo repetiría'. Quien levante menos dedos y quien levante más tienen 30 segundos para explicarse. Si el grupo pilla a alguien mintiendo descaradamente, paga prenda o da un sorbo a una bebida sin alcohol.",
 "tip": "Mira las manos de los demás antes de levantar la tuya: ahí se ve quién va de farol. Un 3 dicho con demasiada calma suele ser un 5.",
 "deck": [
 "Escribirle a un ex después de la segunda copa.",
@@ -1067,7 +1068,7 @@ var ADULTI_GAMES=[
 "time": "20 min",
 "it": {
 "name": "CHI SEI DAVVERO? (18+)",
-"rules": "L'app propone un dilemma con due sole risposte, niente vie di mezzo. Si fa partire il timer: al tre tutti scelgono alzando la mano per la prima opzione o tenendola giù per la seconda. Chi resta in minoranza ha 20 secondi per difendersi. Se il gruppo si divide esattamente a metà, bevono tutti.",
+"rules": "L'app propone un dilemma con due sole risposte, niente vie di mezzo. Si fa partire il timer: al tre tutti scelgono alzando la mano per la prima opzione o tenendola giù per la seconda. Chi resta in minoranza ha 20 secondi per difendersi. Se il gruppo si divide esattamente a metà, tutti pagano pegno o sorseggiano un analcolico.",
 "tip": "Non pensateci troppo: la prima risposta è quella vera. Chi cambia idea dopo aver visto le mani degli altri si merita un pegno.",
 "deck": [
 "Meglio essere lasciati o lasciare?",
@@ -1124,7 +1125,7 @@ var ADULTI_GAMES=[
 },
 "en": {
 "name": "WHO ARE YOU REALLY? (18+)",
-"rules": "The app gives you a dilemma with only two answers, no middle ground. Start the timer: on three, everyone picks by raising a hand for the first option or keeping it down for the second. Whoever's in the minority has 20 seconds to defend themselves. If the group splits exactly in half, everyone drinks.",
+"rules": "The app gives you a dilemma with only two answers, no middle ground. Start the timer: on three, everyone picks by raising a hand for the first option or keeping it down for the second. Whoever's in the minority has 20 seconds to defend themselves. If the group splits exactly in half, everyone pays a forfeit or sips a soft drink.",
 "tip": "Don't overthink it: your first answer is the real one. Anyone who changes their mind after seeing the others' hands deserves a forfeit.",
 "deck": [
 "Be dumped or do the dumping?",
@@ -1181,7 +1182,7 @@ var ADULTI_GAMES=[
 },
 "es": {
 "name": "¿QUIÉN ERES DE VERDAD? (18+)",
-"rules": "La app propone un dilema con solo dos respuestas, sin términos medios. Se pone en marcha el temporizador: a la de tres todos eligen levantando la mano para la primera opción o dejándola bajada para la segunda. Quien quede en minoría tiene 20 segundos para defenderse. Si el grupo se divide justo por la mitad, beben todos.",
+"rules": "La app propone un dilema con solo dos respuestas, sin términos medios. Se pone en marcha el temporizador: a la de tres todos eligen levantando la mano para la primera opción o dejándola bajada para la segunda. Quien quede en minoría tiene 20 segundos para defenderse. Si el grupo se divide justo por la mitad, todos pagan prenda o dan un sorbo a una bebida sin alcohol.",
 "tip": "No le des muchas vueltas: la primera respuesta es la de verdad. Quien cambie de opinión después de ver las manos de los demás se merece una prenda.",
 "deck": [
 "¿Que te dejen o dejar?",
@@ -1245,7 +1246,7 @@ var ADULTI_GAMES=[
 "time": "20 min",
 "it": {
 "name": "OPINIONI SCOTTANTI 18+",
-"rules": "L'app lancia un'opinione scomoda. Al tre si vota: pollice su se sei d'accordo, pollice giù se no. La minoranza ha 30 secondi per difendere la sua posizione e provare a convertire qualcuno. Se riesce a far cambiare voto ad almeno una persona, beve la maggioranza.",
+"rules": "L'app lancia un'opinione scomoda. Al tre si vota: pollice su se sei d'accordo, pollice giù se no. La minoranza ha 30 secondi per difendere la sua posizione e provare a convertire qualcuno. Se riesce a far cambiare voto ad almeno una persona, la maggioranza paga pegno o sorseggia un analcolico.",
 "tip": "Non serve credere davvero a quello che difendi: serve difenderlo bene. I migliori avvocati del diavolo sono quelli che ridono per ultimi.",
 "deck": [
 "Il primo bacio dice già tutto: se è un disastro, inutile insistere.",
@@ -1297,7 +1298,7 @@ var ADULTI_GAMES=[
 },
 "en": {
 "name": "SPICY OPINIONS 18+",
-"rules": "The app throws out an awkward opinion. On three, vote: thumbs up if you agree, thumbs down if you don't. The minority gets 30 seconds to defend their position and try to win someone over. If they manage to change at least one vote, the majority drinks.",
+"rules": "The app throws out an awkward opinion. On three, vote: thumbs up if you agree, thumbs down if you don't. The minority gets 30 seconds to defend their position and try to win someone over. If they manage to change at least one vote, the majority pays a forfeit or sips a soft drink.",
 "tip": "You don't have to believe what you're defending: you have to defend it well. The best devil's advocates are the ones who laugh last.",
 "deck": [
 "The first kiss tells you everything: if it's a disaster, don't bother.",
@@ -1349,7 +1350,7 @@ var ADULTI_GAMES=[
 },
 "es": {
 "name": "OPINIONES PICANTES",
-"rules": "La app lanza una opinión incómoda. A la de tres se vota: pulgar arriba si estás de acuerdo, abajo si no. La minoría tiene 30 segundos para defender su postura e intentar convencer a alguien. Si consigue que al menos una persona cambie su voto, bebe la mayoría.",
+"rules": "La app lanza una opinión incómoda. A la de tres se vota: pulgar arriba si estás de acuerdo, abajo si no. La minoría tiene 30 segundos para defender su postura e intentar convencer a alguien. Si consigue que al menos una persona cambie su voto, la mayoría paga prenda o da un sorbo a una bebida sin alcohol.",
 "tip": "No hace falta creerte lo que defiendes: hace falta defenderlo bien. Los mejores abogados del diablo son los que ríen los últimos.",
 "deck": [
 "El primer beso lo dice todo: si es un desastre, no insistas.",
@@ -1408,7 +1409,7 @@ var ADULTI_GAMES=[
 "time": "20 min",
 "it": {
 "name": "IMBARAZZOMETRO",
-"rules": "L'app propone un tema. A turno, chi vuole racconta la sua storia più imbarazzante su quel tema: vera, possibilmente con dettagli. Alla fine tutti votano alzando da 1 a 10 dita: 10 vuol dire 'avrei cambiato città'. Chi raccoglie il punteggio più alto vince il round e sceglie chi beve. Chi non ha storie da raccontare beve lo stesso, perché nessuno ci crede.",
+"rules": "L'app propone un tema. A turno, chi vuole racconta la sua storia più imbarazzante su quel tema: vera, possibilmente con dettagli. Alla fine tutti votano alzando da 1 a 10 dita: 10 vuol dire 'avrei cambiato città'. Chi raccoglie il punteggio più alto vince il round e sceglie chi paga pegno o sorseggia un analcolico. Chi non ha storie da raccontare paga pegno lo stesso, perché nessuno ci crede.",
 "tip": "I dettagli fanno il punteggio: l'ora, cosa avevi addosso, cosa hai detto esattamente. Le storie raccontate con la faccia seria valgono il doppio.",
 "deck": [
 "Un messaggio mandato alla persona sbagliata.",
@@ -1455,7 +1456,7 @@ var ADULTI_GAMES=[
 },
 "en": {
 "name": "EMBARRASSOMETER",
-"rules": "The app gives a topic. In turn, whoever wants tells their most embarrassing story on that topic: true, ideally with details. At the end, everyone votes by holding up 1 to 10 fingers: 10 means 'I'd have moved cities'. The highest score wins the round and chooses who drinks. Anyone with no story to tell drinks anyway, because nobody believes them.",
+"rules": "The app gives a topic. In turn, whoever wants tells their most embarrassing story on that topic: true, ideally with details. At the end, everyone votes by holding up 1 to 10 fingers: 10 means 'I'd have moved cities'. The highest score wins the round and chooses who pays a forfeit or sips a soft drink. Anyone with no story to tell pays a forfeit anyway, because nobody believes them.",
 "tip": "Details make the score: the time, what you were wearing, exactly what you said. Stories told with a straight face are worth double.",
 "deck": [
 "A message sent to the wrong person.",
@@ -1502,7 +1503,7 @@ var ADULTI_GAMES=[
 },
 "es": {
 "name": "EMBARAZÓMETRO",
-"rules": "La app propone un tema. Por turnos, quien quiera cuenta su historia más vergonzosa sobre ese tema: real y, a poder ser, con detalles. Al final todos votan levantando de 1 a 10 dedos: 10 significa 'me habría cambiado de ciudad'. Quien saque la puntuación más alta gana la ronda y elige quién bebe. Quien no tenga historia que contar bebe igual, porque nadie se lo cree.",
+"rules": "La app propone un tema. Por turnos, quien quiera cuenta su historia más vergonzosa sobre ese tema: real y, a poder ser, con detalles. Al final todos votan levantando de 1 a 10 dedos: 10 significa 'me habría cambiado de ciudad'. Quien saque la puntuación más alta gana la ronda y elige quién paga prenda o da un sorbo a una bebida sin alcohol. Quien no tenga historia que contar paga prenda igual, porque nadie se lo cree.",
 "tip": "Los detalles suben la nota: la hora, qué llevabas puesto, qué dijiste exactamente. Las historias contadas con cara seria valen el doble.",
 "deck": [
 "Un mensaje enviado a la persona equivocada.",
@@ -1556,7 +1557,7 @@ var ADULTI_GAMES=[
 "time": "20 min",
 "it": {
 "name": "PRIMI E ULTIMI",
-"rules": "L'app chiede una 'prima volta' o un''ultima volta'. Tutti rispondono a turno, in poche parole e senza giudizi. Chi si rifiuta di rispondere beve. Chi dà la risposta più sorprendente del giro sceglie chi risponde per primo alla domanda successiva.",
+"rules": "L'app chiede una 'prima volta' o un''ultima volta'. Tutti rispondono a turno, in poche parole e senza giudizi. Chi si rifiuta di rispondere paga pegno o sorseggia un analcolico. Chi dà la risposta più sorprendente del giro sceglie chi risponde per primo alla domanda successiva.",
 "tip": "Le risposte brevi sono le più pericolose: 'ieri' detto con calma vale più di qualsiasi racconto. Fate attenzione alle date: dicono molto più di quanto sembri.",
 "deck": [
 "L'ultima volta che hai scritto a qualcuno alle 2 di notte.",
@@ -1603,7 +1604,7 @@ var ADULTI_GAMES=[
 },
 "en": {
 "name": "FIRSTS AND LASTS",
-"rules": "The app asks about a 'first time' or a 'last time'. Everyone answers in turn, in a few words, no judgement. Anyone who refuses to answer drinks. Whoever gives the most surprising answer of the round chooses who answers first next time.",
+"rules": "The app asks about a 'first time' or a 'last time'. Everyone answers in turn, in a few words, no judgement. Anyone who refuses to answer pays a forfeit or sips a soft drink. Whoever gives the most surprising answer of the round chooses who answers first next time.",
 "tip": "Short answers are the most dangerous: 'yesterday', said calmly, beats any story. Pay attention to dates: they reveal far more than you'd think.",
 "deck": [
 "The last time you texted someone at 2am.",
@@ -1650,7 +1651,7 @@ var ADULTI_GAMES=[
 },
 "es": {
 "name": "PRIMEROS Y ÚLTIMOS",
-"rules": "La app pregunta por una 'primera vez' o una 'última vez'. Todos responden por turnos, en pocas palabras y sin juzgar. Quien se niegue a responder bebe. Quien dé la respuesta más sorprendente de la ronda elige quién empieza a responder la siguiente.",
+"rules": "La app pregunta por una 'primera vez' o una 'última vez'. Todos responden por turnos, en pocas palabras y sin juzgar. Quien se niegue a responder paga prenda o da un sorbo a una bebida sin alcohol. Quien dé la respuesta más sorprendente de la ronda elige quién empieza a responder la siguiente.",
 "tip": "Las respuestas cortas son las más peligrosas: un 'ayer' dicho con calma vale más que cualquier historia. Ojo a las fechas: dicen mucho más de lo que parece.",
 "deck": [
 "La última vez que le escribiste a alguien a las 2 de la mañana.",
@@ -1704,7 +1705,7 @@ var ADULTI_GAMES=[
 "time": "20 min",
 "it": {
 "name": "NON HO MAI (18+)",
-"rules": "Tutti partono con 5 dita alzate. Si legge la frase 'Non ho mai…': chi invece l'ha fatto abbassa un dito e beve un sorso. Chi resta senza dita ha vissuto troppo e paga pegno. Se qualcuno abbassa il dito e nessuno se lo aspettava, il gruppo ha diritto a una domanda.",
+"rules": "Tutti partono con 5 dita alzate. Si legge la frase 'Non ho mai…': chi invece l'ha fatto abbassa un dito. Chi resta senza dita ha vissuto troppo e paga pegno o sorseggia un analcolico. Se qualcuno abbassa il dito e nessuno se lo aspettava, il gruppo ha diritto a una domanda.",
 "tip": "Guardate chi abbassa il dito, ma soprattutto chi esita prima di non abbassarlo. Il vero spettacolo sono le facce, non le dita.",
 "deck": [
 "Non ho mai scritto 'sei sveglio?' a qualcuno dopo mezzanotte.",
@@ -1761,7 +1762,7 @@ var ADULTI_GAMES=[
 },
 "en": {
 "name": "NEVER HAVE I EVER (18+)",
-"rules": "Everyone starts with 5 fingers up. Read the 'Never have I ever…' line: anyone who has done it puts a finger down and takes a sip. Whoever runs out of fingers has lived too much and pays a forfeit. If someone puts a finger down and nobody saw it coming, the group gets to ask one question.",
+"rules": "Everyone starts with 5 fingers up. Read the 'Never have I ever…' line: anyone who has done it puts a finger down. Whoever runs out of fingers has lived too much and pays a forfeit or sips a soft drink. If someone puts a finger down and nobody saw it coming, the group gets to ask one question.",
 "tip": "Watch who puts a finger down, but above all who hesitates before not putting it down. The real show is the faces, not the fingers.",
 "deck": [
 "Never have I ever texted 'you up?' after midnight.",
@@ -1818,7 +1819,7 @@ var ADULTI_GAMES=[
 },
 "es": {
 "name": "YO NUNCA (18+)",
-"rules": "Todos empiezan con 5 dedos levantados. Se lee la frase 'Yo nunca…': quien sí lo haya hecho baja un dedo y da un trago. Quien se quede sin dedos ha vivido demasiado y paga prenda. Si alguien baja el dedo y nadie se lo esperaba, el grupo tiene derecho a una pregunta.",
+"rules": "Todos empiezan con 5 dedos levantados. Se lee la frase 'Yo nunca…': quien sí lo haya hecho baja un dedo. Quien se quede sin dedos ha vivido demasiado y paga prenda o da un sorbo a una bebida sin alcohol. Si alguien baja el dedo y nadie se lo esperaba, el grupo tiene derecho a una pregunta.",
 "tip": "Fijaos en quién baja el dedo, pero sobre todo en quién duda antes de no bajarlo. El verdadero espectáculo son las caras, no los dedos.",
 "deck": [
 "Yo nunca he escrito '¿estás despierto?' a alguien pasada la medianoche.",
@@ -1884,12 +1885,16 @@ function applyAdulti(){
  window.ADULTI_DECKS={};
  ["it","en","es"].forEach(function(L){
   var T2=tables[L];if(!T2)return;
+  // I giochi con "moveTo" vanno in un'altra categoria (es. Il processo → Tra amici)
+  var moved=[];
   T2.adulti=ADULTI_GAMES.map(function(a){
    var g={name:a[L].name,players:a.players,time:a.time,hot:true,rules:a[L].rules,tip:a[L].tip,_it:a.it.name,_adulti:a.key};
    if(a.flag)g[a.flag]=true;
    if(a.mode==="starter"&&packs[L])packs[L][a[L].name]=a[L].deck.slice();
+   if(a.moveTo){delete g.hot;g._moved=a.moveTo;moved.push(g);return null;}
    return g;
-  });
+  }).filter(Boolean);
+  moved.forEach(function(g){var c=g._moved;if(!T2[c])T2[c]=[];if(!T2[c].some(function(x){return (x._it||x.name)===g._it;}))T2[c].push(g);});
  });
  ADULTI_GAMES.forEach(function(a){window.ADULTI_DECKS[a.key]=a;});
 }

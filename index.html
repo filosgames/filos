@@ -1141,11 +1141,11 @@ try {
 <script src="data-ag.js?v=4"></script>
 <script src="data-qv.js?v=4"></script>
 <script src="data-sp.js?v=7"></script>
-<script src="data-cats.js?v=28"></script>
+<script src="data-cats.js?v=29"></script>
 <script src="data-quizdata.js?v=5"></script>
 <script src="data-lingua.js?v=1"></script>
-<script src="data-adulti.js?v=5"></script>
-<script src="data-regole.js?v=10"></script>
+<script src="data-adulti.js?v=6"></script>
+<script src="data-regole.js?v=11"></script>
 <script src="data-parola.js?v=1"></script>
 <script src="data-quiz.js?v=93"></script>
 <script src="data-geo.js?v=2"></script>
@@ -2407,9 +2407,9 @@ Object.assign(STRINGS.es,{"rulesShow":"Leer","rulesHide":"Cerrar"});
 Object.assign(STRINGS.it,{"backAgain": "Premi di nuovo Indietro per uscire dalla partita"});
 Object.assign(STRINGS.en,{"backAgain": "Press Back again to leave the game"});
 Object.assign(STRINGS.es,{"backAgain": "Pulsa Atrás otra vez para salir de la partida"});
-Object.assign(STRINGS.it,{"ageTitle": "Sezione 18+", "ageText": "Questa sezione contiene giochi per adulti e giochi in cui si beve. Entra solo se hai almeno 18 anni. Bere è sempre facoltativo: ogni sorso si può sostituire con una penitenza o con una bevanda analcolica.", "ageYes": "Ho almeno 18 anni", "ageNo": "Torna indietro"});
-Object.assign(STRINGS.en,{"ageTitle": "18+ section", "ageText": "This section contains adult games and drinking games. Only enter if you are at least 18. Drinking is always optional: any sip can be swapped for a forfeit or a non-alcoholic drink.", "ageYes": "I'm 18 or older", "ageNo": "Go back"});
-Object.assign(STRINGS.es,{"ageTitle": "Sección 18+", "ageText": "Esta sección contiene juegos para adultos y juegos en los que se bebe. Entra solo si tienes al menos 18 años. Beber es siempre opcional: cada trago se puede cambiar por una prenda o una bebida sin alcohol.", "ageYes": "Tengo 18 años o más", "ageNo": "Volver"});
+Object.assign(STRINGS.it,{"ageTitle": "Sezione 18+", "ageText": "Questa sezione contiene giochi per adulti. Entra solo se hai almeno 18 anni.", "ageYes": "Ho almeno 18 anni", "ageNo": "Torna indietro"});
+Object.assign(STRINGS.en,{"ageTitle": "18+ section", "ageText": "This section contains adult games. Only enter if you are at least 18.", "ageYes": "I'm 18 or older", "ageNo": "Go back"});
+Object.assign(STRINGS.es,{"ageTitle": "Sección 18+", "ageText": "Esta sección contiene juegos para adultos. Entra solo si tienes al menos 18 años.", "ageYes": "Tengo 18 años o más", "ageNo": "Volver"});
 Object.assign(STRINGS.it,{"rlRoomFull": "La partita è al completo (massimo 20 giocatori)"});
 Object.assign(STRINGS.en,{"rlRoomFull": "The game is full (maximum 20 players)"});
 Object.assign(STRINGS.es,{"rlRoomFull": "La partida está completa (máximo 20 jugadores)"});
@@ -2729,12 +2729,12 @@ var GAMES={
  {name:"IL SUSSURRO",players:"1+",time:"25 min",hot:true,
  rules:"Il classico gioco della paranoia. Il moderatore sussurra una domanda scomoda a un giocatore — tipo 'Chi in questo gruppo mentiresti di più?'. Il giocatore risponde ad alta voce con un nome, senza dire la domanda. Quella persona, se vuole sapere la domanda, lancia una moneta: testa la domanda viene rivelata, croce rimane segreta per sempre.",
  tip:"La paranoia nasce dal non sapere la domanda. Più le domande sono specifiche, più il gioco diventa esplosivo."},
- {name:"RISPONDI O BEVI",players:"1+",time:"20 min",hot:true,
- rules:"Come Verità o Sfida ma senza le sfide — solo domande. A turno il gruppo fa una domanda a un giocatore. Risponde onestamente oppure beve. Niente pressione, niente obbligo — ma rifiutarsi ha un costo. Le domande le decide chi è di turno.",
+ {name:"RISPONDI O PAGA PEGNO",players:"1+",time:"20 min",hot:true,
+ rules:"Come Verità o Sfida ma senza le sfide — solo domande. A turno il gruppo fa una domanda a un giocatore. Risponde onestamente oppure paga pegno o sorseggia un analcolico. Niente pressione, niente obbligo — ma rifiutarsi ha un costo. Le domande le decide chi è di turno.",
  tip:"Le domande migliori sono quelle a cui la persona vuole rispondere ma ha un po' di paura. Tenete sempre un'uscita dignitosa.",
  starter:["Qual è la cosa più imbarazzante che hai fatto per fare colpo su qualcuno?","Hai mai guardato il telefono del tuo ex o della tua ex? Cosa hai trovato?","Qual è la bugia più grande che hai detto in una relazione?","Hai mai fatto finta di non essere geloso/a quando invece lo eri da morire?","Qual è la cosa più stupida per cui hai litigato con qualcuno?","Qual è il messaggio più imbarazzante che hai mai mandato — e a chi?","Hai mai bloccato qualcuno e poi sbloccato dopo 10 minuti?","Qual è la cosa che hai fatto di cui sei ancora un po' orgoglioso/a anche se non dovresti?","Hai mai provato a far ingelosire qualcuno? Ha funzionato?","Qual è il pensiero più strano che hai avuto su qualcuno in questa stanza?"]},
  {name:"CONFESSIONI ANONIME",players:"1+",time:"20 min",hot:true,confessionianonime:true,
- rules:"Ogni giocatore scrive sul telefono la propria confessione anonima — qualcosa di vero, imbarazzante o inaspettato che non ha mai detto in giro. L'app mescola tutto e mostra le confessioni una alla volta. Il gruppo vota a chi appartiene ogni confessione. Chi viene identificato beve o paga un pegno.",
+ rules:"Ogni giocatore scrive sul telefono la propria confessione anonima — qualcosa di vero, imbarazzante o inaspettato che non ha mai detto in giro. L'app mescola tutto e mostra le confessioni una alla volta. Il gruppo vota a chi appartiene ogni confessione. Chi viene identificato paga pegno o sorseggia un analcolico.",
  tip:"Le confessioni migliori sono quelle a metà strada tra ridicole e vere. Più il gruppo si conosce, più diventa esplosivo."},
  {name:"IL PROCESSO",players:"1+",time:"25 min",hot:true,
  rules:"Il gruppo inventa un reato assurdo (es. 'ha rubato il Wi-Fi del vicino', 'ha finto di essere malato per non andare a un compleanno che odiava'). Si assegnano tre ruoli: l'IMPUTATO deve difendersi, l'AVVOCATO lo difende inventando scuse sempre più assurde, l'ACCUSATORE cerca di incastrarlo. Gli altri sono la giuria e votano: colpevole o innocente?",
@@ -4527,7 +4527,7 @@ try{if(typeof applyAdulti==="function")applyAdulti();}catch(e){}
       adulti:{"WHO'S MORE LIKELY?":"CHI È PIÙ PROBABILE?","THE WHISPER":"IL SUSSURRO","THE TRIAL":"IL PROCESSO","SPICY SCALE":"SCALA PICCANTE","EMBARRASSOMETER":"IMBARAZZOMETRO","FIRSTS AND LASTS":"PRIMI E ULTIMI"}},
   es:{amici:{"ESCALA DEL 1 AL 10":"SCALA DA 1 A 10","¿QUIÉN ERES DE VERDAD?":"CHI SEI DAVVERO?","¿QUÉ TENÉIS EN COMÚN?":"COSA HAI IN COMUNE?","EL MAGO":"IL MAGO","EL CUMPLIDO QUE NO HE DADO AÚN":"IL COMPLIMENTO CHE NON HO ANCORA FATTO","EL TRAIDOR":"IL TRADITORE","SÍ, NO, TAMPOCO":"SÌ, NO, NON","¿QUIÉN SOY?":"CHI SONO IO?","CONTAR HASTA 21":"CONTARE FINO A 21","SINCRONÍA":"SINCRONIA","ES UN 10 PERO...":"È UN 10 MA...","SEÑALA CON EL DEDO":"PUNTA IL DITO","ENCUENTRA LA MENTIRA":"TROVA LA BUGIA","OPINIONES POLÉMICAS":"OPINIONI SCOTTANTI","EL SUSURRO":"IL SUSSURRO","COARTADA":"ALIBI"},
       azione:{"¡FREEZE!":"FREEZE!","CONTAR HASTA 21":"CONTARE FINO A 21","EL NUDO HUMANO":"IL NODO UMANO","EL DOBLADOR":"IL DOPPIATORE","TOCA EL AZUL":"TOUCH BLUE","EFECTO DOMINÓ":"EFFETTO DOMINO"},
-      adulti:{"¿QUIÉN ES MÁS PROBABLE?":"CHI È PIÙ PROBABILE?","EL SUSURRO":"IL SUSSURRO","RESPONDE O BEBE":"RISPONDI O BEVI","EL JUICIO":"IL PROCESSO","CONFESIONES ANÓNIMAS":"CONFESSIONI ANONIME","ESCALA PICANTE":"SCALA PICCANTE","OPINIONES PICANTES":"OPINIONI SCOTTANTI 18+","EMBARAZÓMETRO":"IMBARAZZOMETRO","PRIMEROS Y ÚLTIMOS":"PRIMI E ULTIMI"}}
+      adulti:{"¿QUIÉN ES MÁS PROBABLE?":"CHI È PIÙ PROBABILE?","EL SUSURRO":"IL SUSSURRO","RESPONDE O PAGA PRENDA":"RISPONDI O PAGA PEGNO","EL JUICIO":"IL PROCESSO","CONFESIONES ANÓNIMAS":"CONFESSIONI ANONIME","ESCALA PICANTE":"SCALA PICCANTE","OPINIONES PICANTES":"OPINIONI SCOTTANTI 18+","EMBARAZÓMETRO":"IMBARAZZOMETRO","PRIMEROS Y ÚLTIMOS":"PRIMI E ULTIMI"}}
  };
  var SKIP={hot:1,isnew:1};
  function flags(g){var f=[];for(var k in g){if(g[k]===true&&!SKIP[k])f.push(k);}return f.sort().join("+");}
