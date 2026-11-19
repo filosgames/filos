@@ -366,7 +366,7 @@ function nfcTagUrl(){
  return window.location.origin+window.location.pathname+"?p="+encodeURIComponent(venue)+"&t="+tok;
 }
 
-var S={screen: "onboarding",players:0,cat:null,game:null,stars:0,prevScreen:"home",rFilter:"tutti",revealed:{},pinOK:false,pinInput:"",pinErr:false,lastGame:"",menuTab:"drink",menuEdTab:"drink",quizGame:null,quizIdx:0,quizRevealed:false,quizScore:0,quizQuestions:[],quizLevel:null,starterGame:null,starterIdx:0,fromStarter:false,bFilter:"gruppo",mwWord:"",mwSimilar:"",mwWhiteIdx:-1,mwSeen:[],mwRevealing:-1,mwNumPlayers:0,intesaLevel:"facile",intesaWords:[],intesaIdx:0,intesaScore:0,intesaTimer:0,intesaRunning:false,intesaRound:1,intesaTeamScores:[],alfaLetter:"",alfaTimer:0,alfaRunning:false,alfaScores:{},alfaNumPlayers:0,alfaTarget:5,ncLetterN:"",ncLetterC:"",ncScores:{},ncNumPlayers:0,ncTarget:5,dadoValue:0,dadoPlayers:[],dadoScores:{},dadoCurrentIdx:0,dadoTarget:15,dadoRolled:false,dadoNumPlayers:0,dadoPlayerNames:[],codicePlayers:[],codiceCodes:{},codiceFound:{},codiceAsked:{},codiceCurrentIdx:0,codiceQuestion:null,codiceWaiting:false};
+var S={screen: "onboarding",players:0,cat:null,game:null,stars:0,prevScreen:"home",rFilter:"facile",revealed:{},pinOK:false,pinInput:"",pinErr:false,lastGame:"",menuTab:"drink",menuEdTab:"drink",quizGame:null,quizIdx:0,quizRevealed:false,quizScore:0,quizQuestions:[],quizLevel:null,starterGame:null,starterIdx:0,fromStarter:false,bFilter:"gruppo",mwWord:"",mwSimilar:"",mwWhiteIdx:-1,mwSeen:[],mwRevealing:-1,mwNumPlayers:0,intesaLevel:"facile",intesaWords:[],intesaIdx:0,intesaScore:0,intesaTimer:0,intesaRunning:false,intesaRound:1,intesaTeamScores:[],alfaLetter:"",alfaTimer:0,alfaRunning:false,alfaScores:{},alfaNumPlayers:0,alfaTarget:5,ncLetterN:"",ncLetterC:"",ncScores:{},ncNumPlayers:0,ncTarget:5,dadoValue:0,dadoPlayers:[],dadoScores:{},dadoCurrentIdx:0,dadoTarget:15,dadoRolled:false,dadoNumPlayers:0,dadoPlayerNames:[],codicePlayers:[],codiceCodes:{},codiceFound:{},codiceAsked:{},codiceCurrentIdx:0,codiceQuestion:null,codiceWaiting:false};
 
 function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e;}
 function div(cls,txt){return el("div",cls,txt);}
@@ -659,7 +659,7 @@ function renderHome(){
  var ciSvg=div("ci");ciSvg.innerHTML=CAT_SVGS[cat.id];cb.appendChild(ciSvg);
  }
  cb.appendChild(el("span","cn",getCatName(cat.id)));
- if(avail||!S.players){cb.onclick=function(){S.cat=cat.id;S.screen="games";render();};}
+ if(avail||!S.players){cb.onclick=function(){S.cat=cat.id;if(cat.id==="indovinelli")S.rFilter="facile";S.screen="games";render();};}
  return cb;
  }
  if(idx<5)grid1.appendChild(makeCb());else grid2.appendChild(makeCb());
@@ -743,8 +743,10 @@ function renderGames(){
  }
  
  if(S.cat==="indovinelli"){
+ // Solo Facile, Medio e Difficile (su una riga); si apre su Facile
+ if(["facile","media","difficile"].indexOf(S.rFilter)<0)S.rFilter="facile";
  var frow=div("filter-row");
- ["tutti","facile","media","difficile"].forEach(function(f){
+ ["facile","media","difficile"].forEach(function(f){
  var lbl=f==="facile"?T("filterEasy"):f==="media"?T("filterMed"):f==="difficile"?T("filterHard"):T("filterAll");
  var t=div("ftag "+(S.rFilter===f?"on":""));t.textContent=lbl;t.onclick=function(){S.rFilter=f;render();};frow.appendChild(t);
  });
@@ -957,16 +959,18 @@ function renderRiddle(){
  var hdr=div("dhdr");hdr.style.background=(CAT_PASTEL&&CAT_PASTEL[S.cat])?CAT_PASTEL[S.cat]:cat.bg;card.appendChild(hdr);
  var dhdrTop2=div("dhdr-top");hdr.appendChild(dhdrTop2);
  dhdrTop2.appendChild(btn("card-nav-btn back",T("backToGames"),goBackToGames));
- dhdrTop2.appendChild(btn("card-nav-btn",T("exitBtn"),goHome));
- hdr.appendChild(el("span","dbadge",stars));
- hdr.appendChild(div("riddle-q",rq(r).q));
- var body=div("dbody");card.appendChild(body);
+ // In alto solo la pillola del livello; l'indovinello sta nella parte bianca, centrato
+ var bd=div("dbadges");bd.appendChild(el("span","dbadge",stars));hdr.appendChild(bd);
+ var body=div("dbody riddle-body");card.appendChild(body);
+ body.appendChild(div("riddle-q",rq(r).q));
  var revBtn=btn("reveal-btn",S.revealed[key]?T("ui_nascondi"):T("revealAnswer"),function(){S.revealed[key]=!S.revealed[key];renderRiddle();});
  body.appendChild(revBtn);
- if(S.revealed[key])body.appendChild(div("riddle-ans",rq(r).a));
- var ew=div("");ew.style.cssText="text-align:center;margin-top:24px;";
- ew.appendChild(btn("ebtn",T("endBtn"),function(){endGame(T("riddleLabel"));}));
- body.appendChild(ew);
+ if(S.revealed[key]){
+  body.appendChild(div("riddle-ans",rq(r).a));
+  var ew=div("");ew.style.cssText="text-align:center;margin-top:24px;";
+  ew.appendChild(btn("ebtn",T("endBtn"),function(){endGame(T("riddleLabel"));}));
+  body.appendChild(ew);
+ }
  document.getElementById("root").appendChild(panel);
 }
 
