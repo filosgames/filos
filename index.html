@@ -1141,13 +1141,13 @@ try {
 <script src="data-ag.js?v=4"></script>
 <script src="data-qv.js?v=4"></script>
 <script src="data-sp.js?v=7"></script>
-<script src="data-cats.js?v=29"></script>
+<script src="data-cats.js?v=30"></script>
 <script src="data-quizdata.js?v=5"></script>
 <script src="data-lingua.js?v=1"></script>
 <script src="data-adulti.js?v=6"></script>
-<script src="data-regole.js?v=11"></script>
+<script src="data-regole.js?v=12"></script>
 <script src="data-parola.js?v=1"></script>
-<script src="data-quiz.js?v=93"></script>
+<script src="data-quiz.js?v=94"></script>
 <script src="data-geo.js?v=2"></script>
 <script src="data-punti.js?v=2"></script>
 <script src="data-cdr.js?v=22"></script>
@@ -2685,7 +2685,9 @@ var GAMES={
  {name:"IL MUSEO DELLA TUA VITA",players:"1-2",time:"20 min",rules:"Se la tua vita fosse un museo, quali sarebbero i cinque oggetti esposti? Non devono essere cose preziose — solo significative. Ognuno sceglie i suoi cinque oggetti e spiega brevemente la storia di ognuno. L'altro ascolta e alla fine sceglie l'oggetto di cui vuole sapere di più.",tip:"Gli oggetti che scegliamo raccontano la nostra storia meglio di qualsiasi presentazione."},
  {name:"QUESTO O QUELLO — VERSIONE SERIA",players:"1-2",time:"15 min",rules:"Come Questa o Quella ma con dilemmi più profondi: sicurezza o libertà? Essere amato o essere rispettato? Vita breve e intensa o lunga e tranquilla? Successo da solo o mediocrità in compagnia? Rispondete contemporaneamente alzando la mano, poi ognuno spiega il perché in 30 secondi.",tip:"I dilemmi senza risposta ovvia aprono le conversazioni più lunghe. Non c'è risposta giusta."},
  {name:"LE DOMANDE CHE CONTANO",players:"1-2",time:"25 min",rules:"Tre round di domande a intensità crescente. Round 1 (leggero): cosa ti fa ridere davvero? Qual è il tuo posto preferito al mondo? Round 2 (medio): cosa ti spaventa del futuro? Di cosa vai più orgoglioso? Round 3 (profondo): cosa cerchi davvero in una persona? Cosa vorresti che le persone capissero di te?",tip:"Non saltate i round leggeri — servono a costruire il ritmo giusto prima di andare in profondità."},
- {name:"LE DOMANDE DEL PRIMO APPUNTAMENTO",players:"2",time:"20-30 min",isnew:true,rules:"Domande dallo studio di Arthur Aron (1997) per avvicinarsi a chi si conosce da poco.",tip:"Rispondete con calma e fate una domanda in più all'altro."}
+ {name:"PRIMO APPUNTAMENTO",players:"2",time:"20-30 min",isnew:true,rules:"Domande dallo studio di Arthur Aron (1997) per avvicinarsi a chi si conosce da poco.",tip:"Rispondete con calma e fate una domanda in più all'altro."},
+ {name:"ROMPIGHIACCIO",players:"2+",time:"15 min",isnew:true,rules:"Domande leggere per rompere il ghiaccio.",tip:"Rispondete in poche parole."},
+ {name:"CONOSCIAMOCI",players:"2+",time:"20 min",isnew:true,rules:"Domande per conoscersi davvero.",tip:"Meglio poche risposte, ma vere."}
  ],
  ndovinelli:[],
  azione:[
@@ -4566,9 +4568,14 @@ try{if(typeof applyAdulti==="function")applyAdulti();}catch(e){}
   [["it",GAMES],["en",typeof GAMES_EN!=="undefined"?GAMES_EN:null],["es",typeof GAMES_ES!=="undefined"?GAMES_ES:null]].forEach(function(p){
    var L=p[0],T2=p[1];if(!T2||!T2.bambini||!Q36[L])return;
    T2.bambini.forEach(function(g){
-    if((g._it||g.name)!=="LE DOMANDE DEL PRIMO APPUNTAMENTO")return;
-    var r1=Q36[L][0],r2=Q36[L][1];
-    g.questions=[{label:FD_LBL[L][0],items:r1.items.slice()},{label:FD_LBL[L][1],items:FD_II.map(function(i){return r2.items[i];}).filter(Boolean)}];
+    var k=g._it||g.name;
+    if(k==="PRIMO APPUNTAMENTO"){
+     var r1=Q36[L][0],r2=Q36[L][1];
+     g.questions=[{label:FD_LBL[L][0],items:r1.items.slice()},{label:FD_LBL[L][1],items:FD_II.map(function(i){return r2.items[i];}).filter(Boolean)}];
+    }
+    // Rompighiaccio e Conosciamoci: domande in ordine sparso, diverse a ogni partita
+    var dk=k==="ROMPIGHIACCIO"?"rompi":k==="CONOSCIAMOCI"?"cono":null;
+    if(dk&&typeof DOMANDE_Q!=="undefined"&&DOMANDE_Q[dk][L]){g.questions=[{label:"",items:DOMANDE_Q[dk][L].slice()}];g.qShuffle=true;}
    });
   });
   [["it",GAMES],["en",typeof GAMES_EN!=="undefined"?GAMES_EN:null],["es",typeof GAMES_ES!=="undefined"?GAMES_ES:null]].forEach(function(p){

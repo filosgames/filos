@@ -733,15 +733,6 @@ function renderGames(){
  var panel=div("panel");
  panel.appendChild(el("h2","sec-title",getCatName(cat.id)));
  
- if(S.cat==="bambini"){
- var bfrow=div("filter-row");
- if(["primo","rompi","cono"].indexOf(S.bFilter)<0)S.bFilter="primo";
- [["primo",T("ui_primo_appuntamento")],["rompi",T("ui_rompighiaccio")],["cono",T("ui_conosciamoci")]].forEach(function(f){
- var t=div("ftag "+(S.bFilter===f[0]?"on":""));t.textContent=f[1];t.onclick=function(){S.bFilter=f[0];render();};bfrow.appendChild(t);
- });
- panel.appendChild(bfrow);
- }
- 
  if(S.cat==="indovinelli"){
  // Solo Facile, Medio e Difficile (su una riga); si apre su Facile
  if(["facile","media","difficile"].indexOf(S.rFilter)<0)S.rFilter="facile";
@@ -770,10 +761,9 @@ function renderGames(){
  } else {
  var _gtable=gameTable();var _allGames=_gtable[S.cat]||[];var games=_allGames;
  if(S.cat==="bambini"){
- if(["primo","rompi","cono"].indexOf(S.bFilter)<0)S.bFilter="primo";
- games=games.filter(function(g){return (DOMANDE_MICRO[g._it||g.name]||"rompi")===S.bFilter;});
- // Il mazzo dello studio di Aron per primo, in Primo appuntamento
- games=games.slice().sort(function(a,b){var A=(a._it||a.name)==="LE DOMANDE DEL PRIMO APPUNTAMENTO",B=(b._it||b.name)==="LE DOMANDE DEL PRIMO APPUNTAMENTO";return (B?1:0)-(A?1:0);});
+ // DOMANDE: tre giochi, sempre in quest'ordine
+ var ORD=["PRIMO APPUNTAMENTO","ROMPIGHIACCIO","CONOSCIAMOCI"];
+ games=games.filter(function(g){return ORD.indexOf(g._it||g.name)>=0;}).sort(function(a,b){return ORD.indexOf(a._it||a.name)-ORD.indexOf(b._it||b.name);});
  }
  var _qzOn=false;try{_qzOn=localStorage.getItem("filos_quizzone")==="1";}catch(e){}
  games=games.filter(function(g){return !g.quizzone||_qzOn;});
@@ -811,14 +801,9 @@ function renderGames(){
 // Giochi tolti dalla lista ma tenuti nel codice, per poterli rimettere in futuro:
 // basta togliere il nome da qui. (Novembre 2026: richiesta di togliere questi giochi da Azione.)
 var GIOCHI_IN_PAUSA={
- azione:["CONTARE FINO A 21","IL MIMO","SCULTURA UMANA","IL NODO UMANO","IL DOPPIATORE","CACCIA ALL'OGGETTO"]
-};
-// Categoria DOMANDE: in quale micro categoria sta ogni gioco (Primo appuntamento, Rompighiaccio, Conosciamoci)
-var DOMANDE_MICRO={
- "LE DOMANDE DEL PRIMO APPUNTAMENTO":"primo","IL GIOCO DELLE DOMANDE":"primo","QUESTO O QUELLO — VERSIONE SERIA":"primo",
- "APPELLO":"rompi","MI CHIAMO E MI PIACE...":"rompi","IL SUPERPOTERE":"rompi","DUE VERITÀ E UNA BUGIA":"rompi","IL SOPRANNOME":"rompi",
- "IL VIAGGIO DEI SOGNI":"rompi","CONFESSIONI LEGGERE":"rompi","LISTE VELOCI":"rompi",
- "L'ANNO PERFETTO":"cono","IL FILM DELLA TUA VITA":"cono","IL MUSEO DELLA TUA VITA":"cono","LA PRIMA VOLTA CHE...":"cono","SE FOSSI...":"cono","LE DOMANDE CHE CONTANO":"cono"
+ azione:["CONTARE FINO A 21","IL MIMO","SCULTURA UMANA","IL NODO UMANO","IL DOPPIATORE","CACCIA ALL'OGGETTO"],
+ // DOMANDE (ex Rompighiaccio): restano solo Primo appuntamento, Rompighiaccio e Conosciamoci
+ bambini:["APPELLO","MI CHIAMO E MI PIACE...","IL SUPERPOTERE","DUE VERITÀ E UNA BUGIA","IL SOPRANNOME","IL VIAGGIO DEI SOGNI","LA PRIMA VOLTA CHE...","SE FOSSI...","IL GIOCO DELLE DOMANDE","L'ANNO PERFETTO","CONFESSIONI LEGGERE","IL FILM DELLA TUA VITA","LISTE VELOCI","IL MUSEO DELLA TUA VITA","QUESTO O QUELLO — VERSIONE SERIA","LE DOMANDE CHE CONTANO"]
 };
 var GAME_LAUNCH_FLAGS=["bugia","sincronia","alfabeto", "annogiusto", "annoremote", "appello", "bandieraremote", "chipaga", "chiseidavvero", "codice", "codiceremote", "confessionianonime", "cosaincomune", "cosanonsa", "intesa", "lex", "linguaremote", "mimo", "mrwhite", "nomecognome", "occhio", "occhioremote", "primadoporemote", "pub", "quantovale", "quindici", "quizzone", "robot", "scultura", "sinon", "soprannome", "specchio", "superpotere", "temporemote", "traditore", "viaggiosogni"];
 function gameHasLaunch(g){
@@ -853,7 +838,7 @@ function gameLaunch(g){
  S.mwStep=1;S.screen="mrwhite_setup";render();return;
  }
  if(g.bugia||g.sincronia)return; // solo regole: si gioca a voce
- if(g.questions&&g.questions.length){S.qCardKey=(g._it||g.name);S.qCardIdx=0;S.screen="qplay";render();return;}
+ if(g.questions&&g.questions.length){S.qCardKey=(g._it||g.name);S.qCardIdx=0;S.qOrder=null;S.screen="qplay";render();return;}
  if(g.intesa){
  S.intesaStep=1;S.screen="intesa_setup";render();return;
  }
@@ -5532,7 +5517,11 @@ function renderQplay(){
  if(!g||!g.questions){goBackToGames();return;}
  var flat=[];g.questions.forEach(function(rd){(rd.items||[]).forEach(function(it){flat.push({label:rd.label,text:it});});});
  var qKey=(g._it||g.name);
- if(S.qCardKey!==qKey){S.qCardKey=qKey;S.qCardIdx=0;}
+ if(S.qCardKey!==qKey){S.qCardKey=qKey;S.qCardIdx=0;S.qOrder=null;}
+ if(g.qShuffle){
+  if(!S.qOrder||S.qOrder.length!==flat.length){var o=flat.map(function(_,i){return i;});for(var i=o.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=o[i];o[i]=o[j];o[j]=t;}S.qOrder=o;}
+  flat=S.qOrder.map(function(i){return flat[i];});
+ }
  var total=flat.length;
  if(S.qCardIdx<0)S.qCardIdx=0;
  if(S.qCardIdx>=total)S.qCardIdx=total-1;
