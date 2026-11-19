@@ -651,6 +651,7 @@ function renderHome(){
  var ciImg=document.createElement("img");
  ciImg.src=CAT_ICONS[cat.id];
  ciImg.alt=getCatName(cat.id);
+ ciImg.draggable=false;ciImg.setAttribute("draggable","false"); // tenendo premuto non si apre l'immagine in grande
  ciImg.style.cssText="width:120px;height:120px;object-fit:contain;display:block;margin-top:16px;";
  ciWrap.appendChild(ciImg);
  cb.appendChild(ciWrap);

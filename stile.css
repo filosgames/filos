@@ -752,7 +752,7 @@ body[data-cat="cultura"]{--f-cat:#DCE3F7;}body[data-cat="adulti"]{--f-cat:#EEDCE
 .oc-act .codice-cta{max-width:none!important;}
 
 /* 37. Fondo giallo lieve su tutta l'app; «Scegli un gioco per me» sopra la lista dei giochi */
-:root{--f-bg:#FFF4CC;}
+:root{--f-bg:#FCF4DB;}
 .hdr{background:var(--f-bg)!important;}
 .pick-pill{display:inline-flex;align-items:center;gap:8px;margin:0 0 16px;padding:11px 18px;border:none;border-radius:999px;background:var(--f-card);color:var(--f-ink);font:600 15px/1.2 var(--f-font);letter-spacing:-0.1px;box-shadow:var(--f-shadow);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s;}
 .pick-pill:active{transform:scale(.97);}
@@ -882,3 +882,11 @@ html.rs-lock,html.rs-lock body{overflow:hidden!important;}
 /* Titolo e sottotitolo dentro le partite: a sinistra come in tutte le altre schede */
 .dhdr .intesa-title{text-align:left!important;padding:0!important;}
 .dhdr .intesa-title + .intesa-desc{text-align:left!important;padding-left:0!important;padding-right:0!important;}
+
+/* 47 — Home: «Chi paga il conto?» più piccolo delle categorie e scritta più staccata; immagini che non si ingrandiscono tenendo premuto */
+.home-pig{gap:9px!important;}
+.home-pig img{width:62px!important;}
+@media (min-width:700px){.home-pig img{width:84px!important;}}
+img{-webkit-touch-callout:none;-webkit-user-drag:none;user-select:none;-webkit-user-select:none;}
+.cb img,.home-pig img{pointer-events:none;}
+.cb,.home-pig{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
