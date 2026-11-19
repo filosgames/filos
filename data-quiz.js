@@ -889,7 +889,7 @@ function gameLaunch(g){
  S.screen="soprannome";S.sopTime=300;S.sopRunning=false;render();return;
  }
  if(g.cosaincomune){
- S.screen="cosaincomune";S.cicTime=240;S.cicRunning=false;render();return;
+ S.screen="cosaincomune";S.cicTime=CIC_SECS;S.cicRunning=false;render();return;
  }
  if(g.chiseidavvero){
  S.screen="chiseidavvero";S.csdQ=null;S.csdTime=20;S.csdRunning=false;render();return;
@@ -2766,13 +2766,15 @@ function renderSoprannome(){
 // COSA HAI IN COMUNE? — timer 4 minuti
 // ══════════════════════════════════════════
 
+// Cosa hai in comune: 2 minuti a coppia
+var CIC_SECS=120;
 var _cicTimer=null;
 
 function renderCosaInComune(){
  clr();
  var cat=getCatById(S.cat);
  var bg=(CAT_PASTEL&&CAT_PASTEL[S.cat])?CAT_PASTEL[S.cat]:cat.bg;
- var timeLeft=S.cicTime!==undefined?S.cicTime:240;
+ var timeLeft=S.cicTime!==undefined?S.cicTime:CIC_SECS;
  var running=S.cicRunning||false;
  var gameName=(curGame()||{}).name||T("ui_cosa_hai_in_comune");
 
@@ -2804,7 +2806,7 @@ function renderCosaInComune(){
 
  // Barra progresso
  var barWrap=div("");barWrap.style.cssText="width:100%;max-width:260px;height:12px;background:var(--border);border-radius:10px;overflow:hidden;";
- var barFill=div("");barFill.style.cssText="height:100%;border-radius:10px;width:"+(timeLeft/240*100)+"%;background:"+(timeLeft<=30?"#e53935":timeLeft<=60?"#f57c00":"#2e7d32")+";transition:width .4s;";
+ var barFill=div("");barFill.style.cssText="height:100%;border-radius:10px;width:"+(timeLeft/CIC_SECS*100)+"%;background:"+(timeLeft<=30?"#e53935":timeLeft<=60?"#f57c00":"#2e7d32")+";transition:width .4s;";
  barWrap.appendChild(barFill);body.appendChild(barWrap);
 
  var rule=div("rtext");rule.style.cssText="text-align:center;font-size:14px;max-width:280px;";
@@ -2816,14 +2818,14 @@ function renderCosaInComune(){
   scaduto.textContent=T("ui_tempo_presentatevi_al_gruppo");
   body.appendChild(scaduto);
   var nextBtn=btn("ebtn",T("ui_nuova_coppia"),function(){
-   S.cicTime=240;S.cicRunning=false;renderCosaInComune();
+   S.cicTime=CIC_SECS;S.cicRunning=false;renderCosaInComune();
   });nextBtn.style.cssText="width:100%;max-width:280px;";body.appendChild(nextBtn);
   var fineBtn=btn("ebtn out",T("endGame"),function(){
    if(_cicTimer){clearInterval(_cicTimer);_cicTimer=null;}
    endGame(gameName);
   });fineBtn.style.cssText="width:100%;max-width:280px;";body.appendChild(fineBtn);
  } else if(!running){
-  var startBtn=btn("ebtn",timeLeft===240?T("ui_inizia_2"):T("ui_riprendi"),function(){
+  var startBtn=btn("ebtn",timeLeft===CIC_SECS?T("ui_inizia_2"):T("ui_riprendi"),function(){
    S.cicRunning=true;
    _cicTimer=setInterval(function(){
     S.cicTime=(S.cicTime||1)-1;
@@ -2833,10 +2835,10 @@ function renderCosaInComune(){
    renderCosaInComune();
   });startBtn.style.cssText="width:100%;max-width:280px;font-size:18px;padding:18px;";
   body.appendChild(startBtn);
-  if(timeLeft<240){
+  if(timeLeft<CIC_SECS){
    var resetBtn=btn("ebtn out",T("ui_ricomincia"),function(){
     if(_cicTimer){clearInterval(_cicTimer);_cicTimer=null;}
-    S.cicTime=240;S.cicRunning=false;renderCosaInComune();
+    S.cicTime=CIC_SECS;S.cicRunning=false;renderCosaInComune();
    });resetBtn.style.cssText="width:100%;max-width:280px;";body.appendChild(resetBtn);
   }
  } else {
