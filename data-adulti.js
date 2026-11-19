@@ -639,7 +639,7 @@ var ADULTI_GAMES=[
 "time": "25 min",
 "it": {
 "name": "IL PROCESSO",
-"rules": "L'app estrae un capo d'accusa. Si scelgono tre ruoli: l'IMPUTATO (che deve difendersi come se ne andasse della sua reputazione, perché è così), l'AVVOCATO (che trova scuse sempre più assurde) e il PM (che lo inchioda con prove inventate ma credibili). Un minuto a testa, poi la giuria vota: colpevole o innocente. Il condannato paga pegno; se viene assolto, paga pegno il PM.",
+"rules": "L'app estrae un capo d'accusa. Si scelgono tre ruoli: l'IMPUTATO (che deve difendersi come se ne andasse della sua reputazione, perché è così), l'AVVOCATO (che trova scuse sempre più assurde) e il PM (che lo inchioda con prove inventate ma credibili). Un minuto a testa, poi la giuria vota: colpevole o innocente. Se viene condannato, l'imputato offre al PM un drink o uno snack; se viene assolto, è il PM a offrirlo all'imputato. E chi paga lo consegna con un inchino: «Ecco a lei, Vostro Onore».",
 "tip": "Scegliete come imputato chi sembra più innocente: è lì che il processo diventa uno spettacolo. Testimoni a sorpresa dal pubblico sono sempre ammessi.",
 "deck": [
 "L'imputato è accusato di aver risposto 'sto arrivando' mentre era ancora sotto la doccia.",
@@ -686,7 +686,7 @@ var ADULTI_GAMES=[
 },
 "en": {
 "name": "THE TRIAL",
-"rules": "The app draws a charge. Pick three roles: the DEFENDANT (who must defend themselves as if their reputation depends on it — because it does), the LAWYER (who comes up with ever more absurd excuses) and the PROSECUTOR (who nails them with made-up but believable evidence). One minute each, then the jury votes: guilty or innocent. If convicted, the defendant pays a forfeit; if acquitted, the prosecutor does.",
+"rules": "The app draws a charge. Pick three roles: the DEFENDANT (who must defend themselves as if their reputation depends on it — because it does), the LAWYER (who comes up with ever more absurd excuses) and the PROSECUTOR (who nails them with made-up but believable evidence). One minute each, then the jury votes: guilty or innocent. If convicted, the defendant treats the prosecutor to a drink or a snack; if acquitted, the prosecutor treats the defendant. And whoever pays hands it over with a bow: 'Here you are, Your Honour.'",
 "tip": "Pick the most innocent-looking person as the defendant: that's when the trial becomes a show. Surprise witnesses from the audience are always allowed.",
 "deck": [
 "The defendant is charged with texting 'on my way' while still in the shower.",
@@ -733,7 +733,7 @@ var ADULTI_GAMES=[
 },
 "es": {
 "name": "EL JUICIO",
-"rules": "La app saca una acusación. Se reparten tres papeles: el ACUSADO (que debe defenderse como si le fuera la reputación en ello, porque es así), el ABOGADO (que busca excusas cada vez más absurdas) y el FISCAL (que lo acorrala con pruebas inventadas pero creíbles). Un minuto cada uno y el jurado vota: culpable o inocente. Si lo condenan, el acusado paga prenda; si sale absuelto, la paga el fiscal.",
+"rules": "La app saca una acusación. Se reparten tres papeles: el ACUSADO (que debe defenderse como si le fuera la reputación en ello, porque es así), el ABOGADO (que busca excusas cada vez más absurdas) y el FISCAL (que lo acorrala con pruebas inventadas pero creíbles). Un minuto cada uno y el jurado vota: culpable o inocente. Si lo condenan, el acusado invita al fiscal a una bebida o un snack; si sale absuelto, es el fiscal quien invita al acusado. Y quien paga lo entrega con una reverencia: «Aquí tiene, Su Señoría».",
 "tip": "Elegid como acusado a quien parezca más inocente: ahí es cuando el juicio se convierte en un espectáculo. Los testigos sorpresa del público siempre están permitidos.",
 "deck": [
 "El acusado ha escrito 'ya voy' cuando todavía estaba en la ducha.",
