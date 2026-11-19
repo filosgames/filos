@@ -873,3 +873,12 @@ html.rs-lock,html.rs-lock body{overflow:hidden!important;}
 .mw-wrap:has(.nm-wrap,.nm-step),.quiz-level-wrap:has(.nm-wrap,.nm-step){display:flex;flex-direction:column;flex:1 1 auto;width:100%;}
 .nm-step{width:100%;}
 .starter-body .starter-phrase{hyphens:manual!important;-webkit-hyphens:manual!important;overflow-wrap:break-word;}
+
+/* 46 — Schede alte quanto il loro contenuto: niente bianco vuoto sotto «Inizia» o sotto la frase */
+.dcard{min-height:0!important;}
+.starter-body{min-height:0!important;padding:8px 24px 26px!important;}
+.starter-phrase-box{padding:30px 0 30px!important;}
+.nm-start{padding-top:26px!important;}
+/* Titolo e sottotitolo dentro le partite: a sinistra come in tutte le altre schede */
+.dhdr .intesa-title{text-align:left!important;padding:0!important;}
+.dhdr .intesa-title + .intesa-desc{text-align:left!important;padding-left:0!important;padding-right:0!important;}
