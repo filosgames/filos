@@ -802,7 +802,7 @@ function renderGames(){
 // basta togliere il nome da qui. (Novembre 2026: richiesta di togliere questi giochi da Azione.)
 var GIOCHI_IN_PAUSA={
  // «Che lingua è?» resta solo in Cultura (e nella versione a più telefoni di «Sfida un altro tavolo»)
- amici:["CHE LINGUA È?"],
+ amici:["CHE LINGUA È?","IL COMPLIMENTO CHE NON HO ANCORA FATTO"],
  azione:["CONTARE FINO A 21","IL MIMO","SCULTURA UMANA","IL NODO UMANO","IL DOPPIATORE","CACCIA ALL'OGGETTO"],
  // DOMANDE (ex Rompighiaccio): restano solo Primo appuntamento, Rompighiaccio e Conosciamoci
  bambini:["APPELLO","MI CHIAMO E MI PIACE...","IL SUPERPOTERE","DUE VERITÀ E UNA BUGIA","IL SOPRANNOME","IL VIAGGIO DEI SOGNI","LA PRIMA VOLTA CHE...","SE FOSSI...","IL GIOCO DELLE DOMANDE","L'ANNO PERFETTO","CONFESSIONI LEGGERE","IL FILM DELLA TUA VITA","LISTE VELOCI","IL MUSEO DELLA TUA VITA","QUESTO O QUELLO — VERSIONE SERIA","LE DOMANDE CHE CONTANO"]
