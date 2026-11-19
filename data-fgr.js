@@ -426,7 +426,7 @@ function fgrScreenEnd(wrap,st){
  var btns=div("endbtns");
  if(st.leader===FGR.me)btns.appendChild(btn("ebtn",T("qvPlayAgain"),fgrRematch));
  else wrap.appendChild(div("cdr-wait",T("cdrWaitRematch").replace("{n}",st.leader||"")));
- btns.appendChild(btn("ebtn out",T("exitBtn"),function(){fgrLeave();goHome();}));
+ btns.appendChild(btn("ebtn out",T("pcEnd"),endNow(function(){fgrLeave();})));
  wrap.appendChild(btns);
 }
 

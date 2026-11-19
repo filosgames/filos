@@ -386,7 +386,7 @@ function tpScreenEnd(wrap,st){
  var bt=div("endbtns");
  if(st.host===TP.me&&!st.interrupted)bt.appendChild(btn("ebtn",T("qvPlayAgain"),tpRematch));
  else if(!st.interrupted)wrap.appendChild(div("cdr-wait",T("cdrWaitRematch").replace("{n}",st.host||"")));
- bt.appendChild(btn("ebtn out",T("exitBtn"),function(){tpLeave();goHome();}));
+ bt.appendChild(btn("ebtn out",T("pcEnd"),endNow(function(){tpLeave();})));
  wrap.appendChild(bt);
 }
 // ── Testi ──

@@ -418,7 +418,7 @@ function agrScreenEnd(wrap,st){
  var btns=div("endbtns");
  if(st.leader===AGR.me)btns.appendChild(btn("ebtn",T("qvPlayAgain"),agrRematch));
  else wrap.appendChild(div("cdr-wait",T("cdrWaitRematch").replace("{n}",st.leader||"")));
- btns.appendChild(btn("ebtn out",T("exitBtn"),function(){agrLeave();goHome();}));
+ btns.appendChild(btn("ebtn out",T("pcEnd"),endNow(function(){agrLeave();})));
  wrap.appendChild(btns);
 }
 

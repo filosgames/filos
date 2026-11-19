@@ -1147,17 +1147,17 @@ try {
 <script src="data-adulti.js?v=6"></script>
 <script src="data-regole.js?v=12"></script>
 <script src="data-parola.js?v=1"></script>
-<script src="data-quiz.js?v=97"></script>
+<script src="data-quiz.js?v=98"></script>
 <script src="data-geo.js?v=2"></script>
 <script src="data-punti.js?v=2"></script>
-<script src="data-cdr.js?v=22"></script>
-<script src="data-agr.js?v=11"></script>
-<script src="data-pdr.js?v=11"></script>
-<script src="data-fgr.js?v=10"></script>
-<script src="data-lgr.js?v=8"></script>
-<script src="data-qxr.js?v=7"></script>
-<script src="data-occhio.js?v=21"></script>
-<script src="data-tempo.js?v=12"></script>
+<script src="data-cdr.js?v=23"></script>
+<script src="data-agr.js?v=12"></script>
+<script src="data-pdr.js?v=12"></script>
+<script src="data-fgr.js?v=11"></script>
+<script src="data-lgr.js?v=9"></script>
+<script src="data-qxr.js?v=8"></script>
+<script src="data-occhio.js?v=22"></script>
+<script src="data-tempo.js?v=13"></script>
 <script>
 
 
@@ -3832,7 +3832,7 @@ function renderCnsEnd(){
  btns.appendChild(btn("ebtn",T("ui_gioca_ancora_2"),function(){
   S.screen="cns_write";S.cnsPlayer=1;S.cnsItems=[["","","","",""],["","","","",""]];S.cnsIdx=0;S.cnsGuess=null;S.cnsReveal=false;S.cnsScore=[0,0];render();
  }));
- btns.appendChild(btn("ebtn out",T("exitBtn"),goHome));
+ btns.appendChild(btn("ebtn out",T("pcEnd"),endNow()));
  body.appendChild(btns);
  wrap.appendChild(card);
  document.getElementById("root").appendChild(wrap);

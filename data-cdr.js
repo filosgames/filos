@@ -469,7 +469,7 @@ function cdrScreenEnd(wrap,st){
  var btns=div("endbtns");
  if(st.leader===CDR.me)btns.appendChild(btn("ebtn",T("qvPlayAgain"),cdrRematch));
  else wrap.appendChild(div("cdr-wait",T("cdrWaitRematch").replace("{n}",st.leader||"")));
- btns.appendChild(btn("ebtn out",T("exitBtn"),function(){cdrLeave();goHome();}));
+ btns.appendChild(btn("ebtn out",T("pcEnd"),endNow(function(){cdrLeave();})));
  wrap.appendChild(btns);
 }
 

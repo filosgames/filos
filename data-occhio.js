@@ -319,7 +319,7 @@ function renderOc(){
  var bt=div("endbtns");
  bt.appendChild(btn("ebtn",T("qvPlayAgain"),function(){ocLocalStart(OCL.players,OCL.rounds[0].lvl);}));
  bt.appendChild(btn("ebtn out",T("changeLevel"),function(){OCL=null;S.screen="occhio_setup";render();}));
- bt.appendChild(btn("ebtn out",T("exitBtn"),goHome));
+ bt.appendChild(btn("ebtn out",T("pcEnd"),endNow()));
  wrap.appendChild(bt);
 }
 function ocLocalSoloEnd(wrap,rd){
@@ -330,7 +330,7 @@ function ocLocalSoloEnd(wrap,rd){
  var bt=div("endbtns");
  bt.appendChild(btn("ebtn",T("qvPlayAgain"),function(){ocLocalStart(OCL.players,rd.lvl);}));
  bt.appendChild(btn("ebtn out",T("changeLevel"),function(){OCL=null;S.screen="occhio_setup";render();}));
- bt.appendChild(btn("ebtn out",T("exitBtn"),goHome));
+ bt.appendChild(btn("ebtn out",T("pcEnd"),endNow()));
  wrap.appendChild(bt);
 }
 function ocResList(wrap,rd,ranked){
@@ -627,7 +627,7 @@ function ocrScreenEnd(wrap,st){
  var bt=div("endbtns");
  if(st.leader===OCR.me)bt.appendChild(btn("ebtn",T("qvPlayAgain"),ocrRematch));
  else wrap.appendChild(div("cdr-wait",T("cdrWaitRematch").replace("{n}",st.leader||"")));
- bt.appendChild(btn("ebtn out",T("exitBtn"),function(){ocrLeave();goHome();}));
+ bt.appendChild(btn("ebtn out",T("pcEnd"),endNow(function(){ocrLeave();})));
  wrap.appendChild(bt);
 }
 

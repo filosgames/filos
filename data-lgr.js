@@ -401,7 +401,7 @@ function lgrScreenEnd(wrap,st){
  var btns=div("endbtns");
  if(st.leader===LGR.me)btns.appendChild(btn("ebtn",T("qvPlayAgain"),lgrRematch));
  else wrap.appendChild(div("cdr-wait",T("cdrWaitRematch").replace("{n}",st.leader||"")));
- btns.appendChild(btn("ebtn out",T("exitBtn"),function(){lgrLeave();goHome();}));
+ btns.appendChild(btn("ebtn out",T("pcEnd"),endNow(function(){lgrLeave();})));
  wrap.appendChild(btns);
 }
 

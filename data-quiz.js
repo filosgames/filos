@@ -1432,7 +1432,7 @@ function renderIntesaEnd(){
   var nt=(S.intesaTeam+1)%S.intesaTeamScores.length;
   btnsM.appendChild(btn("ebtn",T("intesaNextTeam").replace("{n}",intesaTeamName(nt)),intesaNextTeam));
   btnsM.appendChild(btn("ebtn out",T("intesaNewGame"),function(){startIntesa(S.intesaLevel);}));
-  btnsM.appendChild(btn("ebtn out",T("exitBtn"),goHome));
+  btnsM.appendChild(btn("ebtn out",T("pcEnd"),endNow()));
   wrap.appendChild(btnsM);
   document.getElementById("root").appendChild(wrap);
   return;
@@ -1448,7 +1448,7 @@ function renderIntesaEnd(){
  var btns=div("endbtns");
  btns.appendChild(btn("ebtn",T("qvPlayAgain"),function(){startIntesa(S.intesaLevel);}));
  btns.appendChild(btn("ebtn out",T("changeLevel"),function(){S.screen="intesa_setup";render();}));
- btns.appendChild(btn("ebtn out",T("exitBtn"),goHome));
+ btns.appendChild(btn("ebtn out",T("pcEnd"),endNow()));
  wrap.appendChild(btns);
  document.getElementById("root").appendChild(wrap);
 }
@@ -1541,7 +1541,7 @@ function renderAlfabeto(){
  wrap.appendChild(div("end-sub",T("firstTo")+S.alfaTarget+T("pointsHunter")));
  var btns=div("endbtns");
  btns.appendChild(btn("ebtn",T("qvPlayAgain"),function(){startAlfa(S.alfaNumPlayers);}));
- btns.appendChild(btn("ebtn out",T("exitBtn"),goHome));
+ btns.appendChild(btn("ebtn out",T("pcEnd"),endNow()));
  wrap.appendChild(btns);
  document.getElementById("root").appendChild(wrap);
  return;
@@ -1841,7 +1841,7 @@ function renderDadoWin(){
  wrap.appendChild(pd);
  var btns=div("endbtns");
  btns.appendChild(btn("ebtn",T("qvPlayAgain"),function(){startDado(S.dadoPlayerNames);}));
- btns.appendChild(btn("ebtn out",T("exitBtn"),goHome));
+ btns.appendChild(btn("ebtn out",T("pcEnd"),endNow()));
  wrap.appendChild(btns);
  document.getElementById("root").appendChild(wrap);
 }
@@ -2094,7 +2094,7 @@ function renderCodiceWin(){
  wrap.appendChild(revDiv);
  var btns=div("endbtns");
  btns.appendChild(btn("ebtn",T("qvPlayAgain"),function(){S.screen="codice_setup";render();}));
- btns.appendChild(btn("ebtn out",T("exitBtn"),goHome));
+ btns.appendChild(btn("ebtn out",T("pcEnd"),endNow()));
  wrap.appendChild(btns);
  document.getElementById("root").appendChild(wrap);
 }
@@ -4635,7 +4635,7 @@ function renderQvEnd(){
   else if(S.qvDistanza && !fbIsHost){/* client attende che host riavvii */}
   else{startQuantoVale(S.qvPlayers);}
  }));
- btns.appendChild(btn("ebtn out",T("exitBtn"),function(){fbLeaveRoom();goHome();}));
+ btns.appendChild(btn("ebtn out",T("pcEnd"),endNow(function(){fbLeaveRoom();})));
  wrap.appendChild(btns);
  document.getElementById("root").appendChild(wrap);
 }
@@ -4871,7 +4871,7 @@ function renderAgEnd(){
  wrap.appendChild(pd);
  var btns=div("endbtns");
  btns.appendChild(btn("ebtn",T("ui_gioca_ancora"),function(){startAnnoGiusto(S.agPlayers);}));
- btns.appendChild(btn("ebtn out",T("exitBtn"),goHome));
+ btns.appendChild(btn("ebtn out",T("pcEnd"),endNow()));
  wrap.appendChild(btns);
  document.getElementById("root").appendChild(wrap);
 }
@@ -5117,7 +5117,7 @@ function renderCaEnd(){
  wrap.appendChild(div("end-sub",T("ui_tutte_le")+S.caOrder.length+T("ui_confessioni_sono_state_svelate")));
  var btns=div("endbtns");
  btns.appendChild(btn("ebtn",T("ui_gioca_ancora"),function(){startCa(S.caPlayers);}));
- btns.appendChild(btn("ebtn out",T("exitBtn"),goHome));
+ btns.appendChild(btn("ebtn out",T("pcEnd"),endNow()));
  wrap.appendChild(btns);
  document.getElementById("root").appendChild(wrap);
 }
@@ -5460,7 +5460,7 @@ function renderQuiz(){
  var btns=div("endbtns");sc.appendChild(btns);
  btns.appendChild(btn("ebtn",T("qvPlayAgain"),function(){startQuizWithLevel(S.quizLevel);}));
  btns.appendChild(btn("ebtn out",T("changeLevel"),function(){S.screen="quizlevel";render();}));
- btns.appendChild(btn("ebtn out",T("exitBtn"),goHome));
+ btns.appendChild(btn("ebtn out",T("pcEnd"),endNow()));
  document.getElementById("root").appendChild(wrap);return;
  }
  if(S.quizOpts&&S.quizQIdx&&quizIsOpts(S.quizGame)){var _all=quizDataFor(S.quizGame).questions;S.quizQuestions=S.quizQIdx.map(function(i){return _all[i];});}
@@ -5513,6 +5513,8 @@ function renderQuiz(){
  document.getElementById("root").appendChild(wrap);
 }
 
+// Fine di una partita: si va alla schermata con valutazione e menu del locale (in tutti i giochi)
+function endNow(pre){return function(){try{if(pre)pre();}catch(e){}var g=(typeof curGame==="function")?curGame():null;endGame((g&&g.name)||S.lastGame||"");};}
 // Scheda dei giochi a frasi e a domande (come da bozza):
 // in alto, nella parte colorata: freccia, «Regole», titolo, «FRASE 4/10» e barra; sotto, nel bianco: la frase e «Indietro» / «Prossima».
 function playCard(o){
@@ -5547,6 +5549,7 @@ function renderQplay(){
   if(!S.qOrder||S.qOrder.length!==flat.length){var o=flat.map(function(_,i){return i;});for(var i=o.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=o[i];o[i]=o[j];o[j]=t;}S.qOrder=o;}
   flat=S.qOrder.map(function(i){return flat[i];});
  }
+ flat=flat.slice(0,10); // massimo 10 domande per partita, in tutti i giochi
  var total=flat.length;
  if(S.qCardIdx<0)S.qCardIdx=0;
  if(S.qCardIdx>=total)S.qCardIdx=total-1;
@@ -5570,7 +5573,7 @@ function renderStarter(){
   S.starterDeck={key:_dk,list:sh,src:allPhrases.length,ord:_ord,sk:_sk};
  }
  var shuffled=S.starterDeck.list;
- var maxPhrases=(gameName==="IL SUSSURRO"||gameName==="THE WHISPER"||gameName==="EL SUSURRO")?10:(gameName==="CHI È PIÙ PROBABILE? (COPPIA)"||gameName==="WHO'S MORE LIKELY? (COUPLE)"||gameName==="¿QUIÉN ES MÁS PROBABLE? (PAREJA)")?15:(gameName==="SCALA DA 1 A 10"||gameName==="SCALE OF 1 TO 10"||gameName==="ESCALA DEL 1 AL 10")?20:25;
+ var maxPhrases=10; // massimo 10 frasi per partita, in tutti i giochi
  var phrases=shuffled.slice(0,Math.min(maxPhrases,shuffled.length));var total=phrases.length;
  if(S.starterIdx>=total){endGame(gameName);return;}
  var phrase=phrases[S.starterIdx];var cat=getCatById(S.cat);

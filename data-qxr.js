@@ -409,7 +409,7 @@ function qxrScreenEnd(wrap,st){
  var btns=div("endbtns");
  if(st.leader===QXR.me)btns.appendChild(btn("ebtn",T("qvPlayAgain"),qxrRematch));
  else wrap.appendChild(div("cdr-wait",T("cdrWaitRematch").replace("{n}",st.leader||"")));
- btns.appendChild(btn("ebtn out",T("exitBtn"),function(){qxrLeave();goHome();}));
+ btns.appendChild(btn("ebtn out",T("pcEnd"),endNow(function(){qxrLeave();})));
  wrap.appendChild(btns);
 }
 

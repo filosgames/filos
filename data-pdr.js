@@ -424,7 +424,7 @@ function pdrScreenEnd(wrap,st){
  var btns=div("endbtns");
  if(st.leader===PDR.me)btns.appendChild(btn("ebtn",T("qvPlayAgain"),pdrRematch));
  else wrap.appendChild(div("cdr-wait",T("cdrWaitRematch").replace("{n}",st.leader||"")));
- btns.appendChild(btn("ebtn out",T("exitBtn"),function(){pdrLeave();goHome();}));
+ btns.appendChild(btn("ebtn out",T("pcEnd"),endNow(function(){pdrLeave();})));
  wrap.appendChild(btns);
 }
 
