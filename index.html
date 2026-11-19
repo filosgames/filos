@@ -807,7 +807,7 @@ button:disabled{opacity:0.35!important;transform:none;}
 #cdr-toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 28px);transform:translate(-50%,20px);background:rgba(28,28,30,0.92);color:#fff;font-size:15px;font-weight:600;padding:11px 18px;border-radius:999px;opacity:0;transition:all .25s;pointer-events:none;z-index:9999;}
 #cdr-toast.on{opacity:1;transform:translate(-50%,0);}
 </style>
-<link rel="stylesheet" href="stile.css?v=77">
+<link rel="stylesheet" href="stile.css?v=80">
 
 <!-- Firebase SDK (bundled) -->
 <script>
@@ -1140,14 +1140,14 @@ try {
 </div>
 <script src="data-ag.js?v=4"></script>
 <script src="data-qv.js?v=4"></script>
-<script src="data-sp.js?v=6"></script>
+<script src="data-sp.js?v=7"></script>
 <script src="data-cats.js?v=27"></script>
 <script src="data-quizdata.js?v=5"></script>
 <script src="data-lingua.js?v=1"></script>
 <script src="data-adulti.js?v=5"></script>
-<script src="data-regole.js?v=8"></script>
+<script src="data-regole.js?v=9"></script>
 <script src="data-parola.js?v=1"></script>
-<script src="data-quiz.js?v=86"></script>
+<script src="data-quiz.js?v=88"></script>
 <script src="data-geo.js?v=2"></script>
 <script src="data-punti.js?v=2"></script>
 <script src="data-cdr.js?v=22"></script>
@@ -2397,7 +2397,7 @@ Object.assign(STRINGS.it,{"mwHintLabel":"Indizio per Mr. White","mwHintYes":"Sì
 Object.assign(STRINGS.en,{"mwHintLabel":"Hint for Mr. White","mwHintYes":"Yes","mwHintNo":"No","mwHintYesSub":"Mr. White sees a word similar to the others'.","mwHintNoSub":"Mr. White sees no word at all: harder.","mwYouAre":"{n}, you are","mwWhiteHintSub":"The others have a word similar to this one. Listen carefully and bluff: don't get caught.","mwWhiteNoHintSub":"You don't know the others' word. Listen carefully and bluff: don't get caught.","mwStartsGame":"starts the game","mwStartsSub":"Taking turns, one after another, everyone says a word linked to the secret one. Then vote for who Mr. White is."});
 Object.assign(STRINGS.es,{"mwHintLabel":"Pista para Mr. White","mwHintYes":"Sí","mwHintNo":"No","mwHintYesSub":"Mr. White ve una palabra parecida a la de los demás.","mwHintNoSub":"Mr. White no ve ninguna palabra: más difícil.","mwYouAre":"{n}, eres","mwWhiteHintSub":"Los demás tienen una palabra parecida a esta. Escucha bien y farolea: que no te pillen.","mwWhiteNoHintSub":"No conoces la palabra de los demás. Escucha bien y farolea: que no te pillen.","mwStartsGame":"empieza el juego","mwStartsSub":"Por turnos, uno tras otro, cada uno dice una palabra relacionada con la secreta. Luego votad quién es Mr. White."});
 Object.assign(STRINGS.it,{"rulesShow":"Leggi","rulesHide":"Chiudi"});
-Object.assign(STRINGS.it,{ncNext:"Prossima"});Object.assign(STRINGS.en,{ncNext:"Next"});Object.assign(STRINGS.es,{ncNext:"Siguiente"});
+Object.assign(STRINGS.it,{ncNext:"Prossima"});Object.assign(STRINGS.it,{qDomanda:"Domanda"});Object.assign(STRINGS.en,{qDomanda:"Question"});Object.assign(STRINGS.es,{qDomanda:"Pregunta"});Object.assign(STRINGS.en,{ncNext:"Next"});Object.assign(STRINGS.es,{ncNext:"Siguiente"});
 Object.assign(STRINGS.it,{player1:"giocatore"});Object.assign(STRINGS.en,{player1:"player"});Object.assign(STRINGS.es,{player1:"jugador"});
 Object.assign(STRINGS.it,{nmAdd:"Aggiungi un giocatore",nmAddTeam:"Aggiungi una squadra"});
 Object.assign(STRINGS.en,{nmAdd:"Add a player",nmAddTeam:"Add a team"});
@@ -3951,6 +3951,7 @@ else if(S.screen==="specchio")renderSpecchio();
  else if(S.screen==="quizlevel")renderQuizLevel();
  else if(S.screen==="quiz")renderQuiz();
  else if(S.screen==="starter")renderStarter();
+ else if(S.screen==="qplay")renderQplay();
  else if(S.screen==="viaggio_plan")renderViaggioPlan();
  else if(S.screen==="viaggio_card")renderViaggioCard();
  else if(S.screen==="cns_write")renderCnsWrite();

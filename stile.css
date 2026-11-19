@@ -890,3 +890,15 @@ html.rs-lock,html.rs-lock body{overflow:hidden!important;}
 img{-webkit-touch-callout:none;-webkit-user-drag:none;user-select:none;-webkit-user-select:none;}
 .cb img,.home-pig img{pointer-events:none;}
 .cb,.home-pig{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
+
+/* 48 — Domande una alla volta (La Coppia): etichetta del round sopra la domanda, «Precedente» e «Prossima domanda» affiancati */
+.q-box{flex-direction:column;gap:12px;}
+.q-round{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6B727C;text-align:center;}
+.q-nav{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.q-nav .ebtn[disabled]{opacity:.45;cursor:default;}
+.q-nav{flex-wrap:nowrap!important;align-items:center;}
+.q-prev{width:52px;height:52px;flex:0 0 auto;border-radius:50%;border:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+ background:rgba(26,29,33,0.08);background:color-mix(in srgb,var(--f-chip,#FFE89A),#1A1D21 9%);color:#1A1D21;font-size:0;}
+.q-prev::before{content:"";width:10px;height:10px;border-left:2.6px solid currentColor;border-bottom:2.6px solid currentColor;transform:rotate(45deg);margin-left:5px;}
+.q-prev:disabled{opacity:.35;cursor:default;}
+.q-prev:focus-visible{outline:2px solid #1A1D21;outline-offset:2px;}

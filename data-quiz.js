@@ -808,6 +808,7 @@ var GAME_LAUNCH_FLAGS=["bugia","sincronia","alfabeto", "annogiusto", "annoremote
 function gameHasLaunch(g){
  if(!g)return false;
  if(g.bugia||g.sincronia)return false; // solo regole
+ if(g.questions&&g.questions.length)return true; // regole → «Inizia» → domande
  for(var i=0;i<GAME_LAUNCH_FLAGS.length;i++)if(g[GAME_LAUNCH_FLAGS[i]])return true;
  var gname=g._it||g.name;
  if((S.cat==="cultura"||g.lingua)&&QUIZ_DATA[gname])return true;
@@ -836,6 +837,7 @@ function gameLaunch(g){
  S.mwStep=1;S.screen="mrwhite_setup";render();return;
  }
  if(g.bugia||g.sincronia)return; // solo regole: si gioca a voce
+ if(g.questions&&g.questions.length){S.qCardKey=(g._it||g.name);S.qCardIdx=0;S.screen="qplay";render();return;}
  if(g.intesa){
  S.intesaStep=1;S.screen="intesa_setup";render();return;
  }
@@ -5134,24 +5136,6 @@ function renderGame(){
  
  body.appendChild(div("rlabel",T("howToPlay")));body.appendChild(rulesList(g.rules));
  if(g.tip){var tip=div("tip");tip.innerHTML="<strong>"+T("tipLabel")+"</strong> \u2014 "+g.tip;body.appendChild(tip);}
- if(g.questions){
- // Domande una alla volta, a schede
- var flat=[];g.questions.forEach(function(rd){(rd.items||[]).forEach(function(it){flat.push({label:rd.label,text:it});});});
- var qKey=(g._it||g.name);
- if(S.qCardKey!==qKey){S.qCardKey=qKey;S.qCardIdx=0;}
- if(S.qCardIdx>=flat.length)S.qCardIdx=flat.length-1;if(S.qCardIdx<0)S.qCardIdx=0;
- var cur=flat[S.qCardIdx];
- body.appendChild(div("rlabel",T("theQuestions")));
- var qc=div("qcard");body.appendChild(qc);
- qc.appendChild(div("qcard-round",cur.label));
- qc.appendChild(div("qcard-text",cur.text));
- qc.appendChild(div("qcard-count",(S.qCardIdx+1)+" / "+flat.length));
- var qn=div("qcard-nav");body.appendChild(qn);
- var prev=btn("ebtn out",T("ui_precedente"),function(){S.qCardIdx--;renderGame();});
- if(S.qCardIdx===0)prev.disabled=true;
- qn.appendChild(prev);
- if(S.qCardIdx<flat.length-1)qn.appendChild(btn("ebtn",T("qvNextQuestion"),function(){S.qCardIdx++;renderGame();}));
- }
  var ew=div("");ew.style.cssText="text-align:center;margin-top:26px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;";
  // Prima le regole: se il gioco ha la sua schermata, qui c'è solo «Inizia».
  // Se invece il gioco si gioca da questa pagina (domande, regole), resta «Fine gioco».
@@ -5522,6 +5506,41 @@ function renderQuiz(){
  document.getElementById("root").appendChild(wrap);
 }
 
+// Domande una alla volta (36 domande, vulnerabilità, 3 livelli…): stessa scheda della partita a frasi
+function renderQplay(){
+ clr();
+ addBackArrow(goBackToGames);
+ var g=curGame();
+ if(!g||!g.questions){goBackToGames();return;}
+ var flat=[];g.questions.forEach(function(rd){(rd.items||[]).forEach(function(it){flat.push({label:rd.label,text:it});});});
+ var qKey=(g._it||g.name);
+ if(S.qCardKey!==qKey){S.qCardKey=qKey;S.qCardIdx=0;}
+ var total=flat.length;
+ if(S.qCardIdx<0)S.qCardIdx=0;
+ if(S.qCardIdx>=total)S.qCardIdx=total-1;
+ var cur=flat[S.qCardIdx];var cat=getCatById(S.cat);
+ var wrap=div("starter-wrap");
+ var hdr=div("starter-header");wrap.appendChild(hdr);
+ hdr.appendChild(div("starter-title",g.name));hdr.appendChild(div("starter-counter",T("qDomanda")+" "+(S.qCardIdx+1)+" / "+total));
+ var prog=div("starter-progress");wrap.appendChild(prog);
+ var bar=div("starter-bar");bar.style.width=Math.round((S.qCardIdx/total)*100)+"%";prog.appendChild(bar);
+ var card=div("starter-card");wrap.appendChild(card);
+ var chdr=div("starter-card-hdr");chdr.style.background=(CAT_PASTEL&&CAT_PASTEL[S.cat])?CAT_PASTEL[S.cat]:(cat?cat.bg:"#FFE89A");card.appendChild(chdr);
+ var snav=div("dhdr-top");chdr.appendChild(snav);
+ snav.appendChild(btn("card-nav-btn back",T("backToGames"),goBackToGames));
+ var body=div("starter-body");card.appendChild(body);
+ var ph=div("starter-phrase-box q-box");body.appendChild(ph);
+ if(cur.label)ph.appendChild(div("q-round",cur.label));
+ ph.appendChild(div("starter-phrase",cur.text));
+ var nav=div("starter-nav q-nav");body.appendChild(nav);
+ var prev=btn("q-prev","",function(){S.qCardIdx--;renderQplay();window.scrollTo(0,0);});
+ prev.setAttribute("aria-label",T("ui_precedente"));prev.title=T("ui_precedente");
+ if(S.qCardIdx===0)prev.disabled=true;
+ nav.appendChild(prev);
+ if(S.qCardIdx<total-1)nav.appendChild(btn("ebtn",T("qvNextQuestion"),function(){S.qCardIdx++;renderQplay();window.scrollTo(0,0);}));
+ else nav.appendChild(btn("ebtn",T("endGame"),function(){endGame(g.name);}));
+ document.getElementById("root").appendChild(wrap);
+}
 function renderStarter(){
  clr();
  addBackArrow(goBackToGames);
@@ -6734,7 +6753,7 @@ var QZ = {
 // "Torna ai giochi" ed "Esci", titolo del gioco) vengono messe dentro la stessa scheda.
 // Il pulsante "Indietro" in alto, se c'è, diventa il "Torna ai giochi" della scheda.
 // ══════════════════════════════════════════
-var SHELL_SKIP={home:1,games:1,end:1,onboarding:1,splash:1,analytics:1,starter:1,quiz:1,chipaga:1,terms:1,legal:1,connect:1,game:1,riddle:1};
+var SHELL_SKIP={home:1,games:1,end:1,onboarding:1,splash:1,analytics:1,starter:1,qplay:1,quiz:1,chipaga:1,terms:1,legal:1,connect:1,game:1,riddle:1};
 var SHELL_TITLES={cdr:"codiceTitle",codice_secret:"codiceTitle",codice:"codiceTitle",codice_win:"codiceTitle",agr:"ui_anno_giusto",pdr:"pdrTitle",fgr:"fgrTitle",lgr:"lgrTitle",qxr:"qvTitle",ocr:"ocTitle",tpr:"tpTitle"};
 function shellTitle(){
  var k=SHELL_TITLES[S.screen];
