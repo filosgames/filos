@@ -5509,6 +5509,27 @@ function renderQuiz(){
  document.getElementById("root").appendChild(wrap);
 }
 
+// Scheda dei giochi a frasi e a domande (come da bozza):
+// in alto, nella parte colorata: freccia, «Regole», titolo, «FRASE 4/10» e barra; sotto, nel bianco: la frase e «Indietro» / «Prossima».
+function playCard(o){
+ var cat=getCatById(S.cat);
+ var wrap=div("starter-wrap pc-wrap");
+ var card=div("starter-card pc-card");wrap.appendChild(card);
+ var hdr=div("starter-card-hdr pc-hdr");hdr.style.background=(CAT_PASTEL&&CAT_PASTEL[S.cat])?CAT_PASTEL[S.cat]:(cat?cat.bg:"#FFE89A");card.appendChild(hdr);
+ var top=div("dhdr-top");hdr.appendChild(top);
+ top.appendChild(btn("card-nav-btn back",T("backToGames"),goBackToGames));
+ hdr.appendChild(div("starter-title pc-title",o.title));
+ hdr.appendChild(div("pc-count",o.counter));
+ var tr=div("pc-track");var bar=div("pc-bar");bar.style.width=Math.max(0,Math.min(100,Math.round(o.progress*100)))+"%";tr.appendChild(bar);hdr.appendChild(tr);
+ var body=div("starter-body pc-body");card.appendChild(body);
+ var box=div("starter-phrase-box pc-box");body.appendChild(box);
+ if(o.label)box.appendChild(div("q-round",o.label));
+ box.appendChild(div("starter-phrase",o.text));
+ var nav=div("pc-nav");body.appendChild(nav);
+ var pv=btn("pc-btn pc-prev",T("pcPrev"),o.onPrev);if(o.prevDisabled)pv.disabled=true;nav.appendChild(pv);
+ nav.appendChild(btn("pc-btn pc-next",o.nextLabel,o.onNext));
+ return wrap;
+}
 // Domande una alla volta (36 domande, vulnerabilità, 3 livelli…): stessa scheda della partita a frasi
 function renderQplay(){
  clr();
@@ -5525,27 +5546,10 @@ function renderQplay(){
  var total=flat.length;
  if(S.qCardIdx<0)S.qCardIdx=0;
  if(S.qCardIdx>=total)S.qCardIdx=total-1;
- var cur=flat[S.qCardIdx];var cat=getCatById(S.cat);
- var wrap=div("starter-wrap");
- var hdr=div("starter-header");wrap.appendChild(hdr);
- hdr.appendChild(div("starter-title",g.name));hdr.appendChild(div("starter-counter",T("qDomanda")+" "+(S.qCardIdx+1)+" / "+total));
- var prog=div("starter-progress");wrap.appendChild(prog);
- var bar=div("starter-bar");bar.style.width=Math.round((S.qCardIdx/total)*100)+"%";prog.appendChild(bar);
- var card=div("starter-card");wrap.appendChild(card);
- var chdr=div("starter-card-hdr");chdr.style.background=(CAT_PASTEL&&CAT_PASTEL[S.cat])?CAT_PASTEL[S.cat]:(cat?cat.bg:"#FFE89A");card.appendChild(chdr);
- var snav=div("dhdr-top");chdr.appendChild(snav);
- snav.appendChild(btn("card-nav-btn back",T("backToGames"),goBackToGames));
- var body=div("starter-body");card.appendChild(body);
- var ph=div("starter-phrase-box q-box");body.appendChild(ph);
- if(cur.label)ph.appendChild(div("q-round",cur.label));
- ph.appendChild(div("starter-phrase",cur.text));
- var nav=div("starter-nav q-nav");body.appendChild(nav);
- var prev=btn("q-prev","",function(){S.qCardIdx--;renderQplay();window.scrollTo(0,0);});
- prev.setAttribute("aria-label",T("ui_precedente"));prev.title=T("ui_precedente");
- if(S.qCardIdx===0)prev.disabled=true;
- nav.appendChild(prev);
- if(S.qCardIdx<total-1)nav.appendChild(btn("ebtn",T("qvNextQuestion"),function(){S.qCardIdx++;renderQplay();window.scrollTo(0,0);}));
- else nav.appendChild(btn("ebtn",T("endGame"),function(){endGame(g.name);}));
+ var cur=flat[S.qCardIdx];var last=S.qCardIdx>=total-1;
+ var wrap=playCard({title:g.name,counter:T("qDomanda")+" "+(S.qCardIdx+1)+"/"+total,progress:(S.qCardIdx+1)/total,label:cur.label,text:cur.text,
+  prevDisabled:S.qCardIdx===0,onPrev:function(){if(S.qCardIdx>0){S.qCardIdx--;renderQplay();window.scrollTo(0,0);}},
+  nextLabel:last?T("pcEnd"):T("pcNext"),onNext:function(){if(last){endGame(g.name);return;}S.qCardIdx++;renderQplay();window.scrollTo(0,0);}});
  document.getElementById("root").appendChild(wrap);
 }
 function renderStarter(){
@@ -5577,21 +5581,10 @@ function renderStarter(){
  }
  var phrase=phrases[S.starterIdx];var cat=getCatById(S.cat);
  if(S.starterDeck&&S.starterDeck.ord)freshMark(S.starterDeck.sk,S.starterDeck.ord[S.starterIdx]);
- var wrap=div("starter-wrap");
- var hdr=div("starter-header");wrap.appendChild(hdr);
- hdr.appendChild(div("starter-title",gameName));hdr.appendChild(div("starter-counter",T("ui_frase")+(S.starterIdx+1)+" / "+total));
- var prog=div("starter-progress");wrap.appendChild(prog);
- var bar=div("starter-bar");bar.style.width=Math.round((S.starterIdx/total)*100)+"%";prog.appendChild(bar);
- var card=div("starter-card");wrap.appendChild(card);
- var chdr=div("starter-card-hdr");chdr.style.background=(CAT_PASTEL&&CAT_PASTEL[S.cat])?CAT_PASTEL[S.cat]:(cat?cat.bg:"linear-gradient(135deg,#1C1208,#3a2a10)");card.appendChild(chdr);
- var snav=div("dhdr-top");chdr.appendChild(snav);
- snav.appendChild(btn("card-nav-btn back",T("backToGames"),goBackToGames));
- // La frase sta nella parte bianca, centrata; «Prossima frase» in fondo alla scheda
- var body=div("starter-body");card.appendChild(body);
- var ph=div("starter-phrase-box");body.appendChild(ph);ph.appendChild(div("starter-phrase",phrase));
- var nav=div("starter-nav");body.appendChild(nav);
- if(S.starterIdx<total-1){nav.appendChild(btn("ebtn",T("starterNext"),function(){S.starterIdx++;renderStarter();}));}
- else{nav.appendChild(btn("ebtn",T("starterDone"),function(){S.starterIdx++;renderStarter();}));}
+ var last=S.starterIdx>=total-1;
+ var wrap=playCard({title:gameName,counter:T("ui_frase").trim()+" "+(S.starterIdx+1)+"/"+total,progress:(S.starterIdx+1)/total,text:phrase,
+  prevDisabled:S.starterIdx===0,onPrev:function(){if(S.starterIdx>0){S.starterIdx--;renderStarter();window.scrollTo(0,0);}},
+  nextLabel:last?T("pcEnd"):T("pcNext"),onNext:function(){S.starterIdx++;renderStarter();window.scrollTo(0,0);}});
  document.getElementById("root").appendChild(wrap);
 }
 
