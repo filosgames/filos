@@ -807,6 +807,7 @@ function renderGames(){
 var GAME_LAUNCH_FLAGS=["bugia","sincronia","alfabeto", "annogiusto", "annoremote", "appello", "bandieraremote", "chipaga", "chiseidavvero", "codice", "codiceremote", "confessionianonime", "cosaincomune", "cosanonsa", "intesa", "lex", "linguaremote", "mimo", "mrwhite", "nomecognome", "occhio", "occhioremote", "primadoporemote", "pub", "quantovale", "quindici", "quizzone", "robot", "scultura", "sinon", "soprannome", "specchio", "superpotere", "temporemote", "traditore", "viaggiosogni"];
 function gameHasLaunch(g){
  if(!g)return false;
+ if(g.bugia||g.sincronia)return false; // solo regole
  for(var i=0;i<GAME_LAUNCH_FLAGS.length;i++)if(g[GAME_LAUNCH_FLAGS[i]])return true;
  var gname=g._it||g.name;
  if((S.cat==="cultura"||g.lingua)&&QUIZ_DATA[gname])return true;
@@ -834,7 +835,7 @@ function gameLaunch(g){
  if(g.mrwhite){
  S.mwStep=1;S.screen="mrwhite_setup";render();return;
  }
- if(g.bugia||g.sincronia){scStart();return;}
+ if(g.bugia||g.sincronia)return; // solo regole: si gioca a voce
  if(g.intesa){
  S.intesaStep=1;S.screen="intesa_setup";render();return;
  }
@@ -842,7 +843,7 @@ function gameLaunch(g){
  S.screen="alfabeto_setup";render();return;
  }
  if(g.nomecognome){
- S.screen="nc_setup";render();return;
+ S.ncLetterN=getRandomLetter("");S.ncLetterC=getRandomLetter(S.ncLetterN);S.screen="nomecognome";render();return;
  }
  if(g.quindici){
  S.screen="dado_setup";render();return;
@@ -1646,37 +1647,11 @@ function renderNcSetup(){
 }
 
 function renderNomeCognome(){
+ // Solo le due lettere e «Prossima»: chi dice per primo nome e cognome prende il punto, a voce
  clr();
  addBackArrow(goBackToGames);
  var wrap=div("nc-wrap");
-
- // Check winner
- var players=Object.keys(S.ncScores);
- var winner=null;
- for(var p in S.ncScores){if(S.ncScores[p]>=S.ncTarget){winner=p;break;}}
-
- if(winner){
-  var wt=div("end-title");wt.textContent=winTxt(winner);wrap.appendChild(wt);
- wrap.appendChild(div("end-sub",T("firstTo")+S.ncTarget+T("pointsWin")));
- var btns2=div("endbtns");
- btns2.appendChild(btn("ebtn",T("qvPlayAgain"),function(){startNomeCognome(S.ncNumPlayers);}));
- btns2.appendChild(btn("ebtn out",T("exitBtn"),goHome));
- wrap.appendChild(btns2);
- document.getElementById("root").appendChild(wrap);
- return;
- }
-
- // Scores
- var maxScore=Math.max.apply(null,players.map(function(p){return S.ncScores[p];}));
- var scoresDiv=div("nc-scores");
- players.forEach(function(p){
- var chip=div("nc-score-chip"+(S.ncScores[p]===maxScore&&maxScore>0?" leader":""));
- chip.textContent=p+": "+S.ncScores[p];
- scoresDiv.appendChild(chip);
- });
- wrap.appendChild(scoresDiv);
-
- // Two big letters
+ if(!S.ncLetterN){S.ncLetterN=getRandomLetter("");S.ncLetterC=getRandomLetter(S.ncLetterN);}
  var lettersDiv=div("nc-letters");
  var boxN=div("nc-letter-box");
  var labelN=div("ncl-label");labelN.textContent=T("ncLabelName");boxN.appendChild(labelN);
@@ -1687,25 +1662,10 @@ function renderNomeCognome(){
  var charC=div("ncl-char");charC.textContent=S.ncLetterC;boxC.appendChild(charC);
  lettersDiv.appendChild(boxC);
  wrap.appendChild(lettersDiv);
-
  wrap.appendChild(div("nc-hint",T("nomeCognomeDesc")));
-
- // Point buttons
- var wq=div("rlabel",T("ncWhoFirst"));wq.style.cssText="text-align:center;margin-top:20px;";wrap.appendChild(wq);
- var btns=div("endbtns");
- btns.style.flexWrap="wrap";btns.style.marginTop="10px";
- players.forEach(function(p){
- (function(player){
- var pb=btn("ebtn",player,function(){
- S.ncScores[player]++;
- newNcRound();
- });
- btns.appendChild(pb);
- })(p);
- });
- btns.appendChild(btn("ebtn out"," "+T("ncNobody"),function(){newNcRound();}));
+ var btns=div("endbtns");btns.style.marginTop="18px";
+ btns.appendChild(btn("ebtn",T("ncNext"),function(){newNcRound();}));
  wrap.appendChild(btns);
-
  document.getElementById("root").appendChild(wrap);
 }
 
@@ -1928,25 +1888,51 @@ function startCodice(players){
  S.screen="codice_secret";
  render();
 }
-// Campo di 4 cifre che usa la tastiera numerica del telefono (niente freccette)
+// Campo di 4 cifre che usa la tastiera numerica del telefono (niente freccette).
+// Si può toccare la casella che si vuole e scrivere lì; poi si passa da sola alla casella vuota successiva.
+// Cancella: svuota la casella attiva (o quella prima, se è già vuota).
 function codiceOtp(onChange){
+ var Z="​"; // segnaposto invisibile: serve per accorgersi del tasto Cancella anche sul telefono
  var box=div("codice-otp");
  var inp=document.createElement("input");
  inp.type="text";inp.setAttribute("inputmode","numeric");inp.setAttribute("pattern","[0-9]*");
- inp.setAttribute("autocomplete","one-time-code");inp.maxLength=4;inp.className="codice-otp-input";
- inp.setAttribute("aria-label","Codice");
+ inp.setAttribute("autocomplete","off");inp.className="codice-otp-input";
+ inp.setAttribute("aria-label","Codice");inp.value=Z;
+ var vals=["","","",""],cur=0;
  var slots=[];var row=div("codice-slots big");
  for(var k=0;k<4;k++){var sl=div("codice-slot");slots.push(sl);row.appendChild(sl);}
+ function emit(){var full=vals.every(function(x){return x!=="";});onChange(full?vals.slice():vals.filter(function(x){return x!=="";}));}
  function paint(){
-  var v=inp.value;
-  for(var k=0;k<4;k++){slots[k].textContent=v[k]||"";slots[k].className="codice-slot"+(v[k]?" filled":"")+(document.activeElement===inp&&k===Math.min(v.length,3)?" active":"");}
-  onChange(v.split(""));
+  var on=document.activeElement===inp;
+  for(var k=0;k<4;k++){slots[k].textContent=vals[k];slots[k].className="codice-slot"+(vals[k]!==""?" filled":"")+(on&&k===cur?" active":"");}
  }
- inp.oninput=function(){var c=inp.value.replace(/[^0-9]/g,"").slice(0,4);if(c!==inp.value)inp.value=c;paint();};
- inp.onfocus=paint;inp.onblur=paint;
+ function nextEmpty(from){for(var k=from;k<4;k++)if(vals[k]==="")return k;for(var j=0;j<from;j++)if(vals[j]==="")return j;return Math.min(from,3);}
+ function reset(){inp.value=Z;try{inp.setSelectionRange(1,1);}catch(e){}}
+ function put(d){vals[cur]=d;cur=nextEmpty(cur<3?cur+1:3);}
+ function back(){if(vals[cur]!==""){vals[cur]="";}else if(cur>0){cur--;vals[cur]="";}}
+ inp.addEventListener("input",function(){
+  var v=inp.value,dg=v.replace(/[^0-9]/g,"");
+  if(dg){dg.split("").slice(0,4).forEach(put);}
+  else if(v.indexOf(Z)<0){back();}
+  reset();paint();emit();
+ });
+ inp.addEventListener("keydown",function(e){
+  if(e.key==="Backspace"&&inp.value===Z){e.preventDefault();back();paint();emit();}
+  else if(e.key==="ArrowLeft"){e.preventDefault();cur=Math.max(0,cur-1);paint();}
+  else if(e.key==="ArrowRight"){e.preventDefault();cur=Math.min(3,cur+1);paint();}
+ });
+ // Tocco su una casella: quella diventa la casella attiva
+ function pick(e){
+  var x=(e.touches&&e.touches[0]?e.touches[0].clientX:e.clientX);if(x==null)return;
+  for(var k=0;k<4;k++){var r=slots[k].getBoundingClientRect();if(x>=r.left-6&&x<=r.right+6){cur=k;break;}}
+  paint();
+ }
+ inp.addEventListener("pointerdown",pick);
+ inp.addEventListener("focus",function(){reset();paint();});inp.addEventListener("blur",paint);
  box.onclick=function(){inp.focus();};
  box.appendChild(row);box.appendChild(inp);
  box._input=inp;box._paint=paint;
+ box._set=function(arr){vals=["","","",""];(arr||[]).slice(0,4).forEach(function(d,i){vals[i]=String(d);});cur=nextEmpty(0);paint();emit();};
  setTimeout(function(){try{inp.focus({preventScroll:true});}catch(e){}paint();},60);
  return box;
 }

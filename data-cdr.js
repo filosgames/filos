@@ -368,7 +368,7 @@ function cdrScreenSecret(wrap,st){
   var keep=CDR.entry.slice();
   var otp=codiceOtp(function(a){CDR.entry=a;if(ok)ok.disabled=a.length!==4;});
   wrap.appendChild(otp);
-  if(keep.length){otp._input.value=keep.join("");CDR.entry=keep;}
+  if(keep.length){otp._set(keep);CDR.entry=keep;}
   ok=btn("codice-cta",T("codiceSave"),function(){cdrSaveSecret(CDR.entry.slice());});
   ok.disabled=CDR.entry.length!==4;wrap.appendChild(ok);
  } else {
@@ -419,7 +419,7 @@ function cdrScreenPlay(wrap,st){
   var tryB;var keep2=CDR.entry.slice();
   var otp2=codiceOtp(function(a){CDR.entry=a;if(tryB)tryB.disabled=a.length!==4;});
   play.appendChild(otp2);
-  if(keep2.length){otp2._input.value=keep2.join("");CDR.entry=keep2;}
+  if(keep2.length){otp2._set(keep2);CDR.entry=keep2;}
   tryB=btn("codice-cta",T("codiceTry"),function(){if(CDR.entry.length!==4)return;tryB.disabled=true;cdrGuess(target,CDR.entry.slice());});
   tryB.disabled=CDR.entry.length!==4;play.appendChild(tryB);
   cdrHistory(wrap,st,target);
