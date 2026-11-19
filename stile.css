@@ -939,3 +939,12 @@ img{-webkit-touch-callout:none;-webkit-user-drag:none;user-select:none;-webkit-u
 .end2-nav{margin-top:26px;}
 .end2-back{background:#fff;box-shadow:0 1px 3px rgba(26,29,33,.08);}
 .end2-back:hover{background:#FAFAFA;}
+
+/* 52 — Nomi: «+» in un cerchio pieno (centrato con precisione) e linea sotto i nomi sempre dello stesso colore */
+.nm-in,.nm-in:focus,.nm-in:hover{border-bottom:1px solid rgba(26,29,33,0.16)!important;}
+.nm-add{position:relative;width:48px;height:48px;padding:0!important;font-size:0!important;color:transparent!important;border-radius:50%!important;
+ background:rgba(26,29,33,0.08)!important;background:color-mix(in srgb,var(--f-chip,#FFE89A),#1A1D21 9%)!important;}
+.nm-add::before,.nm-add::after{content:"";position:absolute;left:50%;top:50%;background:#1A1D21;border-radius:2px;transform:translate(-50%,-50%);}
+.nm-add::before{width:18px;height:2.4px;}
+.nm-add::after{width:2.4px;height:18px;}
+.nm-add:hover{filter:brightness(0.96);}
