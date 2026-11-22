@@ -182,6 +182,8 @@ function vcNew(it){
  for(var i=0;i<VCFG.cfg.nw.length;i++)if(VCFG.cfg.nw[i].id===id)return VCFG.cfg.nw[i];
  return null;
 }
+// Nome per le statistiche: per i giochi creati per il locale il nome italiano (non il codice interno)
+function vcLogName(g){if(!g)return "";if(g._vnew){var n=vcNew(g._it);return (n&&vcPick(n.name,"it"))||g.name;}return g._it||g.name;}
 function vcGameCfg(cat,it){return (VCFG.cfg&&VCFG.cfg.g[vcKey(cat,it)])||null;}
 // Visibile di base (senza impostazioni del locale): i giochi in pausa no
 function vcDefaultVisible(cat,g){

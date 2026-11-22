@@ -785,7 +785,7 @@ function renderGames(){
  info.appendChild(nameWrap);info.appendChild(div("gm",g.players+" "+T("players")+" \u00b7 "+g.time));
  row.appendChild(info);row.appendChild(div("garr",CHEV));
  row.onclick=(function(i2){return function(){
- S.game=i2;logPlay(S.cat,g._it||g.name);
+ S.game=i2;logPlay(S.cat,vcLogName(g));
  // Prima le regole del gioco, poi «Inizia» porta al gioco
  if(g.quizzone){gameLaunch(g);return;}
  S.screen="game";render();
