@@ -1147,7 +1147,7 @@ try {
 <script src="data-adulti.js?v=7"></script>
 <script src="data-regole.js?v=14"></script>
 <script src="data-parola.js?v=1"></script>
-<script src="data-quiz.js?v=107"></script>
+<script src="data-quiz.js?v=108"></script>
 <script src="data-geo.js?v=2"></script>
 <script src="data-punti.js?v=2"></script>
 <script src="data-top10.js?v=3"></script>
@@ -1160,6 +1160,7 @@ try {
 <script src="data-qxr.js?v=8"></script>
 <script src="data-occhio.js?v=22"></script>
 <script src="data-tempo.js?v=13"></script>
+<script src="data-venue.js?v=1"></script>
 <script>
 
 
@@ -3871,6 +3872,8 @@ function catBgApply(){
  }catch(e){}
 }
 function render(){
+ // Impostazioni del locale (pannello Filòs): locale cambiato o novità in sospeso
+ try{if(typeof vcTick==="function")vcTick();}catch(e){}
  updateHdr();resetIdle();
  try{document.body.setAttribute("data-cat",S.cat||"");}catch(e){}
  catBgApply();
@@ -4605,6 +4608,13 @@ try{if(typeof applyAdulti==="function")applyAdulti();}catch(e){}
 })();
 
 try{if(typeof applyRegole==="function")applyRegole();}catch(e){}
+// Impostazioni del singolo locale (dopo regole e traduzioni, prima del primo render)
+try{if(typeof vcBoot==="function")vcBoot();}catch(e){}
+// Pannello Filòs: index.html#admin (si carica solo per chi lo apre)
+(function(){
+ function adm(){if(window.location.hash!=="#admin"||window.ADM_LOADING)return;window.ADM_LOADING=true;var sc=document.createElement("script");sc.src="admin.js?v=1";document.body.appendChild(sc);}
+ adm();window.addEventListener("hashchange",adm);
+})();
 
 // Avvia subito il listener se il nome esiste già
 if(FILOS_NAME && fbDB) startInviteListener();

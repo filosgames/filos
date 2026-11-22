@@ -641,7 +641,9 @@ function renderHome(){
  // challenge rimosso
 
  var grid1=div("cgrid"),grid2=div("cgrid"),gridM=div("cgrid-mobile");
- for(var i=0;i<CATS.length;i++){
+ // Categorie nascoste dal pannello Filòs per questo locale
+ var _cats=CATS.filter(function(c){return vcCatVisible(c.id);});
+ for(var i=0;i<_cats.length;i++){
  (function(cat,idx){
  var avail=isAvail(cat);
  function makeCb(){
@@ -664,7 +666,7 @@ function renderHome(){
  }
  if(idx<5)grid1.appendChild(makeCb());else grid2.appendChild(makeCb());
  gridM.appendChild(makeCb());
- })(CATS[i],i);
+ })(_cats[i],i);
  }
  wrap.appendChild(grid1);wrap.appendChild(grid2);wrap.appendChild(gridM);
  // Chi paga il conto? — scheda in home (non copre più i giochi)
@@ -760,15 +762,16 @@ function renderGames(){
  panel.appendChild(list);
  } else {
  var _gtable=gameTable();var _allGames=_gtable[S.cat]||[];var games=_allGames;
- if(S.cat==="bambini"){
- // DOMANDE: tre giochi, sempre in quest'ordine
- var ORD=["PRIMO APPUNTAMENTO","ROMPIGHIACCIO","CONOSCIAMOCI"];
- games=games.filter(function(g){return ORD.indexOf(g._it||g.name)>=0;}).sort(function(a,b){return ORD.indexOf(a._it||a.name)-ORD.indexOf(b._it||b.name);});
- }
  var _qzOn=false;try{_qzOn=localStorage.getItem("filos_quizzone")==="1";}catch(e){}
  games=games.filter(function(g){return !g.quizzone||_qzOn;});
  games=games.filter(function(g){return !g.hidden;});
- games=games.filter(function(g){var p=GIOCHI_IN_PAUSA[S.cat];return !(p&&p.indexOf(g._it||g.name)>=0);});
+ // Giochi in pausa nascosti; le impostazioni del locale (pannello Filòs) possono spegnere o riaccendere un gioco
+ games=games.filter(function(g){var def=vcDefaultVisible(S.cat,g);return vcGameVisible(S.cat,g,def);});
+ if(S.cat==="bambini"){
+ // DOMANDE: Primo appuntamento, Rompighiaccio e Conosciamoci, sempre in quest'ordine (poi gli eventuali giochi del locale)
+ var ORD=VC_BAMBINI_ORD;
+ games=games.slice().sort(function(a,b){var ia=ORD.indexOf(a._it||a.name),ib=ORD.indexOf(b._it||b.name);if(ia<0)ia=99;if(ib<0)ib=99;return ia-ib;});
+ }
  var list=div("glist");
  var lastSection="";
  for(var i=0;i<games.length;i++){(function(g,idx){
@@ -5574,7 +5577,7 @@ function renderStarter(){
  var _dk=gameName+"|"+LANG;
  if(!S.starterDeck||S.starterDeck.key!==_dk||S.starterIdx===0||S.starterDeck.src!==allPhrases.length){
   // Prima le frasi mai uscite su questo telefono
-  var _sk="sp_"+(S.starterGameIt||gameName);var _ord=freshOrder(_sk,allPhrases.length);
+  var _sk="sp_"+(S.starterGameIt||gameName)+vcDeckTag(S.cat,S.starterGameIt||gameName);var _ord=freshOrder(_sk,allPhrases.length);
   var sh=_ord.map(function(i){return allPhrases[i];});
   S.starterDeck={key:_dk,list:sh,src:allPhrases.length,ord:_ord,sk:_sk};
  }
