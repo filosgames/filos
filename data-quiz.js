@@ -808,7 +808,7 @@ var GIOCHI_IN_PAUSA={
  // DOMANDE (ex Rompighiaccio): restano solo Primo appuntamento, Rompighiaccio e Conosciamoci
  bambini:["APPELLO","MI CHIAMO E MI PIACE...","IL SUPERPOTERE","DUE VERITÀ E UNA BUGIA","IL SOPRANNOME","IL VIAGGIO DEI SOGNI","LA PRIMA VOLTA CHE...","SE FOSSI...","IL GIOCO DELLE DOMANDE","L'ANNO PERFETTO","CONFESSIONI LEGGERE","IL FILM DELLA TUA VITA","LISTE VELOCI","IL MUSEO DELLA TUA VITA","QUESTO O QUELLO — VERSIONE SERIA","LE DOMANDE CHE CONTANO"]
 };
-var GAME_LAUNCH_FLAGS=["bugia","sincronia","alfabeto", "annogiusto", "annoremote", "appello", "bandieraremote", "chipaga", "chiseidavvero", "codice", "codiceremote", "confessionianonime", "cosaincomune", "cosanonsa", "intesa", "lex", "linguaremote", "mimo", "mrwhite", "nomecognome", "occhio", "occhioremote", "primadoporemote", "pub", "quantovale", "quindici", "quizzone", "robot", "scultura", "sinon", "soprannome", "specchio", "superpotere", "temporemote", "traditore", "viaggiosogni"];
+var GAME_LAUNCH_FLAGS=["bugia","sincronia","top10","alfabeto", "annogiusto", "annoremote", "appello", "bandieraremote", "chipaga", "chiseidavvero", "codice", "codiceremote", "confessionianonime", "cosaincomune", "cosanonsa", "intesa", "lex", "linguaremote", "mimo", "mrwhite", "nomecognome", "occhio", "occhioremote", "primadoporemote", "pub", "quantovale", "quindici", "quizzone", "robot", "scultura", "sinon", "soprannome", "specchio", "superpotere", "temporemote", "traditore", "viaggiosogni"];
 function gameHasLaunch(g){
  if(!g)return false;
  if(g.bugia||g.sincronia)return false; // solo regole
@@ -840,6 +840,7 @@ function gameLaunch(g){
  if(g.mrwhite){
  S.mwStep=1;S.screen="mrwhite_setup";render();return;
  }
+ if(g.top10){t10Start();return;}
  if(g.bugia||g.sincronia)return; // solo regole: si gioca a voce
  if(g.questions&&g.questions.length){S.qCardKey=(g._it||g.name);S.qCardIdx=0;S.qOrder=null;S.screen="qplay";render();return;}
  if(g.intesa){
@@ -6794,7 +6795,7 @@ function shellWrap(){
  var low=String(title).toLowerCase().trim();
  [].forEach.call(body.querySelectorAll(".codice-big,.mw-title,.quiz-level-title,.intesa-title,.qv-title,.nc-title,.alfa-title"),function(e){if(String(e.textContent||"").toLowerCase().trim()===low)e.remove();});
 }
-var SHELL_BACKONLY={mrwhite_setup:1,mrwhite:1,sc_setup:1,sc_play:1,sc_rank:1};
+var SHELL_BACKONLY={mrwhite_setup:1,mrwhite:1,sc_setup:1,sc_play:1,sc_rank:1,t10_setup:1,t10_play:1,t10_rank:1};
 var SHELL_REMOTE={cdr:1,agr:1,pdr:1,fgr:1,lgr:1,qxr:1,ocr:1,tpr:1};
 (function(){
  function start(){
