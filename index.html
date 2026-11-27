@@ -807,7 +807,7 @@ button:disabled{opacity:0.35!important;transform:none;}
 #cdr-toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 28px);transform:translate(-50%,20px);background:rgba(28,28,30,0.92);color:#fff;font-size:15px;font-weight:600;padding:11px 18px;border-radius:999px;opacity:0;transition:all .25s;pointer-events:none;z-index:9999;}
 #cdr-toast.on{opacity:1;transform:translate(-50%,0);}
 </style>
-<link rel="stylesheet" href="stile.css?v=87">
+<link rel="stylesheet" href="stile.css?v=88">
 
 <!-- Firebase SDK (bundled) -->
 <script>
@@ -1150,7 +1150,7 @@ try {
 <script src="data-quiz.js?v=107"></script>
 <script src="data-geo.js?v=2"></script>
 <script src="data-punti.js?v=2"></script>
-<script src="data-top10.js?v=1"></script>
+<script src="data-top10.js?v=2"></script>
 <script src="data-cdr.js?v=23"></script>
 <script src="data-agr.js?v=12"></script>
 <script src="data-pdr.js?v=12"></script>
@@ -2474,7 +2474,7 @@ function saveMenu(){try{localStorage.setItem("filos_menu",JSON.stringify(MENU));
 
 var GAMES={
  amici:[
- {name:"TOP 10",players:"1+",time:"20 min",isnew:true,top10:true,rules:"Classifiche vere, con la fonte: si prova a indovinare le voci e si prende 1 punto per ogni voce indovinata.",tip:"Non serve indovinare la posizione: basta che la voce sia nella top 10."},
+ {name:"TOP 10",players:"2+",time:"20 min",isnew:true,top10:true,rules:"Classifiche vere, con la fonte: le squadre scrivono una risposta alla volta. Il 1° posto vale 2 punti, gli altri 1; una risposta sbagliata toglie 1 punto e passa il turno.",tip:"Non serve scrivere in modo perfetto: l'app accetta piccoli errori."},
  {name:"È UN 10 MA...",players:"1+",time:"15 min",hot:true,rules:"A turno un giocatore descrive una persona usando la formula 'È un 10, ma...' aggiungendo un difetto assurdo. Gli altri devono dire se la accetterebbero comunque, motivando la risposta.",tip:"I 'ma' più assurdi e specifici sono quelli che fanno ridere di più.",starter:["È un 10, ma canta ad alta voce in tutti i posti pubblici — metro, supermercato, ascensore.","È un 10, ma risponde sempre ai messaggi dopo tre giorni esatti.","È un 10, ma parla di sé in terza persona. Sempre.","È un 10, ma ha paura dei palloncini.","È un 10, ma ogni sera racconta per filo e per segno cosa ha sognato la notte prima.","È un 10, ma non ha mai guardato un film fino alla fine in vita sua.","È un 10, ma mastica con la bocca aperta e lo trova assolutamente normale.","È un 10, ma litiga con gli sconosciuti nei commenti online ogni sera.","È un 10, ma il suo ex lo chiama ancora ogni lunedì mattina.","È un 10, ma crede che tutte le malattie si curino con lo zenzero.","È un 10, ma non sa fare una valigia — porta sempre quattro trolley per un weekend.","È un 10, ma si offende se non rispondi entro dieci minuti.","È un 10, ma ride di sé stesso così tanto che non finisce mai una storia.","È un 10, ma dorme con la luce accesa e il ventilatore anche d'inverno.","È un 10, ma è convinto di essere il migliore cuoco del mondo pur sapendo fare solo la pasta in bianco.","È un 10, ma porta le sue posate ovunque perché non si fida di quelle dei ristoranti."]},
  {name:"MR. WHITE",players:"1+",time:"20 min",hot:true,mrwhite:true,rules:"L'app sceglie una parola segreta e la assegna a tutti tranne a Mr. White, sorteggiato casualmente. A turno ognuno passa il telefono a un giocatore che tocca il proprio pulsante per vedere la parola — o scoprire di essere Mr. White. Poi si danno indizi a turno. Il gruppo vota chi è Mr. White. Se lo beccano, Mr. White ha un'ultima chance: se indovina la parola, vince lui!",tip:"Mr. White deve ascoltare gli indizi degli altri per intuire la parola e salvarsi.",words:[,
  {secret:"Spiaggia",similar:"Piscina"},
