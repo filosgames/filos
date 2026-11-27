@@ -158,39 +158,62 @@ function t10Close(inp,key){
  var n=Math.min(inp.length,key.length);var tol=n>=8?2:(n>=5?1:0);
  return tol>0&&t10Lev(inp,key)<=tol;
 }
-// Tutti i modi accettati per ogni posizione della classifica i
+// Nomi equivalenti validi in tutte le classifiche (es. «USA» = «Stati Uniti»)
+var T10_SYN=[
+ ["stati uniti","usa","america","stati uniti d america","united states","united states of america","us","estados unidos","eeuu","ee uu"],
+ ["regno unito","uk","gran bretagna","united kingdom","great britain","reino unido","gran bretana","inghilterra","england","inglaterra"],
+ ["paesi bassi","olanda","netherlands","holland","paises bajos","holanda"],
+ ["repubblica ceca","cechia","czech republic","czechia","republica checa","chequia","rep ceca"],
+ ["unione sovietica","urss","ussr","soviet union","union sovietica"],
+ ["corea del sud","south korea","corea"]
+];
+var T10_SYNMAP=null;
+function t10Syn(x){
+ if(!T10_SYNMAP){T10_SYNMAP={};T10_SYN.forEach(function(g){g.forEach(function(w){T10_SYNMAP[t10Norm(w)]=g;});});}
+ return T10_SYNMAP[x]||null;
+}
+// Tutti i modi accettati per ogni posizione della classifica i.
+// Le parole che iniziano con «~» sono parole chiave: basta che la risposta le contenga.
+var T10_KEYS={};
 function t10Keys(ci){
- var c=TOP10[ci],out=[];
+ if(T10_KEYS[ci])return T10_KEYS[ci];
+ var c=TOP10[ci],out=[],al=c.a||TOP10_A[ci]||{};
  for(var k=0;k<10;k++){
   var set={};
-  function add(x){x=t10Norm(x);if(x)set[x]=1;}
+  var add=function(x){x=String(x||"");if(x.charAt(0)==="~"){var w=t10Norm(x.slice(1));if(w)set["~"+w]=1;return;}x=t10Norm(x);if(!x)return;set[x]=1;var g=t10Syn(x);if(g)g.forEach(function(w){var n=t10Norm(w);if(n)set[n]=1;});};
   ["it","en","es"].forEach(function(L){
-   var v=Array.isArray(c.l)?c.l[k]:c.l[L][k];add(v);
-   var b=String(v).split(" (")[0];add(b);
+   var v=String(Array.isArray(c.l)?c.l[k]:c.l[L][k]);add(v);
+   var b=v.split(" (")[0];add(b);
    if(b.indexOf(" – ")>0)add(b.split(" – ")[0]);
+   if(b.indexOf(": ")>0)add(b.split(": ")[0]);
+   if(b.indexOf(" - ")>0)add(b.split(" - ")[0]);
+   // Classifiche di persone: basta il cognome
+   if(c.p&&b.indexOf(" / ")<0){var w=b.trim().split(/\s+/);if(w.length>1)add(w[w.length-1]);}
   });
-  ((TOP10_A[ci]||{})[k]||[]).forEach(add);
+  (al[k]||[]).forEach(add);
   out.push(Object.keys(set));
  }
- return out;
+ T10_KEYS[ci]=out;return out;
 }
 var T10_ALL=null;
 function t10AllKeys(){
  if(T10_ALL)return T10_ALL;T10_ALL={};
- for(var i=0;i<TOP10.length;i++)t10Keys(i).forEach(function(ks){ks.forEach(function(x){T10_ALL[x]=1;});});
+ for(var i=0;i<TOP10.length;i++)t10Keys(i).forEach(function(ks){ks.forEach(function(x){if(x.charAt(0)!=="~")T10_ALL[x]=1;});});
  return T10_ALL;
 }
 // Ritorna {k:posizione} oppure {dup:posizione} oppure null
 function t10Match(ci,text,found){
  var inp=t10Norm(text);if(!inp)return null;
- var keys=t10Keys(ci),exact=[],near=[];
+ var keys=t10Keys(ci),exact=[],near=[],kw=[],pad=" "+inp+" ";
  for(var k=0;k<10;k++){
-  if(keys[k].indexOf(inp)>=0)exact.push(k);
-  else if(keys[k].some(function(x){return t10Close(inp,x);}))near.push(k);
+  var full=keys[k].filter(function(x){return x.charAt(0)!=="~";});
+  if(full.indexOf(inp)>=0)exact.push(k);
+  else if(full.some(function(x){return t10Close(inp,x);}))near.push(k);
+  else if(keys[k].some(function(x){return x.charAt(0)==="~"&&pad.indexOf(" "+x.slice(1))>=0;}))kw.push(k);
  }
  // Una parola che è il nome esatto di una voce di un'altra classifica (es. «Irlanda» vs «Islanda») non vale come errore di battitura
- if(!exact.length&&near.length&&t10AllKeys()[inp])return null;
- var hits=exact.length?exact:near;if(!hits.length)return null;
+ if(!exact.length&&near.length&&t10AllKeys()[inp])near=[];
+ var hits=exact.length?exact:(near.length?near:kw);if(!hits.length)return null;
  for(var i=0;i<hits.length;i++)if(found[hits[i]]===undefined)return {k:hits[i]};
  return {dup:hits[0]};
 }
